@@ -1,0 +1,64 @@
+# depslib dependency file v1.0
+1348556291 source:c:\dev\projects\fpga\local\light52\tools\b51\src\b51_log.c
+	<stdint.h>
+	<stdbool.h>
+	<stdio.h>
+	"b51_cpu.h"
+	"b51_log.h"
+
+1348556865 c:\dev\projects\fpga\local\light52\tools\b51\src\b51_cpu.h
+	<stdint.h>
+	<stdbool.h>
+	"b51_mcu.h"
+	"b51_log.h"
+
+1348556074 c:\dev\projects\fpga\local\light52\tools\b51\src\b51_log.h
+	<stdint.h>
+	<stdbool.h>
+
+1348520160 source:c:\dev\projects\fpga\local\light52\tools\b51\src\main.c
+	<stdint.h>
+	<stdbool.h>
+	<stdio.h>
+	<stdlib.h>
+	"b51_mcu.h"
+	"b51_cpu.h"
+	"b51_log.h"
+
+1296959086 source:c:\dev\projects\fpga\local\light52\tools\b51\src\util\ihex.c
+	"ihex.h"
+
+1296959086 c:\dev\projects\fpga\local\light52\tools\b51\src\util\ihex.h
+	<stdio.h>
+	<stdint.h>
+	<stdlib.h>
+	<string.h>
+
+1320007232 source:c:\dev\projects\fpga\local\light52\tools\b51\src\b51_mpu.c
+	<stdio.h>
+	"b51_cpu.h"
+	"b51_log.h"
+
+1348556840 source:c:\dev\projects\fpga\local\light52\tools\b51\src\b51_cpu.c
+	<stdint.h>
+	<stdbool.h>
+	<stdio.h>
+	"b51_cpu.h"
+	"b51_mcu.h"
+	"b51_log.h"
+	"util/ihex.h"
+
+1320008669 c:\dev\projects\fpga\local\light52\tools\b51\src\b51_mpu.h
+	<stdint.h>
+	<stdbool.h>
+	"b51_cpu.h"
+
+1320096559 source:c:\dev\projects\fpga\local\light52\tools\b51\src\b51_mcu.c
+	<stdio.h>
+	"b51_mcu.h"
+	"b51_log.h"
+
+1320096097 c:\dev\projects\fpga\local\light52\tools\b51\src\b51_mcu.h
+	<stdint.h>
+	<stdbool.h>
+
