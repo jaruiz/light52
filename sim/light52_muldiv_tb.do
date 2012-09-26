@@ -1,6 +1,4 @@
-# assumed to run from /<project directory>/syn
-# change the path to the libraries in the vmap commands to match your setup
-# some unused modules' vcom calls have been commented out
+# assumed to run from /<project directory>/sim
 vlib work
 
 vcom -reportprogress 300 -work work ../vhdl/light52_pkg.vhdl
