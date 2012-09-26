@@ -2,7 +2,6 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -format Logic /light52_tb/clk
 add wave -noupdate -divider CPU
-add wave -noupdate -color Gray55 -format Logic /light52_tb/uut/cpu/code_vma
 add wave -noupdate -color Gray75 -format Literal -radix hexadecimal /light52_tb/uut/cpu/pc_reg
 add wave -noupdate -color Gray90 -format Literal -radix hexadecimal /light52_tb/uut/code_addr
 add wave -noupdate -color {Lime Green} -format Literal -radix hexadecimal /light52_tb/uut/code_rd
