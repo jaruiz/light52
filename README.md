@@ -7,7 +7,7 @@ Yet another free 8051 FPGA core.
 
 This project is in a very early state: 
 
-* No documentation other than this readme file.
+* No documentation other than this readme file and a draft of the datasheet.
 * Hardly debugged.
 * No useable synthesizable demo.
 
