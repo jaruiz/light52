@@ -38,9 +38,15 @@ use work.obj_code_pkg.all;
 
 entity light52_mcu is
     generic (
+        -- External memory configuration
         CODE_ROM_SIZE :         integer := 1024;
         XDATA_RAM_SIZE :        integer := 512; -- FIXME default should be zero
         OBJ_CODE :              t_obj_code := default_object_code;
+        -- CPU configuration (see CPU module)
+        USE_BRAM_FOR_XRAM :     boolean := false;
+        IMPLEMENT_BCD_INSTRUCTIONS : boolean := false;
+        SEQUENTIAL_MULTIPLIER : boolean := false;
+        -- Peripheral configuration (see peripheral modules)
         UART_HARDWIRED :        boolean := false;
         UART_BAUD_RATE :        integer := 19200;
         UART_CLOCK_RATE :       integer := 50e6
@@ -136,6 +142,11 @@ signal irq_source :         std_logic_vector(4 downto 0);
 begin
 
 cpu: entity work.light52_cpu 
+generic map (
+    USE_BRAM_FOR_XRAM => USE_BRAM_FOR_XRAM,
+    IMPLEMENT_BCD_INSTRUCTIONS => IMPLEMENT_BCD_INSTRUCTIONS,
+    SEQUENTIAL_MULTIPLIER => SEQUENTIAL_MULTIPLIER
+)
 port map (
     clk         => clk,
     reset       => reset,
