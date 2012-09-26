@@ -11,7 +11,7 @@ This project is in a very early state:
 * Hardly debugged.
 * No useable synthesizable demo.
 
-Until some real documentation is added you are advised to just ignore this project.  
+Until some real documentation is added you are advised to just ignore this project.
 
 (This repo would be private if GitHub free accounts supported that feature).
 
