@@ -303,6 +303,7 @@ begin
             info.pc <= X"0000";
             info.psw_prev <= X"00";
             info.sp_reg_prev <= X"07";
+            info.a_reg_prev <= X"00";
             
             -- Logging must be enabled from outside by setting 
             -- log_trigger_address to a suitable value.
