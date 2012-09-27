@@ -1,12 +1,11 @@
 --------------------------------------------------------------------------------
 -- light52_timer.vhdl -- 16-bit timer with prescaler.
 --------------------------------------------------------------------------------
---  Basic timer, functionally equivalent to the MCS51 timer in mode 2: 8-bit 
---  autoreload. Note this timer is NOT compatible to the original; it has a 
---  different interface and is totally independent of the UART.
+--  Basic timer, not directly compatible to any of the original MCS51 timers. 
+--  This timer is totally independent of the UART.
 -- 
 --  This is essentially a reloadable up-counter that optionally triggers an 
---  interrupt every time the count overflows.
+--  interrupt every time the count reaches a certain value.
 -- 
 --------------------------------------------------------------------------------
 -- REGISTERS
@@ -77,9 +76,9 @@
 --
 -- -# Flag CEN (Count ENable) must be set to 1 by the CPU to start the timer. 
 --    When CEN is 0, the prescaler is reset and the timer register is stopped.
---    Writing a 0 to CEN will stop the count without changing the counter value.
---    Writing a 1 to CEN will load the counter with its reload value and start 
---    the count up. The counter will count up until it overflows (if ARL=0).
+--    Writing a 1 to CEN will start the count up. The counter will count 
+--    until it matches the compare register value (if ARL=1) or it overflows 
+--    (if ARL=0). At which moment it will roll back to zero.
 --
 -- -# Flag ARL (Auto ReLoad) must be set to 1 for autoreload mode. Its reset 
 --    value is 0.
