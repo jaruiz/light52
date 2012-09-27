@@ -1456,7 +1456,7 @@ begin
             bit_index_reg <= bit_index;
         end if;
         if ps = lcall_0 or ps = fetch_addr_1 then
-            addr1_reg <= unsigned(code_rd);--PC_reg(15 downto 8);
+            addr1_reg <= unsigned(code_rd);
         elsif ps = irq_2 then
             addr1_reg <= (others => '0');
         elsif ps = ret_1 then
@@ -1593,7 +1593,10 @@ begin
     end if;
 end process SFR_mux_register;    
     
--- FIXME explain
+-- Data read from the IRAM/SFR: this is the IRAM vs. SFR multiplexor.
+-- Note it is controlled with sfr_addressing_reg, which is in sync with both
+-- sfr_rd_internal_reg and bram_data_p0 because of the 1-cycle data latency
+-- of the BRAM and the SFR interface.
 iram_sfr_rd <= sfr_rd_internal_reg when sfr_addressing_reg='1' else bram_data_p0;
     
 
