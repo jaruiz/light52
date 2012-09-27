@@ -29,6 +29,10 @@
 ; approximation only. If your CPU fails this test, it must be dead!
 ;-------------------------------------------------------------------------------
     
+        ; Include the definitions for the light52 derivative
+        $nomod51
+        $include (light52.mcu)
+    
         ;-- Parameters common to all tests -------------------------------------
         
 dir0    set     060h                ; Address used in direct addressing tests

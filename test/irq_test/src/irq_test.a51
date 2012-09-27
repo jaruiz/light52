@@ -5,20 +5,14 @@
 ; Its purpose is to demonstrate the working of the interrupt service logic. No
 ; actual tests are performed (other than the co-simulation tests), only checks.
 ;
-    
-        ;-----------------------------------------------------------------------
+;-------------------------------------------------------------------------------
+
+        ; Include the definitions for the light52 derivative
+        $nomod51
+        $include (light52.mcu)
         
 ext_irq_ctr     set     060h        ; Incremented by external irq routine
 
-; Define addresses of non-standard timer SFRs.
-; FIXME this shoud be defined in a separate include file
-TSTAT           set     088h        ; Control/status register
-TL              set     08ch        ; Counter register, low byte
-TH              set     08dh        ; Counter register, high byte
-TCL             set     08eh        ; Compare register, low byte
-TCH             set     08fh        ; Compare register, high byte
-
-EXTINT          set     0c0h        ; External interrupt register
     
         ;-- Macros -------------------------------------------------------------
 
@@ -72,7 +66,7 @@ start:
         nop
         mov     a,ext_irq_ctr
         cjne    a,#00,fail_unexpected
-        setb    EXTINT.0            ; Clear external IRQ flag
+        setb    EXTINT0.0           ; Clear external IRQ flag
 
         ; Trigger timer IRQ with external IRQ enabled but global IE disabled
         mov     IE,#01h
@@ -82,7 +76,7 @@ start:
         nop
         mov     a,ext_irq_ctr
         cjne    a,#00,fail_unexpected
-        setb    EXTINT.0           ; Clear timer IRQ flag
+        setb    EXTINT0.0          ; Clear timer IRQ flag
 
         ; Trigger external IRQ with external and global IRQ enabled
         mov     P1,#00h
@@ -94,7 +88,7 @@ start:
         nop
         mov     a,ext_irq_ctr
         cjne    a,#01,fail_expected
-        setb    EXTINT.0           ; Clear timer IRQ flag
+        setb    EXTINT0.0          ; Clear timer IRQ flag
 
 
         ; End of irq test, print message and continue
@@ -182,7 +176,7 @@ puts_done:
 ; Note we don't bother to preserve any registers
 irq_ext:
         mov     P1,#00h             ; Remove the external interrupt request
-        mov     EXTINT,#0ffh        ; Clear all external IRQ flags
+        mov     EXTINT0,#0ffh       ; Clear all external IRQ flags
         inc     ext_irq_ctr         ; Increment irq counter
         mov     DPTR,#text0         ; Print IRQ message...
         call    puts

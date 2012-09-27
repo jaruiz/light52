@@ -3,14 +3,15 @@
 @rem 
 @rem This ia our assembler's path and executable name...
 @set AS_PATH=..\..\local\tools\asem51
-@set AS=%AS_PATH%\asem.exe
+@set AS=%AS_PATH%\asem.exe 
+@set AS_OPTS=/INCLUDEs:..\include
 @rem ...this is the path of the IHEX-to-VHDL script...
 @set BR_PATH=..\..\tools\build_rom
 @rem ...and this is where the object code vhdl package will be written to.
 @set VHDL_TB_PATH=.
 
 @rem Assemble the source files...
-@for %%f in (irq_test) do %AS% src\%%f.a51 bin\%%f.hex lst\%%f.lst
+@for %%f in (irq_test) do %AS% src\%%f.a51 bin\%%f.hex lst\%%f.lst %AS_OPTS%
 
 @rem ...and build the object code vhdl package
 @python %BR_PATH%\src\build_rom.py ^

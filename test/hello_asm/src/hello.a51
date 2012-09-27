@@ -9,11 +9,9 @@
 ; sure that your development environment is working.
     
     
-        ;-- Parameters common to all tests -------------------------------------
-        
-
-saved_psw set   070h                ; (IDATA) temp store for PSW value
-stack0  set     09fh                ; (IDATA) stack addr used for push/pop tests
+        ; Include the definitions for the light52 derivative
+        $nomod51
+        $include (light52.mcu)
     
     
         ;-- Macros -------------------------------------------------------------
