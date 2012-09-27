@@ -39,10 +39,10 @@ ES          BIT         0ACH
 EA          BIT         0AFH
 
 ; SCON flags
-RXIRQ       BIT         098H
-TXIRQ       BIT         099H
-RXRDY       BIT         09CH
-TXRDY       BIT         09DH
+TXIRQ       BIT         098H
+RXIRQ       BIT         099H
+TXRDY       BIT         09CH
+RXRDY       BIT         09DH
 
 ; PSW flags
 P           BIT        0D0H
