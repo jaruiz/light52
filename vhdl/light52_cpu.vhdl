@@ -344,6 +344,7 @@ signal iram_sfr_rd :        t_byte;
 signal direct_addressing :  std_logic;
 -- '1' when using direct addressing to address range 80h..ffh, '0' otherwise.
 signal sfr_addressing :     std_logic;
+signal sfr_addressing_reg : std_logic;
 
 -- Kind of addressing the current instruction is using
 signal direct_addressing_alu_reg : std_logic;
@@ -964,12 +965,12 @@ with ps select iram_sfr_addr <=
     addr0_reg       when alu_res_to_ram_ar_to_ab,
     bit_addr        when jrb_bit_0,
     bit_addr        when bit_op_0,
-    SP_reg          when push_2,
+    SP_reg          when push_2, -- Write dir data to [sp]
     SP_reg          when pop_0 | ret_0 | ret_1 | ret_2,
     SP_reg          when acall_1 | acall_2 | lcall_2 | lcall_3,
     SP_reg          when irq_2 | irq_3,
-    addr0_reg       when djnz_dir_1,
-    addr0_reg       when djnz_dir_2,
+    addr0_reg       when djnz_dir_1 | djnz_dir_2,
+    addr0_reg       when push_1, -- Read dir data for PUSH
     code_byte       when cjne_a_imm_1,
     code_byte       when cjne_a_dir_0,
     code_byte       when cjne_a_dir_2,
@@ -985,7 +986,7 @@ with ps select iram_sfr_addr <=
     code_byte       when fetch_addr_0,
     code_byte       when fetch_addr_0_ajmp,
     code_byte       when alu_code_to_ab, -- DIRECT addressing
-    code_byte       when push_0,
+    code_byte       when push_0, -- read dir address
     code_byte       when pop_1,
     code_byte       when acall_0 | lcall_0 | lcall_1,
     code_byte       when alu_res_to_ram_code_to_ab,
@@ -1454,8 +1455,8 @@ begin
             -- Signal bit_index is valid at the same time as addr0_reg_input.
             bit_index_reg <= bit_index;
         end if;
-        if ps = lcall_2 or ps = fetch_addr_1 then
-            addr1_reg <= PC_reg(15 downto 8);
+        if ps = lcall_0 or ps = fetch_addr_1 then
+            addr1_reg <= unsigned(code_rd);--PC_reg(15 downto 8);
         elsif ps = irq_2 then
             addr1_reg <= (others => '0');
         elsif ps = ret_1 then
@@ -1588,11 +1589,12 @@ process(clk)
 begin
     if clk'event and clk='1' then 
         sfr_rd_internal_reg <= sfr_rd_internal;
+        sfr_addressing_reg <= sfr_addressing;
     end if;
 end process SFR_mux_register;    
     
 -- FIXME explain
-iram_sfr_rd <= sfr_rd_internal_reg when sfr_addressing='1' else bram_data_p0;
+iram_sfr_rd <= sfr_rd_internal_reg when sfr_addressing_reg='1' else bram_data_p0;
     
 
 --## 9.- PSW register and flag logic ###########################################
