@@ -1193,12 +1193,14 @@ tk_ma0: dec     a
 
         ;-- Test series O ------------------------------------------------------
         ; PUSH and POP
-        ; a.- <PUSH dir>
-        ; b.- <POP dir>
+        ; a.- <PUSH dir (IRAM)>
+        ; b.- <POP dir (IRAM)>
+        ; c.- <PUSH dir (SFR)>
+        ; d.- <POP dir (SFR)>
 
         putc    #'O'                ; start of test series
         
-        ; <PUSH dir>
+        ; <PUSH dir (IRAM)>
         mov     SP,#stack0          ; prepare SP...
         mov     dir0,#012h          ; ...and data to be pushed
         mov     r0,#(stack0+1)      ; r0->stack so we can verify data is pushed
@@ -1211,7 +1213,7 @@ tk_ma0: dec     a
         
         eot     'a',to_a0
 
-        ; <POP dir> We'll use the data that was pushed previously
+        ; <POP dir (IRAM)> We'll use the data that was pushed previously
         mov     dir1,#000h          ; clear POP target
         clr     a
         pop     dir1                ; <POP dir>
@@ -1222,6 +1224,30 @@ tk_ma0: dec     a
         cjne    a,#stack0,to_b0
 
         eot     'b',to_b0
+        
+        ; <PUSH dir (SFR)>
+        mov     SP,#stack0          ; prepare SP...
+        mov     B,#042h             ; ...and data to be pushed
+        mov     r0,#(stack0+1)      ; r0->stack so we can verify data is pushed
+        mov     @r0,#000h           ; clear target stack location
+        push    B                   ; <PUSH dir>
+        mov     a,@r0               ; verify data has been pushed
+        cjne    a,#042h,to_c0
+        mov     a,SP                ; verify SP has been incremented
+        cjne    a,#(stack0+1),to_c0
+
+        eot     'c',to_c0
+
+        ; <POP dir (SFR)> We'll use the data that was pushed previously
+        mov     B,#000h             ; clear POP target
+        clr     a
+        pop     B                   ; <POP dir>
+        mov     a,B                 ; verify data has been popped
+        cjne    a,#042h,to_d0
+        mov     a,SP                ; verify SP has been decremented
+        cjne    a,#stack0,to_d0
+
+        eot     'd',to_d0
         
         put_crlf                    ; end of test series
 
