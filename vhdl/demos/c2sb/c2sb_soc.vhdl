@@ -83,6 +83,7 @@ signal p0_out :           std_logic_vector(7 downto 0);
 signal p1_out :           std_logic_vector(7 downto 0);
 signal p2_in :            std_logic_vector(7 downto 0);
 signal p3_in :            std_logic_vector(7 downto 0);
+signal external_irq :     std_logic_vector(7 downto 0);  
 signal uart_txd :         std_logic;
 signal uart_rxd :         std_logic;
 
@@ -149,16 +150,18 @@ begin
     --UART_IRQ_LINE => 3        -- UART uses IRQ3 line of irq controller
   )
   port map (
-    clk         => clk,
-    reset       => reset,
+    clk             => clk,
+    reset           => reset,
         
-    txd         => uart_txd,
-    rxd         => uart_rxd,
+    txd             => uart_txd,
+    rxd             => uart_rxd,
     
-    p0_out      => p0_out,
-    p1_out      => p1_out,
-    p2_in       => p2_in,
-    p3_in       => p3_in
+    external_irq    => external_irq, 
+    
+    p0_out          => p0_out,
+    p1_out          => p1_out,
+    p2_in           => p2_in,
+    p3_in           => p3_in
   );
 
   -- Input port P2 connected to switches for lack of better use...
@@ -166,6 +169,9 @@ begin
   -- ...and input port P3 is connected to P0 for test purposes.
   p3_in <= p0_out; 
 
+  -- External irq inputs tied to P1 for test purposes
+  external_irq <= p0_out;
+  
 --##### Input ports ###########################################################
 
 

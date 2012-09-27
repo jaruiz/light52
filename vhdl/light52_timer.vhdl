@@ -228,8 +228,7 @@ begin
     end if;
 end process timer_counter;
 
-counter_match <= '1' when counter_reg=X"FFFF" and flag_counting_reg='1' 
-                    else '0';
+counter_match <= '1' when counter_reg=compare_reg else '0';
 
 
 ---- Status register -----------------------------------------------------------
