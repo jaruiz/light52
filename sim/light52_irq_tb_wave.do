@@ -17,16 +17,27 @@ add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/cpu/addr0_
 add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/cpu/addr1_reg
 add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/cpu/jump_target
 add wave -noupdate -divider Debug
+add wave -noupdate -group {External Interrupts}
+add wave -noupdate -group {External Interrupts} -format Literal /light52_tb/uut/external_irq
+add wave -noupdate -group {External Interrupts} -format Logic /light52_tb/uut/ext_irq
+add wave -noupdate -group {External Interrupts} -format Literal /light52_tb/uut/external_irq_reg
+add wave -noupdate -expand -group Timer
+add wave -noupdate -group Timer -format Literal -radix hexadecimal /light52_tb/uut/timer/data_o
+add wave -noupdate -group Timer -format Literal -radix hexadecimal /light52_tb/uut/timer/compare_reg
+add wave -noupdate -group Timer -format Literal -radix hexadecimal /light52_tb/uut/timer/counter_reg
+add wave -noupdate -group Timer -format Logic /light52_tb/uut/timer/counter_match
+add wave -noupdate -group Timer -format Literal /light52_tb/uut/timer/status_reg
+add wave -noupdate -group Timer -format Logic /light52_tb/uut/timer/irq_o
+add wave -noupdate -group Timer -format Literal /light52_tb/uut/timer/addr_i
 add wave -noupdate -format Literal /light52_tb/uut/cpu/irq_level_inputs
 add wave -noupdate -format Literal /light52_tb/uut/cpu/irq_level_current
 add wave -noupdate -format Logic /light52_tb/uut/cpu/irq_active
 add wave -noupdate -format Logic /light52_tb/uut/timer/ce_i
 add wave -noupdate -format Logic /light52_tb/uut/timer/wr_i
-add wave -noupdate -format Logic /light52_tb/uut/timer/addr_i
+add wave -noupdate -format Literal /light52_tb/uut/timer/addr_i
 add wave -noupdate -format Logic /light52_tb/uut/timer/irq_o
 add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/timer/data_i
 add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/timer/status_reg
-add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/timer/timer_ctr_reg
 add wave -noupdate -color Pink -format Literal /light52_tb/uut/cpu/ps
 add wave -noupdate -divider Internal
 add wave -noupdate -group Datapath
@@ -132,7 +143,7 @@ add wave -noupdate -group {Register Bank} -color {Indian Red} -format Literal -l
 add wave -noupdate -group {Register Bank} -color {Indian Red} -format Literal -label R6 -radix hexadecimal /light52_tb/uut/cpu/bram(262)
 add wave -noupdate -group {Register Bank} -color {Indian Red} -format Literal -label R7 -radix hexadecimal /light52_tb/uut/cpu/bram(263)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {6955982 ps} 0}
+WaveRestoreCursors {{Cursor 1} {59430000 ps} 0}
 configure wave -namecolwidth 183
 configure wave -valuecolwidth 50
 configure wave -justifyvalue left
@@ -146,4 +157,4 @@ configure wave -gridperiod 1
 configure wave -griddelta 40
 configure wave -timeline 0
 update
-WaveRestoreZoom {6407059 ps} {9631803 ps}
+WaveRestoreZoom {59249016 ps} {59610985 ps}

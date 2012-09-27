@@ -45,7 +45,9 @@ end;
 architecture testbench of light52_tb is
 
 -- FIXME these should be in parameter package
-constant T : time := 20 ns;
+
+-- Simulated clock period is the same as the usual target, the DE-1 board
+constant T : time := 20 ns; -- 50MHz
 constant SIMULATION_LENGTH : integer := 400000;
 
 constant ROM_SIZE : natural := 8192;
@@ -61,6 +63,8 @@ signal p0_out :             std_logic_vector(7 downto 0);
 signal p1_out :             std_logic_vector(7 downto 0);
 signal p2_in :              std_logic_vector(7 downto 0);
 signal p3_in :              std_logic_vector(7 downto 0);
+
+signal external_irq :       std_logic_vector(7 downto 0);
 
 signal txd, rxd :           std_logic;
 
@@ -84,16 +88,18 @@ uut: entity work.light52_mcu
         OBJ_CODE => object_code
     )
     port map (
-        clk         => clk,
-        reset       => reset,
+        clk             => clk,
+        reset           => reset,
         
-        txd         => txd,
-        rxd         => rxd,
+        txd             => txd,
+        rxd             => rxd,
+        
+        external_irq    => external_irq,
                 
-        p0_out      => p0_out,
-        p1_out      => p1_out,
-        p2_in       => p2_in,
-        p3_in       => p3_in
+        p0_out          => p0_out,
+        p1_out          => p1_out,
+        p2_in           => p2_in,
+        p3_in           => p3_in
     );
     
     -- UART is looped back in the test bench.
@@ -102,6 +108,9 @@ uut: entity work.light52_mcu
     -- I/O ports are looped back and otherwise unused.
     p2_in <= p0_out;
     p3_in <= p1_out;
+    
+    -- External IRQ inputs are tied to port P1 for test purposes
+    external_irq <= p1_out;
 
     ---- Master clock: free running clock used as main module clock ------------
     run_master_clock:

@@ -49,7 +49,7 @@ entity light52_mcu is
         -- Peripheral configuration (see peripheral modules)
         UART_HARDWIRED :        boolean := false;
         UART_BAUD_RATE :        integer := 19200;
-        UART_CLOCK_RATE :       integer := 50e6
+        CLOCK_RATE :            integer := 50e6
     );
     port(
         clk             : in std_logic;
@@ -57,6 +57,8 @@ entity light52_mcu is
                        
         rxd             : in std_logic;
         txd             : out std_logic;
+        
+        external_irq    : in std_logic_vector(7 downto 0);
         
         p0_out          : out std_logic_vector(7 downto 0);
         p1_out          : out std_logic_vector(7 downto 0);
@@ -85,7 +87,12 @@ constant SFR_ADDR_P1        : t_mcu_sfr_addr := X"90";
 constant SFR_ADDR_P2        : t_mcu_sfr_addr := X"a0";
 constant SFR_ADDR_P3        : t_mcu_sfr_addr := X"b0";
 constant SFR_ADDR_TCON      : t_mcu_sfr_addr := X"88";
-constant SFR_ADDR_TDATA     : t_mcu_sfr_addr := X"8a";
+constant SFR_ADDR_TL        : t_mcu_sfr_addr := X"8c";
+constant SFR_ADDR_TH        : t_mcu_sfr_addr := X"8d";
+constant SFR_ADDR_TCL       : t_mcu_sfr_addr := X"8e";
+constant SFR_ADDR_TCH       : t_mcu_sfr_addr := X"8f";
+constant SFR_ADDR_EXTINT    : t_mcu_sfr_addr := X"c0";
+
 
 constant P0_RESET_VALUE     : std_logic_vector(7 downto 0) := X"00";
 constant P1_RESET_VALUE     : std_logic_vector(7 downto 0) := X"00";
@@ -137,6 +144,10 @@ signal p1_reg :             std_logic_vector(7 downto 0);
 signal p2_reg :             std_logic_vector(7 downto 0);
 signal p3_reg :             std_logic_vector(7 downto 0);
 
+signal ext_irq_ce :         std_logic;
+signal external_irq_reg :   std_logic_vector(7 downto 0);
+signal ext_irq :            std_logic;
+
 signal irq_source :         std_logic_vector(4 downto 0);
 
 begin
@@ -171,7 +182,7 @@ port map (
 );
 
 -- FIXME uart irq missing
-irq_source <= "000" & timer_irq & "0";
+irq_source <= "000" & timer_irq & ext_irq;
 
 --------------------------------------------------------------------------------
 
@@ -216,7 +227,7 @@ with sfr_addr(7 downto 3) select sfr_rd <=
 uart : entity work.light52_uart
 generic map (
     HARDWIRED => UART_HARDWIRED,
-    CLOCK_FREQ => UART_CLOCK_RATE,
+    CLOCK_FREQ => CLOCK_RATE,
     BAUD_RATE => UART_BAUD_RATE
 )
 port map (
@@ -248,11 +259,12 @@ uart_ce <= '1' when sfr_addr(7 downto 3)=SFR_ADDR_SCON(7 downto 3) else '0';
 uart_re <= sfr_vma and not sfr_we;
 
 
----- Timer (basic 8 bit timer) -------------------------------------------------
+---- Timer ---------------------------------------------------------------------
 
-timer: entity work.light52_timer8
+-- This is a basic 16-bit timer set up as a 20-microsecond-period counter
+timer: entity work.light52_timer
 generic map (
-    PRESCALER_STAGES => 1
+    PRESCALER_VALUE => CLOCK_RATE / 50e3
 )
 port map (
     irq_o   => timer_irq,
@@ -260,7 +272,7 @@ port map (
     data_i  => sfr_wr,
     data_o  => timer_sfr_rd,
     
-    addr_i  => sfr_addr(1),
+    addr_i  => sfr_addr(2 downto 0),
     wr_i    => timer_we,
     ce_i    => timer_ce,
     
@@ -271,14 +283,15 @@ port map (
 timer_ce <= '1' when sfr_addr(7 downto 3)=SFR_ADDR_TCON(7 downto 3) else '0';
 timer_we <= sfr_we;
 
--- Make sure the simplifications we'll do in the address decoding are valid.
-assert SFR_ADDR_TCON=X"88" and SFR_ADDR_TDATA=X"8a"
-report "MCU SFR address decoding assumes standard TIMER0 register addresses "&
-       "but addresses configured in light52_mcu are not standard."
+-- Make sure the simplifications we do in the address decoding are valid.
+assert SFR_ADDR_TCON=X"88" and SFR_ADDR_TL=X"8c"
+report "MCU SFR simplified address decoding makes assumptions that conflict "&
+       "with the SFR addresses configured in light52_mcu."
 severity failure;
 
 
 ---- Input/Output ports --------------------------------------------------------
+-- FIXME this should be encapsulated in a separate module
 
 -- Make sure the simplifications we'll do in the address decoding are valid.
 assert SFR_ADDR_P0=X"80" and SFR_ADDR_P1=X"90" and 
@@ -329,5 +342,32 @@ begin
     end if;
 end process input_ports;
 
+
+---- External interrupt block --------------------------------------------------
+-- FIXME this should be encapsulated in a separate module
+
+ext_irq_ce <= '1' when sfr_addr(7 downto 6)=SFR_ADDR_EXTINT(7 downto 6) and 
+                  sfr_addr(3 downto 0)="0000" and
+                  sfr_vma='1'
+                  else '0';
+
+external_interrupt_register:
+process(clk)
+begin
+    if clk'event and clk='1' then
+        if reset='1' then
+            external_irq_reg <= (others => '0');
+        else
+            if ext_irq_ce='1' and sfr_we='1' then
+                -- All bits in this register are w1c
+                external_irq_reg <= external_irq_reg and (not sfr_wr);
+            else
+                external_irq_reg <= external_irq or external_irq_reg;
+            end if;
+        end if;
+    end if;
+end process external_interrupt_register;
+
+ext_irq <= '1' when external_irq_reg/=X"00" else '0';
 
 end architecture rtl;

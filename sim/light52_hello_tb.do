@@ -7,7 +7,7 @@ vcom -reportprogress 300 -work work ../test/hello_asm/obj_code_pkg.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_muldiv.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_alu.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_cpu.vhdl
-vcom -reportprogress 300 -work work ../vhdl/light52_timer8.vhdl
+vcom -reportprogress 300 -work work ../vhdl/light52_timer.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_uart.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_mcu.vhdl
 
