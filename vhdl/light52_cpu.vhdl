@@ -1056,7 +1056,7 @@ with ps select direct_addressing <=
     '1'                         when djnz_dir_1,
     '1'                         when djnz_dir_2,
     '1'                         when push_0,
-    '1'                         when pop_1,
+    '1'                         when pop_1 | pop_2,
     '0'                         when movx_a_ri_0,
     '0'                         when movx_ri_a_0,
     '1'                         when xch_dir_0,
@@ -1547,6 +1547,7 @@ with ps select sfr_vma_internal <=
     '0'                 when others;
 
 -- Assert sfr_we_internal when a SFR write cycle is done.
+-- FIXME there should be a direct_we, not separate decoding for iram/sfr
 with ps select sfr_we_internal <= 
     sfr_addressing      when alu_res_to_ram,
     sfr_addressing      when alu_res_to_ram_code_to_ab,
@@ -1554,10 +1555,10 @@ with ps select sfr_we_internal <=
     sfr_addressing      when djnz_dir_2,
     sfr_addressing      when bit_op_2,
     sfr_addressing      when jrb_bit_2,
+    sfr_addressing      when pop_2,
     '1'                 when mov_dptr_1,
     '1'                 when mov_dptr_2,
     sfr_addressing      when xch_2,
-    -- FIXME states missing
     '0'                 when others;
 
 -- The SFR address is the full 8 address bits; even if we know there are no
