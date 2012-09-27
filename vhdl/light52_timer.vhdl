@@ -242,7 +242,7 @@ begin
             flag_autoreload_reg <= '0';
             flag_counting_reg <= '0';
         else
-            if counter_match='1' then
+            if (counter_match and prescaler_overflow)='1' then
                 flag_irq_reg <= '1';
             elsif load_status_reg='1' then
                 if data_i(0)='1' then
