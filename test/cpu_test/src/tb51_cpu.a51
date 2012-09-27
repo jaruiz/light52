@@ -89,10 +89,11 @@ skip:
         org     30h
 start:
         ; Initialize serial port
-        mov     TMOD,#20h           ; C/T = 0, Mode = 2
-        mov     TH1,#0fdh           ; 9600 bauds @11.xxx MHz
-        mov     TCON,#40h           ; Enable T1
-        mov     SCON,#52h           ; 8/N/1, TI enabled
+        ;(leave it with the default configuration: 19200-8-N-1)
+        ;mov     TMOD,#20h           ; C/T = 0, Mode = 2
+        ;mov     TH1,#0fdh           ; 9600 bauds @11.xxx MHz
+        ;mov     TCON,#40h           ; Enable T1
+        ;mov     SCON,#52h           ; 8/N/1, TI enabled
         
         ; Clear failure flag
         mov     fail,#000h
@@ -1362,14 +1363,7 @@ tr_sub0:
         ; b.- <LCALL addr16>
         lcall   tr_sub1             ; Do the call...
 tr_rv1: sjmp    tr_b0
-tr_sub1:
-        mov     A,SP
-        cjne    A,#53h,tr_b0       ; ...verify the SP value...
-        mov     A,52h
-        cjne    A,#LOW(tr_rv1),tr_b0 ; ...and verify the pushed ret address
-        mov     A,53h
-        cjne    A,#HIGH(tr_rv1),tr_b0
-
+tr_rv2: nop
         eot     'b',tr_b0
         
         
@@ -1690,5 +1684,21 @@ test_failed:
         ;-- End of test program, enter single-instruction endless loop
 quit:   ajmp    $
     
+
+        ; We'll place a few test routines in the 2nd half of the code space so
+        ; we can test long jumps and calls onto different code pages.
+        org     8000h
+
+        ; tr_sub1: part of the LCALL test.
+tr_sub1:
+        mov     A,SP
+        cjne    A,#53h,tr_sub1_fail ; ...verify the SP value...
+        mov     A,52h               ; ...and verify the pushed ret address
+        cjne    A,#LOW(tr_rv1),tr_sub1_fail
+        mov     A,53h
+        cjne    A,#HIGH(tr_rv1),tr_sub1_fail
+        ljmp    tr_rv2
+tr_sub1_fail:
+        ljmp    tr_b0
     
         end

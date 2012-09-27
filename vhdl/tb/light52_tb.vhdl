@@ -50,7 +50,9 @@ architecture testbench of light52_tb is
 constant T : time := 20 ns; -- 50MHz
 constant SIMULATION_LENGTH : integer := 400000;
 
-constant ROM_SIZE : natural := 8192;
+-- We'll simulate the full code space; the instruction tester will need to test 
+-- jumps and calls to different pages.
+constant ROM_SIZE : natural := 65536;
 
 signal done :               std_logic := '0';
 
