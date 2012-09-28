@@ -937,11 +937,12 @@ tf_mf   macro   rn, n, error_loc
         ; e.- <OP dir,#imm>, <OP A,#imm>
         ; f.- <OP dir,A>
 
-        ;save_psw:
+        ;store psw away for later comparison
 save_psw macro
         mov     saved_psw,PSW
         endm
 
+        ; compare flags CY, AC and OV with expected values in <flags>
 tst_psw macro   flags,error_loc
         mov     a,saved_psw
         anl     a,#0c4h
@@ -950,6 +951,7 @@ tst_psw macro   flags,error_loc
         jnz     error_loc
         endm
 
+        ; Set the CY flag to the value of the lsb of argument <flags>
 set_cy  macro   flags
         local   cy_val
 cy_val  set     (flags and 1)
@@ -960,6 +962,10 @@ cy_val  set     (flags and 1)
         endif
         endm
 
+        ;
+        ;
+        ; flags = (<expected PSW> & 0xfe) | <input cy>
+        ; (P flag result is not tested)
 top_ma  macro   op,src,error_loc,flags
         mov     src,#arg0
         mov     a,#arg1
@@ -1009,7 +1015,8 @@ top_mc  macro   op,error_loc,flags
         endif
         endm
 
-
+        ;
+        ;
 tst_alu macro   op,a0,a1,r,flags
         local   tall_0d
         local   tall_0a
@@ -1143,6 +1150,8 @@ tk_ma0: dec     a
         tst_alu add,081h,093h,014h,084h     ;  CY /AC  OV
         putc    #'2'
         tst_alu add,088h,098h,020h,0c4h     ;  CY  AC  OV
+        putc    #'3'
+        tst_alu add,043h,0fbh,03eh,080h     ;  CY /AC /OV
 
         put_crlf                    ; end of test series
 
@@ -1162,6 +1171,8 @@ tk_ma0: dec     a
         tst_alu addc,088h,098h,020h,0c4h     ;  CY  AC  OV
         putc    #'3'
         tst_alu addc,088h,098h,021h,0c5h     ;  CY  AC  OV (CY input)
+        putc    #'4'
+        tst_alu addc,043h,0fbh,03fh,081h     ;  CY /AC /OV (CY input)
 
 
         put_crlf                    ; end of test series
