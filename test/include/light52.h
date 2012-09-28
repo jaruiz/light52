@@ -11,6 +11,13 @@
 
 /* FIXME this file is mostly a stub; to be fleshed up later */
 
+/* Interrupt Enable register */
+__sfr __at  0xa8 IE;      /**< Interrupt enable register */
+__sbit __at 0xaf EA;      /**< Global Interrupt Enable flag */
+__sbit __at 0xac ES;      /**< Serial port Interrupt Enable flag */
+__sbit __at 0xa9 ET0;     /**< Timer 0 Interrupt Enable flag */
+__sbit __at 0xa8 EEX;     /**< External Interrupt Enable flag */
+
 /* Serial port */
 __sfr __at  0x98 SCON;      /**< UART control register */
 __sbit __at 0x9c TXIRQ;     /**< UART TX interrupt flag */
