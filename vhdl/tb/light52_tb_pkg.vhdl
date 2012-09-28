@@ -85,15 +85,20 @@ procedure log_cpu_activity(
                 signal clk :    in std_logic;
                 signal reset :  in std_logic;
                 signal done :   in std_logic;   
-                --mcu_entity :    string;
-                --cpu_name :      string;
+                mcu :           string;
                 signal info :   inout t_log_info; 
                 rom_size :      natural;
                 iname :         string;
                 trigger_addr :  in t_address;
                 file l_file :   TEXT;
-                file con_file : TEXT) ;
-    
+                file con_file : TEXT);
+
+-- Flush console output to log console file (in case the end of the
+-- simulation caught an unterminated line in the buffer)
+procedure log_flush_console(
+                signal info :   in t_log_info;
+                file con_file : TEXT);
+                
 end package;
 
 package body light52_tb_pkg is
@@ -257,8 +262,7 @@ procedure log_cpu_activity(
                 signal clk :    in std_logic;
                 signal reset :  in std_logic;
                 signal done :   in std_logic;   
-                --mcu_entity :    string;
-                --cpu_name :      string;
+                mcu :           string;
                 signal info :   inout t_log_info; 
                 rom_size :      natural;
                 iname :         string;
@@ -268,27 +272,27 @@ procedure log_cpu_activity(
 
 begin
     
-    init_signal_spy("/uut/cpu/alu/"&"acc_input",    iname&".acc_input", 0);
-    init_signal_spy("/uut/cpu/alu/"&"load_acc",     iname&".load_acc", 0);
-    init_signal_spy("/uut/cpu/"&"update_sp",    iname&".update_sp", 0);
-    init_signal_spy("/uut/cpu/"&"SP_reg",       iname&".sp", 0);
-    init_signal_spy("/uut/cpu/"&"psw",          iname&".psw", 0);
-    init_signal_spy("/uut/cpu/"&"update_psw_flags",iname&".update_psw_flags(0)", 0);
-    init_signal_spy("/uut/cpu/"&"code_addr",    iname&".code_addr", 0);
-    init_signal_spy("/uut/cpu/"&"ps",           iname&".ps", 0);
-    init_signal_spy("/uut/cpu/"&"bram_we",      iname&".bram_we", 0);
-    init_signal_spy("/uut/cpu/"&"bram_addr_p0", iname&".bram_wr_addr", 0);
-    init_signal_spy("/uut/cpu/"&"bram_wr_data_p0",  iname&".bram_wr_data_p0", 0);
-    init_signal_spy("/uut/cpu/"&"next_pc",      iname&".next_pc", 0);
-    init_signal_spy("/uut/cpu/"&"sfr_we",       iname&".sfr_we", 0);
-    init_signal_spy("/uut/cpu/"&"sfr_wr",       iname&".sfr_wr", 0);
-    init_signal_spy("/uut/cpu/"&"sfr_addr",     iname&".sfr_addr", 0);
-    init_signal_spy("/uut/cpu/"&"inc_dptr",     iname&".inc_dptr", 0);
-    init_signal_spy("/uut/cpu/"&"DPTR_reg",     iname&".dptr", 0);
-    init_signal_spy("/uut/"&"xdata_we",         iname&".xdata_we", 0);
-    init_signal_spy("/uut/"&"xdata_vma",        iname&".xdata_vma", 0);
-    init_signal_spy("/uut/"&"xdata_addr",       iname&".xdata_addr", 0);
-    init_signal_spy("/uut/"&"xdata_wr",         iname&".xdata_wr", 0);
+    init_signal_spy(mcu& "/cpu/alu/"&"acc_input",    iname&".acc_input", 0);
+    init_signal_spy(mcu& "/cpu/alu/"&"load_acc",     iname&".load_acc", 0);
+    init_signal_spy(mcu& "/cpu/update_sp",    iname&".update_sp", 0);
+    init_signal_spy(mcu& "/cpu/SP_reg",       iname&".sp", 0);
+    init_signal_spy(mcu& "/cpu/"&"psw",          iname&".psw", 0);
+    init_signal_spy(mcu& "/cpu/"&"update_psw_flags",iname&".update_psw_flags(0)", 0);
+    init_signal_spy(mcu& "/cpu/"&"code_addr",    iname&".code_addr", 0);
+    init_signal_spy(mcu& "/cpu/"&"ps",           iname&".ps", 0);
+    init_signal_spy(mcu& "/cpu/"&"bram_we",      iname&".bram_we", 0);
+    init_signal_spy(mcu& "/cpu/"&"bram_addr_p0", iname&".bram_wr_addr", 0);
+    init_signal_spy(mcu& "/cpu/"&"bram_wr_data_p0",  iname&".bram_wr_data_p0", 0);
+    init_signal_spy(mcu& "/cpu/"&"next_pc",      iname&".next_pc", 0);
+    init_signal_spy(mcu& "/cpu/"&"sfr_we",       iname&".sfr_we", 0);
+    init_signal_spy(mcu& "/cpu/"&"sfr_wr",       iname&".sfr_wr", 0);
+    init_signal_spy(mcu& "/cpu/"&"sfr_addr",     iname&".sfr_addr", 0);
+    init_signal_spy(mcu& "/cpu/"&"inc_dptr",     iname&".inc_dptr", 0);
+    init_signal_spy(mcu& "/cpu/"&"DPTR_reg",     iname&".dptr", 0);
+    init_signal_spy(mcu& "/"&"xdata_we",         iname&".xdata_we", 0);
+    init_signal_spy(mcu& "/"&"xdata_vma",        iname&".xdata_vma", 0);
+    init_signal_spy(mcu& "/"&"xdata_addr",       iname&".xdata_addr", 0);
+    init_signal_spy(mcu& "/"&"xdata_wr",         iname&".xdata_wr", 0);
     
 
     info.con_line_buf <= (others => ' ');
@@ -315,11 +319,22 @@ begin
             log_cpu_status(info, l_file, con_file);
         end if;
     end loop;
-    
-    
-    
-    
+
 end procedure log_cpu_activity;
 
+
+
+procedure log_flush_console(
+                signal info :   in t_log_info;
+                file con_file : TEXT) is
+variable l : line;
+begin
+    -- If there's any character in the line buffer...
+    if info.con_line_ix > 1 then
+        -- ...then write the line buffer to the console log file.
+        write(l, info.con_line_buf(1 to info.con_line_ix));
+        writeline(con_file, l);
+    end if;    
+end procedure log_flush_console;
 
 end package body;

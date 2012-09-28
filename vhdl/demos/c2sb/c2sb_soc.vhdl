@@ -144,10 +144,14 @@ begin
   -- SOC instantiation 
   mcu: entity work.light52_mcu 
   generic map (
+    -- Enough code space for all demos included in the project, modify as needed
     CODE_ROM_SIZE => 8192,
+    -- Take object code from this constant
     OBJ_CODE => work.obj_code_pkg.object_code,
-    UART_HARDWIRED => true      -- UART baud rate isn't programmable in run time
-    --UART_IRQ_LINE => 3        -- UART uses IRQ3 line of irq controller
+    -- UART baud rate isn't programmable in run time
+    UART_HARDWIRED => true,
+    -- We're using the 50MHz clock of the DE-1 board
+    CLOCK_RATE => 50e6
   )
   port map (
     clk             => clk,

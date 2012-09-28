@@ -34,7 +34,6 @@ use std.textio.all;
 
 use work.light52_pkg.all;
 use work.obj_code_pkg.all;
---use work.sim_params_pkg.all;
 use work.light52_tb_pkg.all;
 use work.txt_util.all;
 
@@ -77,7 +76,7 @@ signal txd, rxd :           std_logic;
 file log_file: TEXT open write_mode is "hw_sim_log.txt";
 -- Console output log file
 file con_file: TEXT open write_mode is "hw_sim_console_log.txt";
-
+-- Info record needed by the logging fuctions
 signal log_info :           t_log_info;
 
 begin
@@ -128,34 +127,38 @@ uut: entity work.light52_mcu
 
     drive_uut:
     process
-    variable l : line;
     begin
+        -- Leave reset asserted for a few clock cycles...
+        reset <= '1';
         wait for T*4;
         reset <= '0';
         
+        -- ...and wait for the test to hit a termination condition (evaluated by
+        -- function log_cpu_activity) or to just timeout.
         wait for T*SIMULATION_LENGTH;
 
-        -- Flush console output to log console file (in case the end of the
-        -- simulation caugh an unterminated line in the buffer)
-        if log_info.con_line_ix > 1 then
-            write(l, log_info.con_line_buf(1 to log_info.con_line_ix));
-            writeline(con_file, l);
-        end if;
-
-        print("TB finished");
+        -- If we arrive here, the simulation timed out (termination conditions
+        -- trigger a failed assertion).
+        -- So print a timeout message and quit.
+        print("TB timed out.");
         done <= '1';
         wait;
         
     end process drive_uut;
 
 
-    -- Logging process: launch logger function ---------------------------------
+    -- Logging process: launch logger functions --------------------------------
     log_execution:
     process
     begin
-        log_cpu_activity(clk, reset, done,
+        -- Log cpu activity until done='1'.
+        log_cpu_activity(clk, reset, done, "/uut",
                          log_info, ROM_SIZE, "log_info", 
                          X"0000", log_file, con_file);
+        
+        -- Flush console log file when finished.
+        log_flush_console(log_info, con_file);
+        
         wait;
     end process log_execution;
 
