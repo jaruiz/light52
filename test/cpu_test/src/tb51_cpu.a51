@@ -77,7 +77,7 @@ skip:
         ;-- Reset & interrupt vectors ------------------------------------------
 
         org     00h
-        ljmp    start               ;
+        ljmp    start               ; We'll assume LJMP works this far...
         org     03h
         org     0bh
         org     13h
@@ -1363,13 +1363,14 @@ tq0:    cjne    a,#21h,tq_a0
 
 
         ;-- Test series R ------------------------------------------------------
-        ; ACALL, LCALL instructions
-        ; a.- <ACALL addr8>
-        ; b.- <LCALL addr16>
+        ; ACALL, LCALL, JMP @A+DPTR, LJMP instructions
+        ; a.- <ACALL addr8>     <-- uses LJMP too
+        ; b.- <LCALL addr16>    <-- uses LJMP too
         ; c.- <JMP @A+DPTR>
+        ; d.- <LJMP addr16>
         ;
         ; Biggest limitations:
-        ; .- Short jumps; jumps to other pages (!= H addr byte) not tested.
+        ; .- Only long jumps; jumps to same page (== H addr byte) untested.
         ;
         ; Note RET is NOT tested here! we don't return from these calls, just
         ; use them as jumps.
@@ -1405,18 +1406,29 @@ tr_rv2: nop
         
         
         ; c.- <JMP @A+DPTR>
-        mov     DPTR,#(tr_sub2-33h)
-        mov     a,#33h
+        ; Note that tr_sub2 is at 8000h so that we test the A+DPTR carry
+        ; propagation. Any address xx00h would do.
+        mov     DPTR,#(tr_sub2-33h) ; Prepare DPTR and A so that their sum
+        mov     a,#33h              ; gives the target address.
         jmp     @a+DPTR
         jmp     tr_c0
-tr_sub2: jmp     tr_0
-        jmp     tr_c0
-tr_0:   mov     a,#00h
+        nop
+        nop
+tr_rv3: mov     a,#00h
         mov     a,#00h
         mov     a,#00h
         mov     a,#00h
         
         eot     'c',tr_c0
+
+        ; c.- <LJMP addr16>
+        ljmp    tr_sub3
+        jmp     tr_d0
+        nop
+        nop
+tr_rv4: nop
+        nop
+        eot     'd',tr_d0
 
         put_crlf                    ; end of test series
 
@@ -1726,6 +1738,21 @@ quit:   ajmp    $
         ; we can test long jumps and calls onto different code pages.
         org     8000h
 
+        ; tr_sub2: part of the JMP @A+DPTR test.
+        ; HAS TO BE in 8000h so we can test the A+DPTR carry propagation!
+tr_sub2:
+        jmp     tr_rv3
+        jmp     tr_c0
+        ; Make sure the assumption we'll make in the test is actually valid
+        if      LOW(tr_sub2) ne 0
+        $error("Label 'tr_sub2' must be at an address multiple of 256 to properly test JMP @A+DPTR")
+        endif
+
+        ; tr_sub3: part of the LJMP test.
+tr_sub3:
+        jmp     tr_rv4
+        jmp     tr_d0
+
         ; tr_sub1: part of the LCALL test.
 tr_sub1:
         mov     A,SP
@@ -1737,5 +1764,6 @@ tr_sub1:
         ljmp    tr_rv2
 tr_sub1_fail:
         ljmp    tr_b0
+
     
         end

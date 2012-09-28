@@ -174,7 +174,7 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
   140:				        ;-- Reset & interrupt vectors ------------------------------------------
   141:
   142:		N      0000	        org     00h
-  143:	  0000	02 00 30	        ljmp    start               ;
+  143:	  0000	02 00 30	        ljmp    start               ; We'll assume LJMP works this far...
   144:		N      0003	        org     03h
   145:		N      000B	        org     0bh
   146:		N      0013	        org     13h
@@ -9865,30 +9865,30 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
  8753:
  8754:
  8755:				        ;-- Test series R ------------------------------------------------------
- 8756:				        ; ACALL, LCALL instructions
- 8757:				        ; a.- <ACALL addr8>
- 8758:				        ; b.- <LCALL addr16>
+ 8756:				        ; ACALL, LCALL, JMP @A+DPTR, LJMP instructions
+ 8757:				        ; a.- <ACALL addr8>     <-- uses LJMP too
+ 8758:				        ; b.- <LCALL addr16>    <-- uses LJMP too
  8759:				        ; c.- <JMP @A+DPTR>
- 8760:				        ;
- 8761:				        ; Biggest limitations:
- 8762:				        ; .- Short jumps; jumps to other pages (!= H addr byte) not tested.
- 8763:				        ;
- 8764:				        ; Note RET is NOT tested here! we don't return from these calls, just
- 8765:				        ; use them as jumps.
- 8766:				        ;
- 8767:
- 8768:				        putc    #'R'                ; start of test series
- 8769+ 1  1C18			??0750:
- 8770+ 1			        ;jnb     SCON.1,putc_loop
- 8771+ 1			        ;clr     SCON.1
- 8772+ 1  1C18	75 99 52	        mov     SBUF,#'R'
- 8773:
- 8774:	  1C1B	75 81 4F	        mov     SP,#4fh             ; Initialize SP...
- 8775:	  1C1E	75 50 00	        mov     50h,#00h            ; ...and clear stack area
- 8776:	  1C21	75 51 00	        mov     51h,#00h
- 8777:	  1C24	75 52 00	        mov     52h,#00h
- 8778:	  1C27	75 53 00	        mov     53h,#00h
- 8779:
+ 8760:				        ; d.- <LJMP addr16>
+ 8761:				        ;
+ 8762:				        ; Biggest limitations:
+ 8763:				        ; .- Only long jumps; jumps to same page (== H addr byte) untested.
+ 8764:				        ;
+ 8765:				        ; Note RET is NOT tested here! we don't return from these calls, just
+ 8766:				        ; use them as jumps.
+ 8767:				        ;
+ 8768:
+ 8769:				        putc    #'R'                ; start of test series
+ 8770+ 1  1C18			??0750:
+ 8771+ 1			        ;jnb     SCON.1,putc_loop
+ 8772+ 1			        ;clr     SCON.1
+ 8773+ 1  1C18	75 99 52	        mov     SBUF,#'R'
+ 8774:
+ 8775:	  1C1B	75 81 4F	        mov     SP,#4fh             ; Initialize SP...
+ 8776:	  1C1E	75 50 00	        mov     50h,#00h            ; ...and clear stack area
+ 8777:	  1C21	75 51 00	        mov     51h,#00h
+ 8778:	  1C24	75 52 00	        mov     52h,#00h
+ 8779:	  1C27	75 53 00	        mov     53h,#00h
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 158
 
@@ -9896,62 +9896,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 8780:				        ; a.- <ACALL addr8>
- 8781:				        ; We should test all code pages eventually...
- 8782:	  1C2A	91 2E		        acall   tr_sub0             ; Do the call...
- 8783:	  1C2C	80 14		tr_rv0: sjmp    tr_a0
- 8784:	  1C2E			tr_sub0:
- 8785:	  1C2E	E5 81		        mov     A,SP
- 8786:	  1C30	B4 51 0F	        cjne    A,#51h,tr_a0       ; ...verify the SP value...
- 8787:	  1C33	E5 50		        mov     A,50h
- 8788:	  1C35	B4 2C 0A	        cjne    A,#LOW(tr_rv0),tr_a0 ; ...and verify the pushed ret address
- 8789:	  1C38	E5 51		        mov     A,51h
- 8790:	  1C3A	B4 1C 05	        cjne    A,#HIGH(tr_rv0),tr_a0
- 8791:
- 8792:				        eot     'a',tr_a0
- 8793+ 1			        putc    #'a'
- 8794+ 2  1C3D			??0752:
- 8795+ 2			        ;jnb     SCON.1,putc_loop
- 8796+ 2			        ;clr     SCON.1
- 8797+ 2  1C3D	75 99 61	        mov     SBUF,#'a'
- 8798+ 1  1C40	80 06		        sjmp    ??0751
- 8799+ 1  1C42			tr_a0:  putc    #'?'
- 8800+ 2  1C42			??0753:
- 8801+ 2			        ;jnb     SCON.1,putc_loop
- 8802+ 2			        ;clr     SCON.1
- 8803+ 2  1C42	75 99 3F	        mov     SBUF,#'?'
- 8804+ 1  1C45	75 6E 01	        mov     fail,#001h
- 8805+ 1  1C48			??0751:
- 8806:
- 8807:				        ; b.- <LCALL addr16>
- 8808:	  1C48	12 80 00	        lcall   tr_sub1             ; Do the call...
- 8809:	  1C4B	80 06		tr_rv1: sjmp    tr_b0
- 8810:	  1C4D	00		tr_rv2: nop
- 8811:				        eot     'b',tr_b0
- 8812+ 1			        putc    #'b'
- 8813+ 2  1C4E			??0755:
- 8814+ 2			        ;jnb     SCON.1,putc_loop
- 8815+ 2			        ;clr     SCON.1
- 8816+ 2  1C4E	75 99 62	        mov     SBUF,#'b'
- 8817+ 1  1C51	80 06		        sjmp    ??0754
- 8818+ 1  1C53			tr_b0:  putc    #'?'
- 8819+ 2  1C53			??0756:
- 8820+ 2			        ;jnb     SCON.1,putc_loop
- 8821+ 2			        ;clr     SCON.1
- 8822+ 2  1C53	75 99 3F	        mov     SBUF,#'?'
- 8823+ 1  1C56	75 6E 01	        mov     fail,#001h
- 8824+ 1  1C59			??0754:
- 8825:
+ 8780:
+ 8781:				        ; a.- <ACALL addr8>
+ 8782:				        ; We should test all code pages eventually...
+ 8783:	  1C2A	91 2E		        acall   tr_sub0             ; Do the call...
+ 8784:	  1C2C	80 14		tr_rv0: sjmp    tr_a0
+ 8785:	  1C2E			tr_sub0:
+ 8786:	  1C2E	E5 81		        mov     A,SP
+ 8787:	  1C30	B4 51 0F	        cjne    A,#51h,tr_a0       ; ...verify the SP value...
+ 8788:	  1C33	E5 50		        mov     A,50h
+ 8789:	  1C35	B4 2C 0A	        cjne    A,#LOW(tr_rv0),tr_a0 ; ...and verify the pushed ret address
+ 8790:	  1C38	E5 51		        mov     A,51h
+ 8791:	  1C3A	B4 1C 05	        cjne    A,#HIGH(tr_rv0),tr_a0
+ 8792:
+ 8793:				        eot     'a',tr_a0
+ 8794+ 1			        putc    #'a'
+ 8795+ 2  1C3D			??0752:
+ 8796+ 2			        ;jnb     SCON.1,putc_loop
+ 8797+ 2			        ;clr     SCON.1
+ 8798+ 2  1C3D	75 99 61	        mov     SBUF,#'a'
+ 8799+ 1  1C40	80 06		        sjmp    ??0751
+ 8800+ 1  1C42			tr_a0:  putc    #'?'
+ 8801+ 2  1C42			??0753:
+ 8802+ 2			        ;jnb     SCON.1,putc_loop
+ 8803+ 2			        ;clr     SCON.1
+ 8804+ 2  1C42	75 99 3F	        mov     SBUF,#'?'
+ 8805+ 1  1C45	75 6E 01	        mov     fail,#001h
+ 8806+ 1  1C48			??0751:
+ 8807:
+ 8808:				        ; b.- <LCALL addr16>
+ 8809:	  1C48	12 80 0C	        lcall   tr_sub1             ; Do the call...
+ 8810:	  1C4B	80 06		tr_rv1: sjmp    tr_b0
+ 8811:	  1C4D	00		tr_rv2: nop
+ 8812:				        eot     'b',tr_b0
+ 8813+ 1			        putc    #'b'
+ 8814+ 2  1C4E			??0755:
+ 8815+ 2			        ;jnb     SCON.1,putc_loop
+ 8816+ 2			        ;clr     SCON.1
+ 8817+ 2  1C4E	75 99 62	        mov     SBUF,#'b'
+ 8818+ 1  1C51	80 06		        sjmp    ??0754
+ 8819+ 1  1C53			tr_b0:  putc    #'?'
+ 8820+ 2  1C53			??0756:
+ 8821+ 2			        ;jnb     SCON.1,putc_loop
+ 8822+ 2			        ;clr     SCON.1
+ 8823+ 2  1C53	75 99 3F	        mov     SBUF,#'?'
+ 8824+ 1  1C56	75 6E 01	        mov     fail,#001h
+ 8825+ 1  1C59			??0754:
  8826:
- 8827:				        ; c.- <JMP @A+DPTR>
- 8828:	  1C59	90 1C 2F	        mov     DPTR,#(tr_sub2-33h)
- 8829:	  1C5C	74 33		        mov     a,#33h
- 8830:	  1C5E	73		        jmp     @a+DPTR
- 8831:	  1C5F	02 1C 75	        jmp     tr_c0
- 8832:	  1C62	02 1C 68	tr_sub2: jmp     tr_0
- 8833:	  1C65	02 1C 75	        jmp     tr_c0
- 8834:	  1C68	74 00		tr_0:   mov     a,#00h
- 8835:	  1C6A	74 00		        mov     a,#00h
+ 8827:
+ 8828:				        ; c.- <JMP @A+DPTR>
+ 8829:				        ; Note that tr_sub2 is at 8000h so that we test the A+DPTR carry
+ 8830:				        ; propagation. Any address xx00h would do.
+ 8831:	  1C59	90 7F CD	        mov     DPTR,#(tr_sub2-33h) ; Prepare DPTR and A so that their sum
+ 8832:	  1C5C	74 33		        mov     a,#33h              ; gives the target address.
+ 8833:	  1C5E	73		        jmp     @a+DPTR
+ 8834:	  1C5F	02 1C 71	        jmp     tr_c0
+ 8835:	  1C62	00		        nop
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 159
 
@@ -9959,62 +9959,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 8836:	  1C6C	74 00		        mov     a,#00h
- 8837:	  1C6E	74 00		        mov     a,#00h
- 8838:
- 8839:				        eot     'c',tr_c0
- 8840+ 1			        putc    #'c'
- 8841+ 2  1C70			??0758:
- 8842+ 2			        ;jnb     SCON.1,putc_loop
- 8843+ 2			        ;clr     SCON.1
- 8844+ 2  1C70	75 99 63	        mov     SBUF,#'c'
- 8845+ 1  1C73	80 06		        sjmp    ??0757
- 8846+ 1  1C75			tr_c0:  putc    #'?'
- 8847+ 2  1C75			??0759:
- 8848+ 2			        ;jnb     SCON.1,putc_loop
- 8849+ 2			        ;clr     SCON.1
- 8850+ 2  1C75	75 99 3F	        mov     SBUF,#'?'
- 8851+ 1  1C78	75 6E 01	        mov     fail,#001h
- 8852+ 1  1C7B			??0757:
- 8853:
- 8854:				        put_crlf                    ; end of test series
- 8855+ 1			        putc    #13
- 8856+ 2  1C7B			??0760:
- 8857+ 2			        ;jnb     SCON.1,putc_loop
- 8858+ 2			        ;clr     SCON.1
- 8859+ 2  1C7B	75 99 0D	        mov     SBUF,#13
- 8860+ 1			        putc    #10
- 8861+ 2  1C7E			??0761:
- 8862+ 2			        ;jnb     SCON.1,putc_loop
- 8863+ 2			        ;clr     SCON.1
- 8864+ 2  1C7E	75 99 0A	        mov     SBUF,#10
- 8865:
- 8866:
- 8867:				        ;-- Test series S ------------------------------------------------------
- 8868:				        ; RET, RETI instructions
- 8869:				        ; a.- <RET>
- 8870:				        ; b.- <RETI>
- 8871:				        ;
- 8872:				        ; RETs to different code pages (!= H addr byte) not tested!
- 8873:				        ; Interrupt flag stuff not tested, only RET functionality
- 8874:
- 8875:				        putc    #'S'                ; start of test series
- 8876+ 1  1C81			??0762:
- 8877+ 1			        ;jnb     SCON.1,putc_loop
- 8878+ 1			        ;clr     SCON.1
- 8879+ 1  1C81	75 99 53	        mov     SBUF,#'S'
- 8880:
- 8881:
- 8882:				        ; a.- <RET>
- 8883:	  1C84	75 81 4F	        mov     SP,#4fh             ; Initialize SP...
- 8884:	  1C87	75 4F 1C	        mov     4fh,#HIGH(s_sub0)   ; ...and load stack area with return
- 8885:	  1C8A	75 4E 98	        mov     4eh,#LOW(s_sub0)    ; addresses to be tested
- 8886:	  1C8D	75 4D 1C	        mov     4dh,#HIGH(s_sub1)
- 8887:	  1C90	75 4C A2	        mov     4ch,#LOW(s_sub1)
- 8888:
- 8889:	  1C93	22		        ret                         ; Do the ret...
- 8890:	  1C94	80 16		        sjmp    ts_a0
- 8891:	  1C96	74 00		        mov     A,#00h
+ 8836:	  1C63	00		        nop
+ 8837:	  1C64	74 00		tr_rv3: mov     a,#00h
+ 8838:	  1C66	74 00		        mov     a,#00h
+ 8839:	  1C68	74 00		        mov     a,#00h
+ 8840:	  1C6A	74 00		        mov     a,#00h
+ 8841:
+ 8842:				        eot     'c',tr_c0
+ 8843+ 1			        putc    #'c'
+ 8844+ 2  1C6C			??0758:
+ 8845+ 2			        ;jnb     SCON.1,putc_loop
+ 8846+ 2			        ;clr     SCON.1
+ 8847+ 2  1C6C	75 99 63	        mov     SBUF,#'c'
+ 8848+ 1  1C6F	80 06		        sjmp    ??0757
+ 8849+ 1  1C71			tr_c0:  putc    #'?'
+ 8850+ 2  1C71			??0759:
+ 8851+ 2			        ;jnb     SCON.1,putc_loop
+ 8852+ 2			        ;clr     SCON.1
+ 8853+ 2  1C71	75 99 3F	        mov     SBUF,#'?'
+ 8854+ 1  1C74	75 6E 01	        mov     fail,#001h
+ 8855+ 1  1C77			??0757:
+ 8856:
+ 8857:				        ; c.- <LJMP addr16>
+ 8858:	  1C77	02 80 06	        ljmp    tr_sub3
+ 8859:	  1C7A	02 1C 86	        jmp     tr_d0
+ 8860:	  1C7D	00		        nop
+ 8861:	  1C7E	00		        nop
+ 8862:	  1C7F	00		tr_rv4: nop
+ 8863:	  1C80	00		        nop
+ 8864:				        eot     'd',tr_d0
+ 8865+ 1			        putc    #'d'
+ 8866+ 2  1C81			??0761:
+ 8867+ 2			        ;jnb     SCON.1,putc_loop
+ 8868+ 2			        ;clr     SCON.1
+ 8869+ 2  1C81	75 99 64	        mov     SBUF,#'d'
+ 8870+ 1  1C84	80 06		        sjmp    ??0760
+ 8871+ 1  1C86			tr_d0:  putc    #'?'
+ 8872+ 2  1C86			??0762:
+ 8873+ 2			        ;jnb     SCON.1,putc_loop
+ 8874+ 2			        ;clr     SCON.1
+ 8875+ 2  1C86	75 99 3F	        mov     SBUF,#'?'
+ 8876+ 1  1C89	75 6E 01	        mov     fail,#001h
+ 8877+ 1  1C8C			??0760:
+ 8878:
+ 8879:				        put_crlf                    ; end of test series
+ 8880+ 1			        putc    #13
+ 8881+ 2  1C8C			??0763:
+ 8882+ 2			        ;jnb     SCON.1,putc_loop
+ 8883+ 2			        ;clr     SCON.1
+ 8884+ 2  1C8C	75 99 0D	        mov     SBUF,#13
+ 8885+ 1			        putc    #10
+ 8886+ 2  1C8F			??0764:
+ 8887+ 2			        ;jnb     SCON.1,putc_loop
+ 8888+ 2			        ;clr     SCON.1
+ 8889+ 2  1C8F	75 99 0A	        mov     SBUF,#10
+ 8890:
+ 8891:
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 160
 
@@ -10022,62 +10022,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 8892:	  1C98	E5 81		s_sub0: mov     A,SP
- 8893:	  1C9A	B4 4D 0F	        cjne    A,#4dh,ts_a0       ; ... and verify the SP value
- 8894:
- 8895:	  1C9D	22		        ret                         ; Do another ret...
- 8896:	  1C9E	80 0C		        sjmp    ts_a0
- 8897:	  1CA0	74 00		        mov     A,#00h
- 8898:	  1CA2	E5 81		s_sub1: mov     A,SP
- 8899:	  1CA4	B4 4B 05	        cjne    A,#4bh,ts_a0       ; ... and verify the SP value
- 8900:
- 8901:				        eot     'a',ts_a0
- 8902+ 1			        putc    #'a'
- 8903+ 2  1CA7			??0764:
- 8904+ 2			        ;jnb     SCON.1,putc_loop
- 8905+ 2			        ;clr     SCON.1
- 8906+ 2  1CA7	75 99 61	        mov     SBUF,#'a'
- 8907+ 1  1CAA	80 06		        sjmp    ??0763
- 8908+ 1  1CAC			ts_a0:  putc    #'?'
- 8909+ 2  1CAC			??0765:
- 8910+ 2			        ;jnb     SCON.1,putc_loop
- 8911+ 2			        ;clr     SCON.1
- 8912+ 2  1CAC	75 99 3F	        mov     SBUF,#'?'
- 8913+ 1  1CAF	75 6E 01	        mov     fail,#001h
- 8914+ 1  1CB2			??0763:
- 8915:
- 8916:
- 8917:				        ; a.- <RETI>
- 8918:	  1CB2	75 81 4F	        mov     SP,#4fh             ; Initialize SP...
- 8919:	  1CB5	75 4F 1C	        mov     4fh,#HIGH(s_sub2)   ; ...and load stack area with return
- 8920:	  1CB8	75 4E C6	        mov     4eh,#LOW(s_sub2)    ; addresses to be tested
- 8921:	  1CBB	75 4D 1C	        mov     4dh,#HIGH(s_sub3)
- 8922:	  1CBE	75 4C D0	        mov     4ch,#LOW(s_sub3)
- 8923:
- 8924:	  1CC1	22		        ret                         ; Do the ret...
- 8925:	  1CC2	80 E8		        sjmp    ts_a0
- 8926:	  1CC4	74 00		        mov     A,#00h
- 8927:	  1CC6	E5 81		s_sub2: mov     A,SP
- 8928:	  1CC8	B4 4D 0F	        cjne    A,#4dh,ts_b0       ; ... and verify the SP value
- 8929:
- 8930:	  1CCB	22		        ret                         ; Do another ret...
- 8931:	  1CCC	80 DE		        sjmp    ts_a0
- 8932:	  1CCE	74 00		        mov     A,#00h
- 8933:	  1CD0	E5 81		s_sub3: mov     A,SP
- 8934:	  1CD2	B4 4B 05	        cjne    A,#4bh,ts_b0       ; ... and verify the SP value
- 8935:
- 8936:				        eot     'b',ts_b0
- 8937+ 1			        putc    #'b'
- 8938+ 2  1CD5			??0767:
- 8939+ 2			        ;jnb     SCON.1,putc_loop
- 8940+ 2			        ;clr     SCON.1
- 8941+ 2  1CD5	75 99 62	        mov     SBUF,#'b'
- 8942+ 1  1CD8	80 06		        sjmp    ??0766
- 8943+ 1  1CDA			ts_b0:  putc    #'?'
- 8944+ 2  1CDA			??0768:
- 8945+ 2			        ;jnb     SCON.1,putc_loop
- 8946+ 2			        ;clr     SCON.1
- 8947+ 2  1CDA	75 99 3F	        mov     SBUF,#'?'
+ 8892:				        ;-- Test series S ------------------------------------------------------
+ 8893:				        ; RET, RETI instructions
+ 8894:				        ; a.- <RET>
+ 8895:				        ; b.- <RETI>
+ 8896:				        ;
+ 8897:				        ; RETs to different code pages (!= H addr byte) not tested!
+ 8898:				        ; Interrupt flag stuff not tested, only RET functionality
+ 8899:
+ 8900:				        putc    #'S'                ; start of test series
+ 8901+ 1  1C92			??0765:
+ 8902+ 1			        ;jnb     SCON.1,putc_loop
+ 8903+ 1			        ;clr     SCON.1
+ 8904+ 1  1C92	75 99 53	        mov     SBUF,#'S'
+ 8905:
+ 8906:
+ 8907:				        ; a.- <RET>
+ 8908:	  1C95	75 81 4F	        mov     SP,#4fh             ; Initialize SP...
+ 8909:	  1C98	75 4F 1C	        mov     4fh,#HIGH(s_sub0)   ; ...and load stack area with return
+ 8910:	  1C9B	75 4E A9	        mov     4eh,#LOW(s_sub0)    ; addresses to be tested
+ 8911:	  1C9E	75 4D 1C	        mov     4dh,#HIGH(s_sub1)
+ 8912:	  1CA1	75 4C B3	        mov     4ch,#LOW(s_sub1)
+ 8913:
+ 8914:	  1CA4	22		        ret                         ; Do the ret...
+ 8915:	  1CA5	80 16		        sjmp    ts_a0
+ 8916:	  1CA7	74 00		        mov     A,#00h
+ 8917:	  1CA9	E5 81		s_sub0: mov     A,SP
+ 8918:	  1CAB	B4 4D 0F	        cjne    A,#4dh,ts_a0       ; ... and verify the SP value
+ 8919:
+ 8920:	  1CAE	22		        ret                         ; Do another ret...
+ 8921:	  1CAF	80 0C		        sjmp    ts_a0
+ 8922:	  1CB1	74 00		        mov     A,#00h
+ 8923:	  1CB3	E5 81		s_sub1: mov     A,SP
+ 8924:	  1CB5	B4 4B 05	        cjne    A,#4bh,ts_a0       ; ... and verify the SP value
+ 8925:
+ 8926:				        eot     'a',ts_a0
+ 8927+ 1			        putc    #'a'
+ 8928+ 2  1CB8			??0767:
+ 8929+ 2			        ;jnb     SCON.1,putc_loop
+ 8930+ 2			        ;clr     SCON.1
+ 8931+ 2  1CB8	75 99 61	        mov     SBUF,#'a'
+ 8932+ 1  1CBB	80 06		        sjmp    ??0766
+ 8933+ 1  1CBD			ts_a0:  putc    #'?'
+ 8934+ 2  1CBD			??0768:
+ 8935+ 2			        ;jnb     SCON.1,putc_loop
+ 8936+ 2			        ;clr     SCON.1
+ 8937+ 2  1CBD	75 99 3F	        mov     SBUF,#'?'
+ 8938+ 1  1CC0	75 6E 01	        mov     fail,#001h
+ 8939+ 1  1CC3			??0766:
+ 8940:
+ 8941:
+ 8942:				        ; a.- <RETI>
+ 8943:	  1CC3	75 81 4F	        mov     SP,#4fh             ; Initialize SP...
+ 8944:	  1CC6	75 4F 1C	        mov     4fh,#HIGH(s_sub2)   ; ...and load stack area with return
+ 8945:	  1CC9	75 4E D7	        mov     4eh,#LOW(s_sub2)    ; addresses to be tested
+ 8946:	  1CCC	75 4D 1C	        mov     4dh,#HIGH(s_sub3)
+ 8947:	  1CCF	75 4C E1	        mov     4ch,#LOW(s_sub3)
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 161
 
@@ -10085,62 +10085,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 8948+ 1  1CDD	75 6E 01	        mov     fail,#001h
- 8949+ 1  1CE0			??0766:
- 8950:
- 8951:				        ; Lots of things can go badly and we wouldn't know with this test...
- 8952:				        put_crlf                    ; end of test series
- 8953+ 1			        putc    #13
- 8954+ 2  1CE0			??0769:
- 8955+ 2			        ;jnb     SCON.1,putc_loop
- 8956+ 2			        ;clr     SCON.1
- 8957+ 2  1CE0	75 99 0D	        mov     SBUF,#13
- 8958+ 1			        putc    #10
- 8959+ 2  1CE3			??0770:
- 8960+ 2			        ;jnb     SCON.1,putc_loop
- 8961+ 2			        ;clr     SCON.1
- 8962+ 2  1CE3	75 99 0A	        mov     SBUF,#10
- 8963:
- 8964:				        ;-- Test series T ------------------------------------------------------
- 8965:				        ; MUL, DIV instructions
- 8966:				        ; a.- <DIV>
- 8967:				        ; b.- <MUL>
- 8968:				        ;
- 8969:
- 8970:				        putc    #'T'                ; start of test series
- 8971+ 1  1CE6			??0771:
- 8972+ 1			        ;jnb     SCON.1,putc_loop
- 8973+ 1			        ;clr     SCON.1
- 8974+ 1  1CE6	75 99 54	        mov     SBUF,#'T'
+ 8948:
+ 8949:	  1CD2	22		        ret                         ; Do the ret...
+ 8950:	  1CD3	80 E8		        sjmp    ts_a0
+ 8951:	  1CD5	74 00		        mov     A,#00h
+ 8952:	  1CD7	E5 81		s_sub2: mov     A,SP
+ 8953:	  1CD9	B4 4D 0F	        cjne    A,#4dh,ts_b0       ; ... and verify the SP value
+ 8954:
+ 8955:	  1CDC	22		        ret                         ; Do another ret...
+ 8956:	  1CDD	80 DE		        sjmp    ts_a0
+ 8957:	  1CDF	74 00		        mov     A,#00h
+ 8958:	  1CE1	E5 81		s_sub3: mov     A,SP
+ 8959:	  1CE3	B4 4B 05	        cjne    A,#4bh,ts_b0       ; ... and verify the SP value
+ 8960:
+ 8961:				        eot     'b',ts_b0
+ 8962+ 1			        putc    #'b'
+ 8963+ 2  1CE6			??0770:
+ 8964+ 2			        ;jnb     SCON.1,putc_loop
+ 8965+ 2			        ;clr     SCON.1
+ 8966+ 2  1CE6	75 99 62	        mov     SBUF,#'b'
+ 8967+ 1  1CE9	80 06		        sjmp    ??0769
+ 8968+ 1  1CEB			ts_b0:  putc    #'?'
+ 8969+ 2  1CEB			??0771:
+ 8970+ 2			        ;jnb     SCON.1,putc_loop
+ 8971+ 2			        ;clr     SCON.1
+ 8972+ 2  1CEB	75 99 3F	        mov     SBUF,#'?'
+ 8973+ 1  1CEE	75 6E 01	        mov     fail,#001h
+ 8974+ 1  1CF1			??0769:
  8975:
- 8976:				        ; a.- <DIV>
- 8977:	  1CE9	75 F0 07	        mov     B,#07h              ; First of all, make sure B can be read back
- 8978:	  1CEC	74 13		        mov     A,#13h
- 8979:	  1CEE	E5 F0		        mov     A,B
- 8980:	  1CF0	B4 07 37	        cjne    A,#07h,tt_a0
- 8981:
- 8982:				        ; Now do a few representative DIVs using a table. The table has the
- 8983:				        ; following format:
- 8984:				        ; denominator, numerator, overflow, quotient, remainder
- 8985:				        ; Where 'overflow' is 00h or 04h.
- 8986:
- 8987:				        ; DPTR will point to the start of the table, r0 will be the current data
- 8988:				        ; byte offset and r1 the number of test cases remaiining.
- 8989:	  1CF3	90 1D 32	        mov     DPTR,#tt_a_tab
- 8990:	  1CF6	78 00		        mov     r0,#00h
- 8991:	  1CF8	79 09		        mov     r1,#((tt_a_tab_end-tt_a_tab)/5)
- 8992:
- 8993:	  1CFA			tt_a_loop:
- 8994:	  1CFA	E8		        mov     a,r0
- 8995:	  1CFB	08		        inc     r0
- 8996:	  1CFC	93		        movc    a,@a+DPTR
- 8997:	  1CFD	F5 F0		        mov     B,a
- 8998:	  1CFF	E8		        mov     a,r0
- 8999:	  1D00	08		        inc     r0
- 9000:	  1D01	93		        movc    a,@a+DPTR
- 9001:	  1D02	84		        div     ab
- 9002:	  1D03	F5 60		        mov     dir0,a
- 9003:
+ 8976:				        ; Lots of things can go badly and we wouldn't know with this test...
+ 8977:				        put_crlf                    ; end of test series
+ 8978+ 1			        putc    #13
+ 8979+ 2  1CF1			??0772:
+ 8980+ 2			        ;jnb     SCON.1,putc_loop
+ 8981+ 2			        ;clr     SCON.1
+ 8982+ 2  1CF1	75 99 0D	        mov     SBUF,#13
+ 8983+ 1			        putc    #10
+ 8984+ 2  1CF4			??0773:
+ 8985+ 2			        ;jnb     SCON.1,putc_loop
+ 8986+ 2			        ;clr     SCON.1
+ 8987+ 2  1CF4	75 99 0A	        mov     SBUF,#10
+ 8988:
+ 8989:				        ;-- Test series T ------------------------------------------------------
+ 8990:				        ; MUL, DIV instructions
+ 8991:				        ; a.- <DIV>
+ 8992:				        ; b.- <MUL>
+ 8993:				        ;
+ 8994:
+ 8995:				        putc    #'T'                ; start of test series
+ 8996+ 1  1CF7			??0774:
+ 8997+ 1			        ;jnb     SCON.1,putc_loop
+ 8998+ 1			        ;clr     SCON.1
+ 8999+ 1  1CF7	75 99 54	        mov     SBUF,#'T'
+ 9000:
+ 9001:				        ; a.- <DIV>
+ 9002:	  1CFA	75 F0 07	        mov     B,#07h              ; First of all, make sure B can be read back
+ 9003:	  1CFD	74 13		        mov     A,#13h
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 162
 
@@ -10148,62 +10148,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 9004:	  1D05	E8		        mov     a,r0                ; Get expected OV flag
- 9005:	  1D06	08		        inc     r0
- 9006:	  1D07	93		        movc    a,@a+DPTR
- 9007:	  1D08	70 15		        jnz     tt_a_divzero        ; If OV expected, skip verification of
- 9008:	  1D0A	E5 D0		        mov     a,PSW               ; quotient and remainder
- 9009:	  1D0C	54 04		        anl     a,#04h
- 9010:	  1D0E	70 1A		        jnz     tt_a0
+ 9004:	  1CFF	E5 F0		        mov     A,B
+ 9005:	  1D01	B4 07 37	        cjne    A,#07h,tt_a0
+ 9006:
+ 9007:				        ; Now do a few representative DIVs using a table. The table has the
+ 9008:				        ; following format:
+ 9009:				        ; denominator, numerator, overflow, quotient, remainder
+ 9010:				        ; Where 'overflow' is 00h or 04h.
  9011:
- 9012:	  1D10	E8		        mov     a,r0                ; Verify quotient...
- 9013:	  1D11	08		        inc     r0
- 9014:	  1D12	93		        movc    a,@a+DPTR
- 9015:	  1D13	B5 60 14	        cjne    a,dir0,tt_a0
- 9016:	  1D16	E8		        mov     a,r0                ; ...and verify remainder
- 9017:	  1D17	08		        inc     r0
- 9018:	  1D18	93		        movc    a,@a+DPTR
- 9019:	  1D19	B5 F0 0E	        cjne    a,B,tt_a0
- 9020:	  1D1C	02 1D 21	        jmp     tt_a_next
- 9021:
- 9022:	  1D1F			tt_a_divzero:
- 9023:	  1D1F	08		        inc     r0
- 9024:	  1D20	08		        inc     r0
- 9025:	  1D21			tt_a_next:
- 9026:	  1D21	19		        dec     r1                  ; go for next test vector, if any
- 9027:	  1D22	E9		        mov     a,r1
- 9028:	  1D23	70 D5		        jnz     tt_a_loop
- 9029:
- 9030:				        eot     'a',tt_a0
- 9031+ 1			        putc    #'a'
- 9032+ 2  1D25			??0773:
- 9033+ 2			        ;jnb     SCON.1,putc_loop
- 9034+ 2			        ;clr     SCON.1
- 9035+ 2  1D25	75 99 61	        mov     SBUF,#'a'
- 9036+ 1  1D28	80 06		        sjmp    ??0772
- 9037+ 1  1D2A			tt_a0:  putc    #'?'
- 9038+ 2  1D2A			??0774:
- 9039+ 2			        ;jnb     SCON.1,putc_loop
- 9040+ 2			        ;clr     SCON.1
- 9041+ 2  1D2A	75 99 3F	        mov     SBUF,#'?'
- 9042+ 1  1D2D	75 6E 01	        mov     fail,#001h
- 9043+ 1  1D30			??0772:
- 9044:	  1D30	80 2D		        sjmp    tt_a_tab_end
- 9045:
- 9046:	  1D32			tt_a_tab:
- 9047:	  1D32	07 13 00 02	        db      7,19,0,2,5
-	  1D36	05
- 9048:	  1D37	07 11 00 02	        db      7,17,0,2,3
-	  1D3B	03
- 9049:	  1D3C	07 0D 00 01	        db      7,13,0,1,6
-	  1D40	06
- 9050:	  1D41	0D 11 00 01	        db      13,17,0,1,4
-	  1D45	04
- 9051:	  1D46	11 0D 00 00	        db      17,13,0,0,13
-	  1D4A	0D
- 9052:	  1D4B	00 0D 04 00	        db      0,13,4,0,13
-	  1D4F	0D
- 9053:	  1D50	80 87 00 01	        db      80h,87h,0,1,7
+ 9012:				        ; DPTR will point to the start of the table, r0 will be the current data
+ 9013:				        ; byte offset and r1 the number of test cases remaiining.
+ 9014:	  1D04	90 1D 43	        mov     DPTR,#tt_a_tab
+ 9015:	  1D07	78 00		        mov     r0,#00h
+ 9016:	  1D09	79 09		        mov     r1,#((tt_a_tab_end-tt_a_tab)/5)
+ 9017:
+ 9018:	  1D0B			tt_a_loop:
+ 9019:	  1D0B	E8		        mov     a,r0
+ 9020:	  1D0C	08		        inc     r0
+ 9021:	  1D0D	93		        movc    a,@a+DPTR
+ 9022:	  1D0E	F5 F0		        mov     B,a
+ 9023:	  1D10	E8		        mov     a,r0
+ 9024:	  1D11	08		        inc     r0
+ 9025:	  1D12	93		        movc    a,@a+DPTR
+ 9026:	  1D13	84		        div     ab
+ 9027:	  1D14	F5 60		        mov     dir0,a
+ 9028:
+ 9029:	  1D16	E8		        mov     a,r0                ; Get expected OV flag
+ 9030:	  1D17	08		        inc     r0
+ 9031:	  1D18	93		        movc    a,@a+DPTR
+ 9032:	  1D19	70 15		        jnz     tt_a_divzero        ; If OV expected, skip verification of
+ 9033:	  1D1B	E5 D0		        mov     a,PSW               ; quotient and remainder
+ 9034:	  1D1D	54 04		        anl     a,#04h
+ 9035:	  1D1F	70 1A		        jnz     tt_a0
+ 9036:
+ 9037:	  1D21	E8		        mov     a,r0                ; Verify quotient...
+ 9038:	  1D22	08		        inc     r0
+ 9039:	  1D23	93		        movc    a,@a+DPTR
+ 9040:	  1D24	B5 60 14	        cjne    a,dir0,tt_a0
+ 9041:	  1D27	E8		        mov     a,r0                ; ...and verify remainder
+ 9042:	  1D28	08		        inc     r0
+ 9043:	  1D29	93		        movc    a,@a+DPTR
+ 9044:	  1D2A	B5 F0 0E	        cjne    a,B,tt_a0
+ 9045:	  1D2D	02 1D 32	        jmp     tt_a_next
+ 9046:
+ 9047:	  1D30			tt_a_divzero:
+ 9048:	  1D30	08		        inc     r0
+ 9049:	  1D31	08		        inc     r0
+ 9050:	  1D32			tt_a_next:
+ 9051:	  1D32	19		        dec     r1                  ; go for next test vector, if any
+ 9052:	  1D33	E9		        mov     a,r1
+ 9053:	  1D34	70 D5		        jnz     tt_a_loop
+ 9054:
+ 9055:				        eot     'a',tt_a0
+ 9056+ 1			        putc    #'a'
+ 9057+ 2  1D36			??0776:
+ 9058+ 2			        ;jnb     SCON.1,putc_loop
+ 9059+ 2			        ;clr     SCON.1
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 163
 
@@ -10211,62 +10211,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
-	  1D54	07
- 9054:	  1D55	01 FF 00 FF	        db      1,255,0,255,0
-	  1D59	00
- 9055:	  1D5A	02 FF 00 7F	        db      2,255,0,127,1
-	  1D5E	01
- 9056:	  1D5F			tt_a_tab_end:
- 9057:
- 9058:				        ; b.- <MUL>
- 9059:
- 9060:				        ; Do with MUL the same we just did with DIV. The test data table has
- 9061:				        ; the following format:
- 9062:				        ; denominator, numerator, product high byte, product low byte.
- 9063:
- 9064:				        ; DPTR will point to the start of the table, r0 will be the current data
- 9065:				        ; byte offset and r1 the number of test cases remaiining.
- 9066:	  1D5F	90 1D A0	        mov     DPTR,#tt_b_tab
- 9067:	  1D62	78 00		        mov     r0,#00h
- 9068:	  1D64	79 09		        mov     r1,#((tt_b_tab_end-tt_b_tab)/4)
- 9069:
- 9070:	  1D66			tt_b_loop:
- 9071:	  1D66	E8		        mov     a,r0                ; Load B with test data...
- 9072:	  1D67	08		        inc     r0
- 9073:	  1D68	93		        movc    a,@a+DPTR
- 9074:	  1D69	F5 F0		        mov     B,a
- 9075:	  1D6B	E8		        mov     a,r0                ; ...then load A with test data...
- 9076:	  1D6C	08		        inc     r0
- 9077:	  1D6D	93		        movc    a,@a+DPTR
- 9078:	  1D6E	A4		        mul     ab                  ; and do the MUL
- 9079:	  1D6F	F5 60		        mov     dir0,a              ; Save A for later checks
- 9080:
- 9081:	  1D71	E8		        mov     a,r0                ; Verify product high byte
- 9082:				        ;inc     r0
- 9083:	  1D72	93		        movc    a,@a+DPTR
- 9084:	  1D73	60 08		        jz      tt_b_noovf
- 9085:
- 9086:	  1D75	E5 D0		        mov     a,PSW               ; overflow expected
- 9087:	  1D77	54 04		        anl     a,#04h
- 9088:	  1D79	60 1D		        jz      tt_b0
- 9089:	  1D7B	80 06		        sjmp    tt_b_0
- 9090:
- 9091:	  1D7D			tt_b_noovf:
- 9092:	  1D7D	E5 D0		        mov     a,PSW               ; no overflow expected
- 9093:	  1D7F	54 04		        anl     a,#04h
- 9094:	  1D81	70 15		        jnz     tt_b0
- 9095:
- 9096:	  1D83			tt_b_0:
- 9097:	  1D83	E8		        mov     a,r0                ; Verify product high byte
- 9098:	  1D84	08		        inc     r0
- 9099:	  1D85	93		        movc    a,@a+DPTR
- 9100:	  1D86	B5 F0 0F	        cjne    a,B,tt_b0
- 9101:	  1D89	E8		        mov     a,r0                ; ...and verify low byte
- 9102:	  1D8A	08		        inc     r0
- 9103:	  1D8B	93		        movc    a,@a+DPTR
- 9104:	  1D8C	B5 60 09	        cjne    a,dir0,tt_b0
+ 9060+ 2  1D36	75 99 61	        mov     SBUF,#'a'
+ 9061+ 1  1D39	80 06		        sjmp    ??0775
+ 9062+ 1  1D3B			tt_a0:  putc    #'?'
+ 9063+ 2  1D3B			??0777:
+ 9064+ 2			        ;jnb     SCON.1,putc_loop
+ 9065+ 2			        ;clr     SCON.1
+ 9066+ 2  1D3B	75 99 3F	        mov     SBUF,#'?'
+ 9067+ 1  1D3E	75 6E 01	        mov     fail,#001h
+ 9068+ 1  1D41			??0775:
+ 9069:	  1D41	80 2D		        sjmp    tt_a_tab_end
+ 9070:
+ 9071:	  1D43			tt_a_tab:
+ 9072:	  1D43	07 13 00 02	        db      7,19,0,2,5
+	  1D47	05
+ 9073:	  1D48	07 11 00 02	        db      7,17,0,2,3
+	  1D4C	03
+ 9074:	  1D4D	07 0D 00 01	        db      7,13,0,1,6
+	  1D51	06
+ 9075:	  1D52	0D 11 00 01	        db      13,17,0,1,4
+	  1D56	04
+ 9076:	  1D57	11 0D 00 00	        db      17,13,0,0,13
+	  1D5B	0D
+ 9077:	  1D5C	00 0D 04 00	        db      0,13,4,0,13
+	  1D60	0D
+ 9078:	  1D61	80 87 00 01	        db      80h,87h,0,1,7
+	  1D65	07
+ 9079:	  1D66	01 FF 00 FF	        db      1,255,0,255,0
+	  1D6A	00
+ 9080:	  1D6B	02 FF 00 7F	        db      2,255,0,127,1
+	  1D6F	01
+ 9081:	  1D70			tt_a_tab_end:
+ 9082:
+ 9083:				        ; b.- <MUL>
+ 9084:
+ 9085:				        ; Do with MUL the same we just did with DIV. The test data table has
+ 9086:				        ; the following format:
+ 9087:				        ; denominator, numerator, product high byte, product low byte.
+ 9088:
+ 9089:				        ; DPTR will point to the start of the table, r0 will be the current data
+ 9090:				        ; byte offset and r1 the number of test cases remaiining.
+ 9091:	  1D70	90 1D B1	        mov     DPTR,#tt_b_tab
+ 9092:	  1D73	78 00		        mov     r0,#00h
+ 9093:	  1D75	79 09		        mov     r1,#((tt_b_tab_end-tt_b_tab)/4)
+ 9094:
+ 9095:	  1D77			tt_b_loop:
+ 9096:	  1D77	E8		        mov     a,r0                ; Load B with test data...
+ 9097:	  1D78	08		        inc     r0
+ 9098:	  1D79	93		        movc    a,@a+DPTR
+ 9099:	  1D7A	F5 F0		        mov     B,a
+ 9100:	  1D7C	E8		        mov     a,r0                ; ...then load A with test data...
+ 9101:	  1D7D	08		        inc     r0
+ 9102:	  1D7E	93		        movc    a,@a+DPTR
+ 9103:	  1D7F	A4		        mul     ab                  ; and do the MUL
+ 9104:	  1D80	F5 60		        mov     dir0,a              ; Save A for later checks
  9105:
- 9106:	  1D8F	19		        dec     r1                  ; go for next test vector, if any
+ 9106:	  1D82	E8		        mov     a,r0                ; Verify product high byte
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 164
 
@@ -10274,62 +10274,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 9107:	  1D90	E9		        mov     a,r1
- 9108:	  1D91	70 D3		        jnz     tt_b_loop
- 9109:
- 9110:				        eot     'b',tt_b0
- 9111+ 1			        putc    #'b'
- 9112+ 2  1D93			??0776:
- 9113+ 2			        ;jnb     SCON.1,putc_loop
- 9114+ 2			        ;clr     SCON.1
- 9115+ 2  1D93	75 99 62	        mov     SBUF,#'b'
- 9116+ 1  1D96	80 06		        sjmp    ??0775
- 9117+ 1  1D98			tt_b0:  putc    #'?'
- 9118+ 2  1D98			??0777:
- 9119+ 2			        ;jnb     SCON.1,putc_loop
- 9120+ 2			        ;clr     SCON.1
- 9121+ 2  1D98	75 99 3F	        mov     SBUF,#'?'
- 9122+ 1  1D9B	75 6E 01	        mov     fail,#001h
- 9123+ 1  1D9E			??0775:
- 9124:	  1D9E	80 24		        sjmp    tt_b_tab_end
- 9125:
- 9126:	  1DA0			tt_b_tab:
- 9127:	  1DA0	07 13 00 85	        db      7,19,0,133
- 9128:	  1DA4	07 11 00 77	        db      7,17,0,119
- 9129:	  1DA8	07 0D 00 5B	        db      7,13,0,91
- 9130:	  1DAC	0D 11 00 DD	        db      13,17,0,221
- 9131:	  1DB0	11 0D 00 DD	        db      17,13,0,221
- 9132:	  1DB4	00 0D 00 00	        db      0,13,0,0
- 9133:	  1DB8	80 87 43 80	        db      80h,87h,43h,80h
- 9134:	  1DBC	01 FF 00 FF	        db      1,255,0,255
- 9135:	  1DC0	02 FF 01 FE	        db      2,255,01h,0feh
- 9136:	  1DC4			tt_b_tab_end:
- 9137:
- 9138:				        put_crlf                    ; end of test series
- 9139+ 1			        putc    #13
- 9140+ 2  1DC4			??0778:
- 9141+ 2			        ;jnb     SCON.1,putc_loop
- 9142+ 2			        ;clr     SCON.1
- 9143+ 2  1DC4	75 99 0D	        mov     SBUF,#13
- 9144+ 1			        putc    #10
- 9145+ 2  1DC7			??0779:
- 9146+ 2			        ;jnb     SCON.1,putc_loop
- 9147+ 2			        ;clr     SCON.1
- 9148+ 2  1DC7	75 99 0A	        mov     SBUF,#10
- 9149:
+ 9107:				        ;inc     r0
+ 9108:	  1D83	93		        movc    a,@a+DPTR
+ 9109:	  1D84	60 08		        jz      tt_b_noovf
+ 9110:
+ 9111:	  1D86	E5 D0		        mov     a,PSW               ; overflow expected
+ 9112:	  1D88	54 04		        anl     a,#04h
+ 9113:	  1D8A	60 1D		        jz      tt_b0
+ 9114:	  1D8C	80 06		        sjmp    tt_b_0
+ 9115:
+ 9116:	  1D8E			tt_b_noovf:
+ 9117:	  1D8E	E5 D0		        mov     a,PSW               ; no overflow expected
+ 9118:	  1D90	54 04		        anl     a,#04h
+ 9119:	  1D92	70 15		        jnz     tt_b0
+ 9120:
+ 9121:	  1D94			tt_b_0:
+ 9122:	  1D94	E8		        mov     a,r0                ; Verify product high byte
+ 9123:	  1D95	08		        inc     r0
+ 9124:	  1D96	93		        movc    a,@a+DPTR
+ 9125:	  1D97	B5 F0 0F	        cjne    a,B,tt_b0
+ 9126:	  1D9A	E8		        mov     a,r0                ; ...and verify low byte
+ 9127:	  1D9B	08		        inc     r0
+ 9128:	  1D9C	93		        movc    a,@a+DPTR
+ 9129:	  1D9D	B5 60 09	        cjne    a,dir0,tt_b0
+ 9130:
+ 9131:	  1DA0	19		        dec     r1                  ; go for next test vector, if any
+ 9132:	  1DA1	E9		        mov     a,r1
+ 9133:	  1DA2	70 D3		        jnz     tt_b_loop
+ 9134:
+ 9135:				        eot     'b',tt_b0
+ 9136+ 1			        putc    #'b'
+ 9137+ 2  1DA4			??0779:
+ 9138+ 2			        ;jnb     SCON.1,putc_loop
+ 9139+ 2			        ;clr     SCON.1
+ 9140+ 2  1DA4	75 99 62	        mov     SBUF,#'b'
+ 9141+ 1  1DA7	80 06		        sjmp    ??0778
+ 9142+ 1  1DA9			tt_b0:  putc    #'?'
+ 9143+ 2  1DA9			??0780:
+ 9144+ 2			        ;jnb     SCON.1,putc_loop
+ 9145+ 2			        ;clr     SCON.1
+ 9146+ 2  1DA9	75 99 3F	        mov     SBUF,#'?'
+ 9147+ 1  1DAC	75 6E 01	        mov     fail,#001h
+ 9148+ 1  1DAF			??0778:
+ 9149:	  1DAF	80 24		        sjmp    tt_b_tab_end
  9150:
- 9151:
- 9152:				        ;-- Test series U ------------------------------------------------------
- 9153:				        ; Register banks
- 9154:				        ; a.- Write to register, read from indirect address.
- 9155:				        ; a.- Write to indirect address, read from register.
- 9156:				        ;
- 9157:
- 9158:				        putc    #'U'                ; start of test series
- 9159+ 1  1DCA			??0780:
- 9160+ 1			        ;jnb     SCON.1,putc_loop
- 9161+ 1			        ;clr     SCON.1
- 9162+ 1  1DCA	75 99 55	        mov     SBUF,#'U'
+ 9151:	  1DB1			tt_b_tab:
+ 9152:	  1DB1	07 13 00 85	        db      7,19,0,133
+ 9153:	  1DB5	07 11 00 77	        db      7,17,0,119
+ 9154:	  1DB9	07 0D 00 5B	        db      7,13,0,91
+ 9155:	  1DBD	0D 11 00 DD	        db      13,17,0,221
+ 9156:	  1DC1	11 0D 00 DD	        db      17,13,0,221
+ 9157:	  1DC5	00 0D 00 00	        db      0,13,0,0
+ 9158:	  1DC9	80 87 43 80	        db      80h,87h,43h,80h
+ 9159:	  1DCD	01 FF 00 FF	        db      1,255,0,255
+ 9160:	  1DD1	02 FF 01 FE	        db      2,255,01h,0feh
+ 9161:	  1DD5			tt_b_tab_end:
+ 9162:
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 165
 
@@ -10337,62 +10337,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 9163:
- 9164:
- 9165:	  1DCD	75 D0 00	        mov     PSW,#00h            ; Test bank 0
- 9166:	  1DD0	74 01		        mov     a,#00h + 1
- 9167:	  1DD2	12 1D EF	        call    tu_a_test
- 9168:
- 9169:	  1DD5	75 D0 08	        mov     PSW,#08h            ; Test bank 1
- 9170:	  1DD8	74 09		        mov     a,#08h + 1
- 9171:	  1DDA	12 1D EF	        call    tu_a_test
- 9172:
- 9173:	  1DDD	75 D0 10	        mov     PSW,#10h            ; Test bank 2
- 9174:	  1DE0	74 11		        mov     a,#10h + 1
- 9175:	  1DE2	12 1D EF	        call    tu_a_test
+ 9163:				        put_crlf                    ; end of test series
+ 9164+ 1			        putc    #13
+ 9165+ 2  1DD5			??0781:
+ 9166+ 2			        ;jnb     SCON.1,putc_loop
+ 9167+ 2			        ;clr     SCON.1
+ 9168+ 2  1DD5	75 99 0D	        mov     SBUF,#13
+ 9169+ 1			        putc    #10
+ 9170+ 2  1DD8			??0782:
+ 9171+ 2			        ;jnb     SCON.1,putc_loop
+ 9172+ 2			        ;clr     SCON.1
+ 9173+ 2  1DD8	75 99 0A	        mov     SBUF,#10
+ 9174:
+ 9175:
  9176:
- 9177:	  1DE5	75 D0 18	        mov     PSW,#18h            ; Test bank 3
- 9178:	  1DE8	74 19		        mov     a,#18h + 1
- 9179:	  1DEA	12 1D EF	        call    tu_a_test
- 9180:
- 9181:	  1DED	80 1E		        sjmp    tu_a_done
+ 9177:				        ;-- Test series U ------------------------------------------------------
+ 9178:				        ; Register banks
+ 9179:				        ; a.- Write to register, read from indirect address.
+ 9180:				        ; a.- Write to indirect address, read from register.
+ 9181:				        ;
  9182:
- 9183:	  1DEF			tu_a_test:
- 9184:	  1DEF	F8		        mov     r0,a                ; R0 points to R1 in the selected bank.
- 9185:
- 9186:	  1DF0	79 12		        mov     r1,#12h             ; Write to registers R1 and R7
- 9187:	  1DF2	7F 34		        mov     r7,#34h
+ 9183:				        putc    #'U'                ; start of test series
+ 9184+ 1  1DDB			??0783:
+ 9185+ 1			        ;jnb     SCON.1,putc_loop
+ 9186+ 1			        ;clr     SCON.1
+ 9187+ 1  1DDB	75 99 55	        mov     SBUF,#'U'
  9188:
- 9189:	  1DF4	E6		        mov     a,@r0               ; Check R1
- 9190:	  1DF5	B4 12 1B	        cjne    a,#12h,tu_a0
- 9191:	  1DF8	74 56		        mov     a,#56h              ; Ok, now write to R1 with reg addressing...
- 9192:	  1DFA	F6		        mov     @r0,a               ; ...and check by reading in indirect.
- 9193:	  1DFB	B9 56 15	        cjne    r1,#56h,tu_a0
- 9194:
- 9195:	  1DFE	E8		        mov     a,r0                ; Set R0 to point to R7 in selected bank
- 9196:	  1DFF	24 06		        add     a,#06h
- 9197:	  1E01	F8		        mov     r0,a
- 9198:	  1E02	E6		        mov     a,@r0               ; Check R7
- 9199:	  1E03	B4 34 0D	        cjne    a,#34h,tu_a0
- 9200:
- 9201:	  1E06	74 78		        mov     a,#78h              ; Ok, now write to R7 with reg addressing...
- 9202:	  1E08	F6		        mov     @r0,a               ; ...and check by reading in indirect.
- 9203:	  1E09	B4 78 07	        cjne    a,#78h,tu_a0
- 9204:
- 9205:	  1E0C	22		        ret
- 9206:
- 9207:	  1E0D			tu_a_done:
- 9208:	  1E0D	00		        nop
- 9209:				        eot     'a',tu_a0
- 9210+ 1			        putc    #'a'
- 9211+ 2  1E0E			??0782:
- 9212+ 2			        ;jnb     SCON.1,putc_loop
- 9213+ 2			        ;clr     SCON.1
- 9214+ 2  1E0E	75 99 61	        mov     SBUF,#'a'
- 9215+ 1  1E11	80 06		        sjmp    ??0781
- 9216+ 1  1E13			tu_a0:  putc    #'?'
- 9217+ 2  1E13			??0783:
- 9218+ 2			        ;jnb     SCON.1,putc_loop
+ 9189:
+ 9190:	  1DDE	75 D0 00	        mov     PSW,#00h            ; Test bank 0
+ 9191:	  1DE1	74 01		        mov     a,#00h + 1
+ 9192:	  1DE3	12 1E 00	        call    tu_a_test
+ 9193:
+ 9194:	  1DE6	75 D0 08	        mov     PSW,#08h            ; Test bank 1
+ 9195:	  1DE9	74 09		        mov     a,#08h + 1
+ 9196:	  1DEB	12 1E 00	        call    tu_a_test
+ 9197:
+ 9198:	  1DEE	75 D0 10	        mov     PSW,#10h            ; Test bank 2
+ 9199:	  1DF1	74 11		        mov     a,#10h + 1
+ 9200:	  1DF3	12 1E 00	        call    tu_a_test
+ 9201:
+ 9202:	  1DF6	75 D0 18	        mov     PSW,#18h            ; Test bank 3
+ 9203:	  1DF9	74 19		        mov     a,#18h + 1
+ 9204:	  1DFB	12 1E 00	        call    tu_a_test
+ 9205:
+ 9206:	  1DFE	80 1E		        sjmp    tu_a_done
+ 9207:
+ 9208:	  1E00			tu_a_test:
+ 9209:	  1E00	F8		        mov     r0,a                ; R0 points to R1 in the selected bank.
+ 9210:
+ 9211:	  1E01	79 12		        mov     r1,#12h             ; Write to registers R1 and R7
+ 9212:	  1E03	7F 34		        mov     r7,#34h
+ 9213:
+ 9214:	  1E05	E6		        mov     a,@r0               ; Check R1
+ 9215:	  1E06	B4 12 1B	        cjne    a,#12h,tu_a0
+ 9216:	  1E09	74 56		        mov     a,#56h              ; Ok, now write to R1 with reg addressing...
+ 9217:	  1E0B	F6		        mov     @r0,a               ; ...and check by reading in indirect.
+ 9218:	  1E0C	B9 56 15	        cjne    r1,#56h,tu_a0
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 166
 
@@ -10400,62 +10400,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 9219+ 2			        ;clr     SCON.1
- 9220+ 2  1E13	75 99 3F	        mov     SBUF,#'?'
- 9221+ 1  1E16	75 6E 01	        mov     fail,#001h
- 9222+ 1  1E19			??0781:
- 9223:
- 9224:				        put_crlf                    ; end of test series
- 9225+ 1			        putc    #13
- 9226+ 2  1E19			??0784:
- 9227+ 2			        ;jnb     SCON.1,putc_loop
- 9228+ 2			        ;clr     SCON.1
- 9229+ 2  1E19	75 99 0D	        mov     SBUF,#13
- 9230+ 1			        putc    #10
- 9231+ 2  1E1C			??0785:
- 9232+ 2			        ;jnb     SCON.1,putc_loop
- 9233+ 2			        ;clr     SCON.1
- 9234+ 2  1E1C	75 99 0A	        mov     SBUF,#10
- 9235:
- 9236:
- 9237:				        ;-- Template for test series -------------------------------------------
- 9238:
- 9239:				        ;-- Test series X ------------------------------------------------------
- 9240:				        ;
- 9241:				        ; a.-
- 9242:
- 9243:				        ;putc    #'X'                ; start of test series
- 9244:				        ;put_crlf                    ; end of test series
- 9245:
- 9246:				        ;-----------------------------------------------------------------------
- 9247:
- 9248:				        ; Test cases finished. Now print completion message dependent on the
- 9249:				        ; value of the fail flag.
- 9250:
- 9251:	  1E1F	E5 6E		        mov     a,fail
- 9252:	  1E21	70 1A		        jnz     test_failed
- 9253:
- 9254:				        put_crlf
- 9255+ 1			        putc    #13
- 9256+ 2  1E23			??0786:
+ 9219:
+ 9220:	  1E0F	E8		        mov     a,r0                ; Set R0 to point to R7 in selected bank
+ 9221:	  1E10	24 06		        add     a,#06h
+ 9222:	  1E12	F8		        mov     r0,a
+ 9223:	  1E13	E6		        mov     a,@r0               ; Check R7
+ 9224:	  1E14	B4 34 0D	        cjne    a,#34h,tu_a0
+ 9225:
+ 9226:	  1E17	74 78		        mov     a,#78h              ; Ok, now write to R7 with reg addressing...
+ 9227:	  1E19	F6		        mov     @r0,a               ; ...and check by reading in indirect.
+ 9228:	  1E1A	B4 78 07	        cjne    a,#78h,tu_a0
+ 9229:
+ 9230:	  1E1D	22		        ret
+ 9231:
+ 9232:	  1E1E			tu_a_done:
+ 9233:	  1E1E	00		        nop
+ 9234:				        eot     'a',tu_a0
+ 9235+ 1			        putc    #'a'
+ 9236+ 2  1E1F			??0785:
+ 9237+ 2			        ;jnb     SCON.1,putc_loop
+ 9238+ 2			        ;clr     SCON.1
+ 9239+ 2  1E1F	75 99 61	        mov     SBUF,#'a'
+ 9240+ 1  1E22	80 06		        sjmp    ??0784
+ 9241+ 1  1E24			tu_a0:  putc    #'?'
+ 9242+ 2  1E24			??0786:
+ 9243+ 2			        ;jnb     SCON.1,putc_loop
+ 9244+ 2			        ;clr     SCON.1
+ 9245+ 2  1E24	75 99 3F	        mov     SBUF,#'?'
+ 9246+ 1  1E27	75 6E 01	        mov     fail,#001h
+ 9247+ 1  1E2A			??0784:
+ 9248:
+ 9249:				        put_crlf                    ; end of test series
+ 9250+ 1			        putc    #13
+ 9251+ 2  1E2A			??0787:
+ 9252+ 2			        ;jnb     SCON.1,putc_loop
+ 9253+ 2			        ;clr     SCON.1
+ 9254+ 2  1E2A	75 99 0D	        mov     SBUF,#13
+ 9255+ 1			        putc    #10
+ 9256+ 2  1E2D			??0788:
  9257+ 2			        ;jnb     SCON.1,putc_loop
  9258+ 2			        ;clr     SCON.1
- 9259+ 2  1E23	75 99 0D	        mov     SBUF,#13
- 9260+ 1			        putc    #10
- 9261+ 2  1E26			??0787:
- 9262+ 2			        ;jnb     SCON.1,putc_loop
- 9263+ 2			        ;clr     SCON.1
- 9264+ 2  1E26	75 99 0A	        mov     SBUF,#10
- 9265:				        putc    #'P'
- 9266+ 1  1E29			??0788:
- 9267+ 1			        ;jnb     SCON.1,putc_loop
- 9268+ 1			        ;clr     SCON.1
- 9269+ 1  1E29	75 99 50	        mov     SBUF,#'P'
- 9270:				        putc    #'A'
- 9271+ 1  1E2C			??0789:
- 9272+ 1			        ;jnb     SCON.1,putc_loop
- 9273+ 1			        ;clr     SCON.1
- 9274+ 1  1E2C	75 99 41	        mov     SBUF,#'A'
+ 9259+ 2  1E2D	75 99 0A	        mov     SBUF,#10
+ 9260:
+ 9261:
+ 9262:				        ;-- Template for test series -------------------------------------------
+ 9263:
+ 9264:				        ;-- Test series X ------------------------------------------------------
+ 9265:				        ;
+ 9266:				        ; a.-
+ 9267:
+ 9268:				        ;putc    #'X'                ; start of test series
+ 9269:				        ;put_crlf                    ; end of test series
+ 9270:
+ 9271:				        ;-----------------------------------------------------------------------
+ 9272:
+ 9273:				        ; Test cases finished. Now print completion message dependent on the
+ 9274:				        ; value of the fail flag.
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 167
 
@@ -10463,62 +10463,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 9275:				        putc    #'S'
- 9276+ 1  1E2F			??0790:
- 9277+ 1			        ;jnb     SCON.1,putc_loop
- 9278+ 1			        ;clr     SCON.1
- 9279+ 1  1E2F	75 99 53	        mov     SBUF,#'S'
- 9280:				        putc    #'S'
- 9281+ 1  1E32			??0791:
- 9282+ 1			        ;jnb     SCON.1,putc_loop
- 9283+ 1			        ;clr     SCON.1
- 9284+ 1  1E32	75 99 53	        mov     SBUF,#'S'
- 9285:				        put_crlf
- 9286+ 1			        putc    #13
- 9287+ 2  1E35			??0792:
- 9288+ 2			        ;jnb     SCON.1,putc_loop
- 9289+ 2			        ;clr     SCON.1
- 9290+ 2  1E35	75 99 0D	        mov     SBUF,#13
- 9291+ 1			        putc    #10
- 9292+ 2  1E38			??0793:
- 9293+ 2			        ;jnb     SCON.1,putc_loop
- 9294+ 2			        ;clr     SCON.1
- 9295+ 2  1E38	75 99 0A	        mov     SBUF,#10
- 9296:	  1E3B	80 1A		        sjmp    quit
- 9297:
- 9298:	  1E3D			test_failed:
- 9299:				        put_crlf
- 9300+ 1			        putc    #13
- 9301+ 2  1E3D			??0794:
- 9302+ 2			        ;jnb     SCON.1,putc_loop
- 9303+ 2			        ;clr     SCON.1
- 9304+ 2  1E3D	75 99 0D	        mov     SBUF,#13
- 9305+ 1			        putc    #10
- 9306+ 2  1E40			??0795:
- 9307+ 2			        ;jnb     SCON.1,putc_loop
- 9308+ 2			        ;clr     SCON.1
- 9309+ 2  1E40	75 99 0A	        mov     SBUF,#10
- 9310:				        putc    #'F'
- 9311+ 1  1E43			??0796:
- 9312+ 1			        ;jnb     SCON.1,putc_loop
- 9313+ 1			        ;clr     SCON.1
- 9314+ 1  1E43	75 99 46	        mov     SBUF,#'F'
- 9315:				        putc    #'A'
- 9316+ 1  1E46			??0797:
- 9317+ 1			        ;jnb     SCON.1,putc_loop
- 9318+ 1			        ;clr     SCON.1
- 9319+ 1  1E46	75 99 41	        mov     SBUF,#'A'
- 9320:				        putc    #'I'
- 9321+ 1  1E49			??0798:
- 9322+ 1			        ;jnb     SCON.1,putc_loop
- 9323+ 1			        ;clr     SCON.1
- 9324+ 1  1E49	75 99 49	        mov     SBUF,#'I'
- 9325:				        putc    #'L'
- 9326+ 1  1E4C			??0799:
- 9327+ 1			        ;jnb     SCON.1,putc_loop
- 9328+ 1			        ;clr     SCON.1
- 9329+ 1  1E4C	75 99 4C	        mov     SBUF,#'L'
- 9330:				        put_crlf
+ 9275:
+ 9276:	  1E30	E5 6E		        mov     a,fail
+ 9277:	  1E32	70 1A		        jnz     test_failed
+ 9278:
+ 9279:				        put_crlf
+ 9280+ 1			        putc    #13
+ 9281+ 2  1E34			??0789:
+ 9282+ 2			        ;jnb     SCON.1,putc_loop
+ 9283+ 2			        ;clr     SCON.1
+ 9284+ 2  1E34	75 99 0D	        mov     SBUF,#13
+ 9285+ 1			        putc    #10
+ 9286+ 2  1E37			??0790:
+ 9287+ 2			        ;jnb     SCON.1,putc_loop
+ 9288+ 2			        ;clr     SCON.1
+ 9289+ 2  1E37	75 99 0A	        mov     SBUF,#10
+ 9290:				        putc    #'P'
+ 9291+ 1  1E3A			??0791:
+ 9292+ 1			        ;jnb     SCON.1,putc_loop
+ 9293+ 1			        ;clr     SCON.1
+ 9294+ 1  1E3A	75 99 50	        mov     SBUF,#'P'
+ 9295:				        putc    #'A'
+ 9296+ 1  1E3D			??0792:
+ 9297+ 1			        ;jnb     SCON.1,putc_loop
+ 9298+ 1			        ;clr     SCON.1
+ 9299+ 1  1E3D	75 99 41	        mov     SBUF,#'A'
+ 9300:				        putc    #'S'
+ 9301+ 1  1E40			??0793:
+ 9302+ 1			        ;jnb     SCON.1,putc_loop
+ 9303+ 1			        ;clr     SCON.1
+ 9304+ 1  1E40	75 99 53	        mov     SBUF,#'S'
+ 9305:				        putc    #'S'
+ 9306+ 1  1E43			??0794:
+ 9307+ 1			        ;jnb     SCON.1,putc_loop
+ 9308+ 1			        ;clr     SCON.1
+ 9309+ 1  1E43	75 99 53	        mov     SBUF,#'S'
+ 9310:				        put_crlf
+ 9311+ 1			        putc    #13
+ 9312+ 2  1E46			??0795:
+ 9313+ 2			        ;jnb     SCON.1,putc_loop
+ 9314+ 2			        ;clr     SCON.1
+ 9315+ 2  1E46	75 99 0D	        mov     SBUF,#13
+ 9316+ 1			        putc    #10
+ 9317+ 2  1E49			??0796:
+ 9318+ 2			        ;jnb     SCON.1,putc_loop
+ 9319+ 2			        ;clr     SCON.1
+ 9320+ 2  1E49	75 99 0A	        mov     SBUF,#10
+ 9321:	  1E4C	80 1A		        sjmp    quit
+ 9322:
+ 9323:	  1E4E			test_failed:
+ 9324:				        put_crlf
+ 9325+ 1			        putc    #13
+ 9326+ 2  1E4E			??0797:
+ 9327+ 2			        ;jnb     SCON.1,putc_loop
+ 9328+ 2			        ;clr     SCON.1
+ 9329+ 2  1E4E	75 99 0D	        mov     SBUF,#13
+ 9330+ 1			        putc    #10
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 168
 
@@ -10526,39 +10526,87 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
- 9331+ 1			        putc    #13
- 9332+ 2  1E4F			??0800:
- 9333+ 2			        ;jnb     SCON.1,putc_loop
- 9334+ 2			        ;clr     SCON.1
- 9335+ 2  1E4F	75 99 0D	        mov     SBUF,#13
- 9336+ 1			        putc    #10
- 9337+ 2  1E52			??0801:
- 9338+ 2			        ;jnb     SCON.1,putc_loop
- 9339+ 2			        ;clr     SCON.1
- 9340+ 2  1E52	75 99 0A	        mov     SBUF,#10
- 9341:	  1E55	80 00		        sjmp    quit
- 9342:
- 9343:				        ;-- End of test program, enter single-instruction endless loop
- 9344:	  1E57	C1 57		quit:   ajmp    $
- 9345:
- 9346:
- 9347:				        ; We'll place a few test routines in the 2nd half of the code space so
- 9348:				        ; we can test long jumps and calls onto different code pages.
- 9349:		N      8000	        org     8000h
- 9350:
- 9351:				        ; tr_sub1: part of the LCALL test.
- 9352:	  8000			tr_sub1:
- 9353:	  8000	E5 81		        mov     A,SP
- 9354:	  8002	B4 53 0D	        cjne    A,#53h,tr_sub1_fail ; ...verify the SP value...
- 9355:	  8005	E5 52		        mov     A,52h               ; ...and verify the pushed ret address
- 9356:	  8007	B4 4B 08	        cjne    A,#LOW(tr_rv1),tr_sub1_fail
- 9357:	  800A	E5 53		        mov     A,53h
- 9358:	  800C	B4 1C 03	        cjne    A,#HIGH(tr_rv1),tr_sub1_fail
- 9359:	  800F	02 1C 4D	        ljmp    tr_rv2
- 9360:	  8012			tr_sub1_fail:
- 9361:	  8012	02 1C 53	        ljmp    tr_b0
- 9362:
- 9363:				        end
+ 9331+ 2  1E51			??0798:
+ 9332+ 2			        ;jnb     SCON.1,putc_loop
+ 9333+ 2			        ;clr     SCON.1
+ 9334+ 2  1E51	75 99 0A	        mov     SBUF,#10
+ 9335:				        putc    #'F'
+ 9336+ 1  1E54			??0799:
+ 9337+ 1			        ;jnb     SCON.1,putc_loop
+ 9338+ 1			        ;clr     SCON.1
+ 9339+ 1  1E54	75 99 46	        mov     SBUF,#'F'
+ 9340:				        putc    #'A'
+ 9341+ 1  1E57			??0800:
+ 9342+ 1			        ;jnb     SCON.1,putc_loop
+ 9343+ 1			        ;clr     SCON.1
+ 9344+ 1  1E57	75 99 41	        mov     SBUF,#'A'
+ 9345:				        putc    #'I'
+ 9346+ 1  1E5A			??0801:
+ 9347+ 1			        ;jnb     SCON.1,putc_loop
+ 9348+ 1			        ;clr     SCON.1
+ 9349+ 1  1E5A	75 99 49	        mov     SBUF,#'I'
+ 9350:				        putc    #'L'
+ 9351+ 1  1E5D			??0802:
+ 9352+ 1			        ;jnb     SCON.1,putc_loop
+ 9353+ 1			        ;clr     SCON.1
+ 9354+ 1  1E5D	75 99 4C	        mov     SBUF,#'L'
+ 9355:				        put_crlf
+ 9356+ 1			        putc    #13
+ 9357+ 2  1E60			??0803:
+ 9358+ 2			        ;jnb     SCON.1,putc_loop
+ 9359+ 2			        ;clr     SCON.1
+ 9360+ 2  1E60	75 99 0D	        mov     SBUF,#13
+ 9361+ 1			        putc    #10
+ 9362+ 2  1E63			??0804:
+ 9363+ 2			        ;jnb     SCON.1,putc_loop
+ 9364+ 2			        ;clr     SCON.1
+ 9365+ 2  1E63	75 99 0A	        mov     SBUF,#10
+ 9366:	  1E66	80 00		        sjmp    quit
+ 9367:
+ 9368:				        ;-- End of test program, enter single-instruction endless loop
+ 9369:	  1E68	C1 68		quit:   ajmp    $
+ 9370:
+ 9371:
+ 9372:				        ; We'll place a few test routines in the 2nd half of the code space so
+ 9373:				        ; we can test long jumps and calls onto different code pages.
+ 9374:		N      8000	        org     8000h
+ 9375:
+ 9376:				        ; tr_sub2: part of the JMP @A+DPTR test.
+ 9377:				        ; HAS TO BE in 8000h so we can test the A+DPTR carry propagation!
+ 9378:	  8000			tr_sub2:
+ 9379:	  8000	02 1C 64	        jmp     tr_rv3
+ 9380:	  8003	02 1C 71	        jmp     tr_c0
+ 9381:				        ; Make sure the assumption we'll make in the test is actually valid
+ 9382:		N      0000	        if      LOW(tr_sub2) ne 0
+ 9383:				        $error("Label 'tr_sub2' must be at an address multiple of 256 to properly test JMP @A+DPTR")
+ 9384:				        endif
+ 9385:
+ 9386:				        ; tr_sub3: part of the LJMP test.
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 169
+
+
+
+ Line  I  Addr  Code            Source
+
+ 9387:	  8006			tr_sub3:
+ 9388:	  8006	02 1C 7F	        jmp     tr_rv4
+ 9389:	  8009	02 1C 86	        jmp     tr_d0
+ 9390:
+ 9391:				        ; tr_sub1: part of the LCALL test.
+ 9392:	  800C			tr_sub1:
+ 9393:	  800C	E5 81		        mov     A,SP
+ 9394:	  800E	B4 53 0D	        cjne    A,#53h,tr_sub1_fail ; ...verify the SP value...
+ 9395:	  8011	E5 52		        mov     A,52h               ; ...and verify the pushed ret address
+ 9396:	  8013	B4 4B 08	        cjne    A,#LOW(tr_rv1),tr_sub1_fail
+ 9397:	  8016	E5 53		        mov     A,53h
+ 9398:	  8018	B4 1C 03	        cjne    A,#HIGH(tr_rv1),tr_sub1_fail
+ 9399:	  801B	02 1C 4D	        ljmp    tr_rv2
+ 9400:	  801E			tr_sub1_fail:
+ 9401:	  801E	02 1C 53	        ljmp    tr_b0
+ 9402:
+ 9403:
+ 9404:				        end
 
 
 
@@ -10571,7 +10619,7 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
 
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 169
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 170
 
 
 
@@ -10634,7 +10682,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0048				  CODE	    0185	 491
 ??0049				  CODE	    018A	 497
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 170
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 171
 
 
 
@@ -10697,7 +10745,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0104				  CODE	    0380	 961
 ??0105				  CODE	    0385	 967
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 171
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 172
 
 
 
@@ -10760,7 +10808,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0160				  CODE	    06A9	1675
 ??0161				  CODE	    069E	1664
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 172
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 173
 
 
 
@@ -10823,7 +10871,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0216				  CODE	    08EC	2363
 ??0217				  CODE	    0973	2587
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 173
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 174
 
 
 
@@ -10886,7 +10934,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0272				  CODE	    0AB6	3111
 ??0273				  CODE	    0AD1	3155
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 174
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 175
 
 
 
@@ -10949,7 +10997,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0330				  CODE	    0C56	3644
 ??0331				  NUMBER    0000	3656
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 175
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 176
 
 
 
@@ -11012,7 +11060,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0390				  CODE	    0EA4	4394
 ??0391				  NUMBER    0000	4406
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 176
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 177
 
 
 
@@ -11075,7 +11123,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0450				  NUMBER    0000	5139
 ??0451				  CODE	    1101	5174
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 177
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 178
 
 
 
@@ -11138,7 +11186,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0510				  NUMBER    0000	5889
 ??0511				  CODE	    134F	5924
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 178
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 179
 
 
 
@@ -11201,7 +11249,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0570				  NUMBER    0001	6639
 ??0571				  CODE	    159D	6674
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 179
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 180
 
 
 
@@ -11264,7 +11312,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0630				  NUMBER    0001	7338
 ??0631				  NUMBER    0001	7365
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 180
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 181
 
 
 
@@ -11327,7 +11375,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0690				  NUMBER    0001	8088
 ??0691				  NUMBER    0001	8115
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 181
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 182
 
 
 
@@ -11390,7 +11438,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0746				  CODE	    1C07	8729
 ??0747				  CODE	    1C0C	8735
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 182
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 183
 
 
 
@@ -11398,67 +11446,70 @@ SYMBOL				  TYPE     VALUE	LINE
 ------------------------------------------------------------
 ??0748				  CODE	    1C12	8744
 ??0749				  CODE	    1C15	8749
-??0750				  CODE	    1C18	8769
-??0751				  CODE	    1C48	8805
-??0752				  CODE	    1C3D	8794
-??0753				  CODE	    1C42	8800
-??0754				  CODE	    1C59	8824
-??0755				  CODE	    1C4E	8813
-??0756				  CODE	    1C53	8819
-??0757				  CODE	    1C7B	8852
-??0758				  CODE	    1C70	8841
-??0759				  CODE	    1C75	8847
-??0760				  CODE	    1C7B	8856
-??0761				  CODE	    1C7E	8861
-??0762				  CODE	    1C81	8876
-??0763				  CODE	    1CB2	8914
-??0764				  CODE	    1CA7	8903
-??0765				  CODE	    1CAC	8909
-??0766				  CODE	    1CE0	8949
-??0767				  CODE	    1CD5	8938
-??0768				  CODE	    1CDA	8944
-??0769				  CODE	    1CE0	8954
-??0770				  CODE	    1CE3	8959
-??0771				  CODE	    1CE6	8971
-??0772				  CODE	    1D30	9043
-??0773				  CODE	    1D25	9032
-??0774				  CODE	    1D2A	9038
-??0775				  CODE	    1D9E	9123
-??0776				  CODE	    1D93	9112
-??0777				  CODE	    1D98	9118
-??0778				  CODE	    1DC4	9140
-??0779				  CODE	    1DC7	9145
-??0780				  CODE	    1DCA	9159
-??0781				  CODE	    1E19	9222
-??0782				  CODE	    1E0E	9211
-??0783				  CODE	    1E13	9217
-??0784				  CODE	    1E19	9226
-??0785				  CODE	    1E1C	9231
-??0786				  CODE	    1E23	9256
-??0787				  CODE	    1E26	9261
-??0788				  CODE	    1E29	9266
-??0789				  CODE	    1E2C	9271
-??0790				  CODE	    1E2F	9276
-??0791				  CODE	    1E32	9281
-??0792				  CODE	    1E35	9287
-??0793				  CODE	    1E38	9292
-??0794				  CODE	    1E3D	9301
-??0795				  CODE	    1E40	9306
-??0796				  CODE	    1E43	9311
-??0797				  CODE	    1E46	9316
-??0798				  CODE	    1E49	9321
-??0799				  CODE	    1E4C	9326
-??0800				  CODE	    1E4F	9332
-??0801				  CODE	    1E52	9337
-??ASEM_51			  NUMBER    8051
-??VERSION			  NUMBER    0130
+??0750				  CODE	    1C18	8770
+??0751				  CODE	    1C48	8806
+??0752				  CODE	    1C3D	8795
+??0753				  CODE	    1C42	8801
+??0754				  CODE	    1C59	8825
+??0755				  CODE	    1C4E	8814
+??0756				  CODE	    1C53	8820
+??0757				  CODE	    1C77	8855
+??0758				  CODE	    1C6C	8844
+??0759				  CODE	    1C71	8850
+??0760				  CODE	    1C8C	8877
+??0761				  CODE	    1C81	8866
+??0762				  CODE	    1C86	8872
+??0763				  CODE	    1C8C	8881
+??0764				  CODE	    1C8F	8886
+??0765				  CODE	    1C92	8901
+??0766				  CODE	    1CC3	8939
+??0767				  CODE	    1CB8	8928
+??0768				  CODE	    1CBD	8934
+??0769				  CODE	    1CF1	8974
+??0770				  CODE	    1CE6	8963
+??0771				  CODE	    1CEB	8969
+??0772				  CODE	    1CF1	8979
+??0773				  CODE	    1CF4	8984
+??0774				  CODE	    1CF7	8996
+??0775				  CODE	    1D41	9068
+??0776				  CODE	    1D36	9057
+??0777				  CODE	    1D3B	9063
+??0778				  CODE	    1DAF	9148
+??0779				  CODE	    1DA4	9137
+??0780				  CODE	    1DA9	9143
+??0781				  CODE	    1DD5	9165
+??0782				  CODE	    1DD8	9170
+??0783				  CODE	    1DDB	9184
+??0784				  CODE	    1E2A	9247
+??0785				  CODE	    1E1F	9236
+??0786				  CODE	    1E24	9242
+??0787				  CODE	    1E2A	9251
+??0788				  CODE	    1E2D	9256
+??0789				  CODE	    1E34	9281
+??0790				  CODE	    1E37	9286
+??0791				  CODE	    1E3A	9291
+??0792				  CODE	    1E3D	9296
+??0793				  CODE	    1E40	9301
+??0794				  CODE	    1E43	9306
+??0795				  CODE	    1E46	9312
+??0796				  CODE	    1E49	9317
+??0797				  CODE	    1E4E	9326
+??0798				  CODE	    1E51	9331
+??0799				  CODE	    1E54	9336
+??0800				  CODE	    1E57	9341
+??0801				  CODE	    1E5A	9346
+??0802				  CODE	    1E5D	9351
+??0803				  CODE	    1E60	9357
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 183
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 184
 
 
 
 SYMBOL				  TYPE     VALUE	LINE
 ------------------------------------------------------------
+??0804				  CODE	    1E63	9362
+??ASEM_51			  NUMBER    8051
+??VERSION			  NUMBER    0130
 AC				  BIT	      D6	  87
 ACC				  DATA	      E0	  58
 ARG0				  NUMBER    00C3	2370
@@ -11490,7 +11541,7 @@ P3				  DATA	      B0	  54
 PSW				  DATA	      D0	  57
 PUTC				  MACRO	        	 112
 PUT_CRLF			  MACRO	        	 121
-QUIT				  CODE	    1E57	9344
+QUIT				  CODE	    1E68	9369
 RES				  NUMBER    0001	2372
 RESET				  CODE	    0000	  91
 RS0				  BIT	      D3	  84
@@ -11506,22 +11557,22 @@ SINT				  CODE	    0023	  96
 SP				  DATA	      81	  39
 STACK0				  NUMBER    009F	 105
 START				  CODE	    0030	 153
-S_SUB0				  CODE	    1C98	8892
-S_SUB1				  CODE	    1CA2	8898
-S_SUB2				  CODE	    1CC6	8927
-S_SUB3				  CODE	    1CD0	8933
+S_SUB0				  CODE	    1CA9	8917
+S_SUB1				  CODE	    1CB3	8923
+S_SUB2				  CODE	    1CD7	8952
+S_SUB3				  CODE	    1CE1	8958
 T0ARL				  BIT	      8C	  63
 T0CEN				  BIT	      8D	  64
-T0IRQ				  BIT	      88	  62
-TA_B0				  CODE	    0041	 197
-TA_C0				  CODE	    0044	 204
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 184
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 185
 
 
 
 SYMBOL				  TYPE     VALUE	LINE
 ------------------------------------------------------------
+T0IRQ				  BIT	      88	  62
+TA_B0				  CODE	    0041	 197
+TA_C0				  CODE	    0044	 204
 TA_C1				  CODE	    004B	 211
 TA_C2				  CODE	    005A	 220
 TA_C3				  CODE	    0046	 205
@@ -11575,16 +11626,16 @@ TC_H3				  CODE	    0353	 921
 TC_I0				  CODE	    0374	 950
 TC_I1				  CODE	    0366	 941
 TC_I2				  CODE	    037D	 957
-TC_I3				  CODE	    0385	 966
-TC_J0				  CODE	    03A2	 989
-TC_J1				  CODE	    0393	 977
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 185
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 186
 
 
 
 SYMBOL				  TYPE     VALUE	LINE
 ------------------------------------------------------------
+TC_I3				  CODE	    0385	 966
+TC_J0				  CODE	    03A2	 989
+TC_J1				  CODE	    0393	 977
 TC_K0				  CODE	    03CF	1024
 TC_L0				  CODE	    03F2	1052
 TC_M0				  CODE	    040C	1075
@@ -11596,7 +11647,7 @@ TD_A0				  CODE	    0448	1154
 TD_B0				  CODE	    046F	1189
 TD_C0				  CODE	    0495	1223
 TD_D0				  CODE	    04CD	1269
-TEST_FAILED			  CODE	    1E3D	9298
+TEST_FAILED			  CODE	    1E4E	9323
 TE_A0				  CODE	    04F0	1335
 TE_B0				  CODE	    0575	1425
 TE_C0				  CODE	    05A2	1462
@@ -11638,52 +11689,55 @@ TOP_MB				  MACRO	        	2271
 TOP_MC				  MACRO	        	2287
 TO_A0				  CODE	    1B0A	8467
 TO_B0				  CODE	    1B26	8492
-TO_C0				  CODE	    1B46	8518
-TO_D0				  CODE	    1B61	8542
-TP_A0				  CODE	    1B88	8592
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 186
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 187
 
 
 
 SYMBOL				  TYPE     VALUE	LINE
 ------------------------------------------------------------
+TO_C0				  CODE	    1B46	8518
+TO_D0				  CODE	    1B61	8542
+TP_A0				  CODE	    1B88	8592
 TP_B0				  CODE	    1BA8	8628
 TP_C0				  CODE	    1BC4	8653
 TQ0				  CODE	    1BDE	8691
 TQ1				  CODE	    1BDA	8690
 TQ_A0				  CODE	    1BE6	8700
 TQ_B0				  CODE	    1C0C	8734
-TR_0				  CODE	    1C68	8834
-TR_A0				  CODE	    1C42	8799
-TR_B0				  CODE	    1C53	8818
-TR_C0				  CODE	    1C75	8846
-TR_RV0				  CODE	    1C2C	8783
-TR_RV1				  CODE	    1C4B	8809
-TR_RV2				  CODE	    1C4D	8810
-TR_SUB0				  CODE	    1C2E	8784
-TR_SUB1				  CODE	    8000	9352
-TR_SUB1_FAIL			  CODE	    8012	9360
-TR_SUB2				  CODE	    1C62	8832
+TR_A0				  CODE	    1C42	8800
+TR_B0				  CODE	    1C53	8819
+TR_C0				  CODE	    1C71	8849
+TR_D0				  CODE	    1C86	8871
+TR_RV0				  CODE	    1C2C	8784
+TR_RV1				  CODE	    1C4B	8810
+TR_RV2				  CODE	    1C4D	8811
+TR_RV3				  CODE	    1C64	8837
+TR_RV4				  CODE	    1C7F	8862
+TR_SUB0				  CODE	    1C2E	8785
+TR_SUB1				  CODE	    800C	9392
+TR_SUB1_FAIL			  CODE	    801E	9400
+TR_SUB2				  CODE	    8000	9378
+TR_SUB3				  CODE	    8006	9387
 TSTAT				  DATA	      88	  43
 TST_ALU				  MACRO	        	2306
 TST_PSW				  MACRO	        	2232
-TS_A0				  CODE	    1CAC	8908
-TS_B0				  CODE	    1CDA	8943
-TT_A0				  CODE	    1D2A	9037
-TT_A_DIVZERO			  CODE	    1D1F	9022
-TT_A_LOOP			  CODE	    1CFA	8993
-TT_A_NEXT			  CODE	    1D21	9025
-TT_A_TAB			  CODE	    1D32	9046
-TT_A_TAB_END			  CODE	    1D5F	9056
-TT_B0				  CODE	    1D98	9117
-TT_B_0				  CODE	    1D83	9096
-TT_B_LOOP			  CODE	    1D66	9070
-TT_B_NOOVF			  CODE	    1D7D	9091
-TT_B_TAB			  CODE	    1DA0	9126
-TT_B_TAB_END			  CODE	    1DC4	9136
-TU_A0				  CODE	    1E13	9216
-TU_A_DONE			  CODE	    1E0D	9207
-TU_A_TEST			  CODE	    1DEF	9183
+TS_A0				  CODE	    1CBD	8933
+TS_B0				  CODE	    1CEB	8968
+TT_A0				  CODE	    1D3B	9062
+TT_A_DIVZERO			  CODE	    1D30	9047
+TT_A_LOOP			  CODE	    1D0B	9018
+TT_A_NEXT			  CODE	    1D32	9050
+TT_A_TAB			  CODE	    1D43	9071
+TT_A_TAB_END			  CODE	    1D70	9081
+TT_B0				  CODE	    1DA9	9142
+TT_B_0				  CODE	    1D94	9121
+TT_B_LOOP			  CODE	    1D77	9095
+TT_B_NOOVF			  CODE	    1D8E	9116
+TT_B_TAB			  CODE	    1DB1	9151
+TT_B_TAB_END			  CODE	    1DD5	9161
+TU_A0				  CODE	    1E24	9241
+TU_A_DONE			  CODE	    1E1E	9232
+TU_A_TEST			  CODE	    1E00	9208
 TXIRQ				  BIT	      98	  76
 TXRDY				  BIT	      9C	  78
