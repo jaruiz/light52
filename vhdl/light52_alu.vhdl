@@ -306,15 +306,17 @@ with alu_ctrl_fn_arith(2 downto 0) select adder_cy_in <=
     '1'             when "110", -- INC
     '0'             when others;-- DEC
    
-    
--- ALU operands are sign extended before entering the adder...
-adder_op_0 <= alu_op_0(7) & alu_op_0;
+-- Note we do zero-extension and not sign-extension because we just want to 
+-- get the value of CY from bit 7 and this is most easily done with zero-ext.
+
+-- ALU operands are ZERO extended before entering the adder...
+adder_op_0 <= '0' & alu_op_0;
 -- ...and op1 (subtrahend) is negated for substract operations.
 -- Note this is a complement-to-1 only; we need to adjust the carry input for
 -- the adder op to be performed (see @note5).
 with alu_ctrl_fn_arith(0) select adder_op_1_comp <= 
-    (alu_op_1(7) & alu_op_1)            when '0',
-    (not alu_op_1(7) & not alu_op_1)    when others;
+    ('0' & alu_op_1)        when '0',
+    ('1' & not alu_op_1)    when others;
 -- The adder carry input needs some syntactic trickery: std_logic to integer.
 adder_cy_integer <= 1 when adder_cy_in='1' else 0;
 
