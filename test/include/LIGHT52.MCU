@@ -1,5 +1,5 @@
-;   Light52 processor definition file
-;   =================================
+;   Light52 processor definition file (for ASEM-51 assembler)
+;   =========================================================
 
 P0          DATA        080H
 SP          DATA        081H
