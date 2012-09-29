@@ -145,7 +145,8 @@ begin
   mcu: entity work.light52_mcu 
   generic map (
     -- Enough code space for all demos included in the project, modify as needed
-    CODE_ROM_SIZE => 8192,
+    CODE_ROM_SIZE => 16384,
+    XDATA_RAM_SIZE => 2048,
     -- Take object code from this constant
     OBJ_CODE => work.obj_code_pkg.object_code,
     -- UART baud rate isn't programmable in run time
