@@ -31,7 +31,7 @@ architecture testbench of c2sb_soc_tb is
 constant T : time := 20 ns;
 
 -- SIMULATION_LENGTH: maximum simulation time in clock cycles 
-constant SIMULATION_LENGTH : natural := 7000000; -- enough for most purposes
+constant SIMULATION_LENGTH : natural := 99000000; -- enough for most purposes
 
 -- Size of ROM, as defined in the top file. Used to catch stray jumps.
 constant ROM_SIZE : natural := 8192;
@@ -79,7 +79,7 @@ begin
     );
     
     -- The reset signal is used by the logging functions only.
-    reset <= switches(9);
+    reset <= not switches(9);
     
     
     ---- Master clock: free running clock used as main module clock ------------
@@ -98,9 +98,9 @@ begin
     begin
         switches <= (others => '0');
         -- Leave reset asserted for a few clock cycles...
-        switches(9) <= '1';
-        wait for T*4;
         switches(9) <= '0';
+        wait for T*4;
+        switches(9) <= '1';
         
         -- ...and wait for the test to hit a termination condition (evaluated by
         -- function log_cpu_activity) or to just timeout.
