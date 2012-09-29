@@ -280,7 +280,9 @@ port map (
     reset_i => reset
 );
 
-timer_ce <= '1' when sfr_addr(7 downto 3)=SFR_ADDR_TCON(7 downto 3) else '0';
+timer_ce <= '1' when sfr_addr(7 downto 3)=SFR_ADDR_TCON(7 downto 3) and
+            sfr_vma='1' 
+            else '0';
 timer_we <= sfr_we;
 
 -- Make sure the simplifications we do in the address decoding are valid.

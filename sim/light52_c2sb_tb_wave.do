@@ -20,13 +20,15 @@ add wave -noupdate -group {External Interrupts} -format Literal /c2sb_soc_tb/uut
 add wave -noupdate -group {External Interrupts} -format Logic /c2sb_soc_tb/uut/mcu/ext_irq
 add wave -noupdate -group {External Interrupts} -format Literal /c2sb_soc_tb/uut/mcu/external_irq_reg
 add wave -noupdate -group Timer
-add wave -noupdate -group Timer -format Literal -radix hexadecimal /c2sb_soc_tb/uut/mcu/timer/data_o
+add wave -noupdate -group Timer -format Logic /c2sb_soc_tb/uut/mcu/timer/ce_i
+add wave -noupdate -group Timer -format Literal /c2sb_soc_tb/uut/mcu/timer/addr_i
+add wave -noupdate -group Timer -format Logic /c2sb_soc_tb/uut/mcu/timer/wr_i
+add wave -noupdate -group Timer -format Literal -radix hexadecimal /c2sb_soc_tb/uut/mcu/timer/data_i
 add wave -noupdate -group Timer -format Literal -radix hexadecimal /c2sb_soc_tb/uut/mcu/timer/compare_reg
 add wave -noupdate -group Timer -format Literal -radix hexadecimal /c2sb_soc_tb/uut/mcu/timer/counter_reg
 add wave -noupdate -group Timer -format Logic /c2sb_soc_tb/uut/mcu/timer/counter_match
 add wave -noupdate -group Timer -format Literal /c2sb_soc_tb/uut/mcu/timer/status_reg
 add wave -noupdate -group Timer -format Logic /c2sb_soc_tb/uut/mcu/timer/irq_o
-add wave -noupdate -group Timer -format Literal /c2sb_soc_tb/uut/mcu/timer/addr_i
 add wave -noupdate -divider Internal
 add wave -noupdate -color Pink -format Literal /c2sb_soc_tb/uut/mcu/cpu/ps
 add wave -noupdate -group Interrupts
@@ -140,7 +142,7 @@ add wave -noupdate -group {Register Bank} -color {Indian Red} -format Literal -l
 add wave -noupdate -group {Register Bank} -color {Indian Red} -format Literal -label R7 -radix hexadecimal /c2sb_soc_tb/uut/mcu/cpu/bram(263)
 add wave -noupdate -color White -format Literal -label CONSOLE /c2sb_soc_tb/log_info.con_line_buf
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {68850000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {68850000 ps} 0} {{Cursor 2} {632590000 ps} 0}
 configure wave -namecolwidth 183
 configure wave -valuecolwidth 50
 configure wave -justifyvalue left
@@ -154,4 +156,4 @@ configure wave -gridperiod 1
 configure wave -griddelta 40
 configure wave -timeline 0
 update
-WaveRestoreZoom {602108104 ps} {626654438 ps}
+WaveRestoreZoom {632455977 ps} {632967861 ps}
