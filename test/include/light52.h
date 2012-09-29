@@ -33,10 +33,10 @@ __sfr __at  0x88 TCON;      /**< Timer 0 control register */
 __sbit __at 0x88 T0IRQ;     /**< Timer 0 interrupt flag */
 __sbit __at 0x8c T0ARL;     /**< Timer 0 Auto ReLoad flag */
 __sbit __at 0x8d T0CEN;     /**< Timer 0 Count ENable flag */
-__sfr __at  0x88 T0H;       /**< Timer 0 counter register, High byte */
-__sfr __at  0x88 T0L;       /**< Timer 0 counter register, Low byte */
-__sfr __at  0x88 T0CH;      /**< Timer 0 reload register, High byte */
-__sfr __at  0x88 T0CL;      /**< Timer 0 reload register, Low byte */
+__sfr __at  0x8c T0L;       /**< Timer 0 counter register, Low byte */
+__sfr __at  0x8d T0H;       /**< Timer 0 counter register, High byte */
+__sfr __at  0x8e T0CL;      /**< Timer 0 reload register, Low byte */
+__sfr __at  0x8f T0CH;      /**< Timer 0 reload register, High byte */
 
 /* External interrupts */
 __sfr __at  0xc0 EXTINT;    /**< EXTernal INTerrupt flag register */
