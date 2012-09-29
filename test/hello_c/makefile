@@ -1,6 +1,8 @@
-#--
+#-- Target 'all' will build an object code VHDL package ready for synthesis ----
 
 #-- Toolchain executables ------------------------------------------------------
+
+# FIXME only tested in Win32/Cygwin host. This may not work in a vanilla Win32.
 
 AS = 
 CC = SDCC
@@ -37,7 +39,7 @@ LFLAGS = -o $(OBJDIR)/
 CFLAGS = -o $(OBJDIR)/
 AFLAGS = -c
 
-#-- 
+#-- A bit of 'make magic' to simplify the rules
 
 # Add all the source directories to the VPATH... 
 VPATH := $(dir $(SRC))
@@ -63,9 +65,9 @@ all: $(BINDIR)/$(BIN) package
 	@echo Done
 
 
-#-- Targets that build the synthesizable vhdl; meant for direct invocation -----
+#-- Targets that build the synthesizable vhdl ----------------------------------
 
-#-- Create VHDL package with data and parameters for simulation 
+#-- Create VHDL package with object code and synthesis parameters
 package: $(BINDIR)/$(BIN)
 	@echo Building object code VHDL package...
 	@python $(BRPATH)/src/build_rom.py \
