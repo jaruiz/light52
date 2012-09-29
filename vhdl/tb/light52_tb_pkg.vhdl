@@ -236,6 +236,7 @@ begin
     -- loop. This will not catch multi-instruction endless loops and is only
     -- intended to replicate the behavior of B51 and give the SW a means to 
     -- cleanly end the simulation.
+    -- FIXME use some jump signal, not a single state
     if info.ps = long_jump and (info.pc = info.next_pc) then
         assert 1 = 0
         report "NONE. Endless loop encountered. Simulation terminated."
@@ -272,10 +273,12 @@ procedure log_cpu_activity(
 
 begin
     
-    init_signal_spy(mcu& "/cpu/alu/"&"acc_input",    iname&".acc_input", 0);
-    init_signal_spy(mcu& "/cpu/alu/"&"load_acc",     iname&".load_acc", 0);
-    init_signal_spy(mcu& "/cpu/update_sp",    iname&".update_sp", 0);
-    init_signal_spy(mcu& "/cpu/SP_reg",       iname&".sp", 0);
+    -- 'Connect' all the internal signals we want to watch to members of 
+    -- the info record.
+    init_signal_spy(mcu& "/cpu/alu/"&"acc_input",iname&".acc_input", 0);
+    init_signal_spy(mcu& "/cpu/alu/"&"load_acc", iname&".load_acc", 0);
+    init_signal_spy(mcu& "/cpu/update_sp",       iname&".update_sp", 0);
+    init_signal_spy(mcu& "/cpu/SP_reg",          iname&".sp", 0);
     init_signal_spy(mcu& "/cpu/"&"psw",          iname&".psw", 0);
     init_signal_spy(mcu& "/cpu/"&"update_psw_flags",iname&".update_psw_flags(0)", 0);
     init_signal_spy(mcu& "/cpu/"&"code_addr",    iname&".code_addr", 0);
@@ -294,9 +297,19 @@ begin
     init_signal_spy(mcu& "/"&"xdata_addr",       iname&".xdata_addr", 0);
     init_signal_spy(mcu& "/"&"xdata_wr",         iname&".xdata_wr", 0);
     
+    -- We force both 'rdy' uart outputs to speed up the simulation (since the
+    -- UART operation is not simulated by B51, just logged).
+    signal_force(mcu&"/uart/rx_rdy_flag", "1", 0 ms, freeze, -1 ms, 0);
+    signal_force(mcu&"/uart/tx_busy", "0", 0 ms, freeze, -1 ms, 0);
+    -- And we force the UART RX data to a predictable value until we implement
+    -- UART RX simulation in the B51 simulator, eventually.
+    signal_force(mcu&"/uart/rx_buffer", "00000000", 0 ms, freeze, -1 ms, 0);
 
-    info.con_line_buf <= (others => ' ');
     
+    -- Initialize the console log line buffer...
+    info.con_line_buf <= (others => ' ');
+    -- ...and take note of the ROM size 
+    -- FIXME this should not be necessary, we know the array size already.
     info.rom_size <= rom_size;
     
     while done='0' loop
