@@ -34,7 +34,7 @@ constant T : time := 20 ns;
 constant SIMULATION_LENGTH : natural := 99000000; -- enough for most purposes
 
 -- Size of ROM, as defined in the top file. Used to catch stray jumps.
-constant ROM_SIZE : natural := 8192;
+constant ROM_SIZE : natural := 16384;
 
 
 --------------------------------------------------------------------------------
