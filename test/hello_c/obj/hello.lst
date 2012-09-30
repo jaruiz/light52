@@ -1,7 +1,7 @@
                               1 ;--------------------------------------------------------
                               2 ; File Created by SDCC : free open source ANSI-C Compiler
                               3 ; Version 3.2.0 #8008 (Jul  6 2012) (MINGW32)
-                              4 ; This file was generated Sat Sep 29 17:25:33 2012
+                              4 ; This file was generated Sun Sep 30 04:52:13 2012
                               5 ;--------------------------------------------------------
                               6 	.module hello
                               7 	.optsdcc -mmcs51 --model-small
@@ -331,11 +331,11 @@
    0001 0D                  331 	.db 0x0D
    0002 00                  332 	.db 0x00
    0003                     333 __str_1:
-   0003 4C 69 67 68 74 35   334 	.ascii "Light52 project -- Sep 29 2012"
+   0003 4C 69 67 68 74 35   334 	.ascii "Light52 project -- Sep 30 2012"
         32 20 70 72 6F 6A
         65 63 74 20 2D 2D
-        20 53 65 70 20 32
-        39 20 32 30 31 32
+        20 53 65 70 20 33
+        30 20 32 30 31 32
    0021 0A                  335 	.db 0x0A
    0022 0A                  336 	.db 0x0A
    0023 0D                  337 	.db 0x0D

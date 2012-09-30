@@ -50,7 +50,7 @@ OBJS := $(patsubst %.c, $(OBJDIR)/%.rel, $(notdir $(SRC)))
 #-- Targets & rules ------------------------------------------------------------
 
 # Compile C sources into relocatable object files
-$(OBJDIR)/%.rel : $(SRCDIR)/%.c
+$(OBJDIR)/%.rel : %.c
 	@echo Compiling $< ...
 	$(CC) $(CFLAGS) -c $<
 
