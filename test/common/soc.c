@@ -4,12 +4,16 @@
     
 */
 
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "../include/light52.h"
 #include "soc.h"
+
+/*-- Local macros ------------------------------------------------------------*/
+
+/** How many Timer 0 counts are there in a millisecond period */
+#define TIMER0_COUNTS_PER_MS (uint32_t)((CLOCK_RATE/1000)/TIMER0_PRESCALER)
 
 /*-- Static data -------------------------------------------------------------*/
 
@@ -25,19 +29,23 @@ volatile uint32_t seconds;
 
 void soc_init(void){
     seconds = 0;
-    /* FIXME timer0 constants should come as macros */
-    timer0_init(50000);
+    /* Set up timer 0 to trigger an interrupt every second... */
+    timer0_init(CLOCK_RATE/TIMER0_PRESCALER);
+    /* ...enable interrupts globally, plus the timer interrupt only... */ 
     timer0_enable_irq(1);
     cpu_enable_interrupts(1);
+    /* ...and (re)start the timer */
     timer0_enable(1);
 }
 
 uint32_t soc_get_msecs(void){
-    uint32_t usecs;
-    usecs = timer0_counter();
-    usecs = usecs/50;  /* 20us per timer count */
-    usecs = usecs + seconds*1000;
-    return usecs;
+    uint32_t msecs;
+    /* First, get the elapsed milliseconds of the current second */ 
+    msecs = timer0_counter();           /* Get the counter... */
+    msecs = msecs/TIMER0_COUNTS_PER_MS; /* ...and convert it to milliseconds */
+    /* Then, add the number of full seconds elapsed */
+    msecs = msecs + seconds*1000;
+    return msecs;
 }
 
 

@@ -12,6 +12,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+/*-- SoC configuration macros ------------------------------------------------*/
+/* These may optionally be set at the makefile */
+
+#ifndef CLOCK_RATE
+/** Default clock rate is that of Terasic's DE-1 board */
+#define CLOCK_RATE (50e6)
+#endif  
+
+#ifndef TIMER0_PRESCALER
+/** By default the prescaler is set to count periods of 20us @ 50MHz */
+#define TIMER0_PRESCALER (1000)
+#endif
+
 /*-- Public functions --------------------------------------------------------*/
 
 
