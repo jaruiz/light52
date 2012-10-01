@@ -39,7 +39,7 @@ use work.obj_code_pkg.all;
 entity light52_mcu is
     generic (
         -- External memory configuration
-        CODE_ROM_SIZE :         integer := 1024;
+        CODE_ROM_SIZE :         integer := 2*1024;
         XDATA_RAM_SIZE :        integer := 512; -- FIXME default should be zero
         OBJ_CODE :              t_obj_code := default_object_code;
         -- CPU configuration (see CPU module)
@@ -92,7 +92,6 @@ constant SFR_ADDR_TH        : t_mcu_sfr_addr := X"8d";
 constant SFR_ADDR_TCL       : t_mcu_sfr_addr := X"8e";
 constant SFR_ADDR_TCH       : t_mcu_sfr_addr := X"8f";
 constant SFR_ADDR_EXTINT    : t_mcu_sfr_addr := X"c0";
-
 
 constant P0_RESET_VALUE     : std_logic_vector(7 downto 0) := X"00";
 constant P1_RESET_VALUE     : std_logic_vector(7 downto 0) := X"00";
@@ -214,13 +213,20 @@ end process xdata_ram_block;
 --------------------------------------------------------------------------------
 
 -- SFR input multiplexor -- modify simplified addressing if you add peripherals.
+-- WARNING:
+-- If we use constant slices for decoding instead of bit vector literals,
+-- Xilinx ISE 9.2i will complain that 'sfr_rd is not assigned' and will 
+-- optimize away the SFR input mux.
+-- The only way I've found to fix this is to use literals, though it 
+-- defeats the purpose of using constants in the first place...
 with sfr_addr(7 downto 3) select sfr_rd <=
-    uart_sfr_rd     when SFR_ADDR_SCON(7 downto 3),
-    timer_sfr_rd    when SFR_ADDR_TCON(7 downto 3),
-    p0_reg          when SFR_ADDR_P0(7 downto 3),
-    p1_reg          when SFR_ADDR_P1(7 downto 3),
-    p2_reg          when SFR_ADDR_P2(7 downto 3),
+    uart_sfr_rd     when "10011",       -- SFR_ADDR_SCON(7 downto 3)
+    timer_sfr_rd    when "10001",       -- SFR_ADDR_TCON(7 downto 3)
+    p0_reg          when "10000",       -- SFR_ADDR_P0(7 downto 3)
+    p1_reg          when "10010",       -- SFR_ADDR_P1(7 downto 3)
+    p2_reg          when "10100",       -- SFR_ADDR_P2(7 downto 3)
     p3_reg          when others;
+
 
 ---- UART ----------------------------------------------------------------------
 
