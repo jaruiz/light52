@@ -15,6 +15,7 @@ typedef struct log51_s {
     uint8_t psw;
     uint8_t sp;
     uint8_t a;
+    uint32_t executed_instructions;
 } log51_t;
 
 /**

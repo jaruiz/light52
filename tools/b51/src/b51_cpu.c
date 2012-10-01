@@ -89,6 +89,7 @@ extern uint16_t cpu_load_code(cpu51_t *cpu, const char *hex_filename){
 extern void cpu_init(cpu51_t *cpu){
     /* Nothing to init in the CPU so far */
     cpu->breakpoint = 0xffff; /* FIXME implementation of BP is flimsy */
+    cpu->log.executed_instructions = 0;
     /* now init the MCU model -- peripherals */
     mcu_init(&cpu->mcu);
 }
@@ -110,7 +111,7 @@ extern bool cpu_add_breakpoint(cpu51_t *cpu, uint16_t address){
     return true;
 }
 
-extern void cpu_exec(cpu51_t *cpu, uint32_t num_inst){
+extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst){
     uint8_t opcode;
     uint32_t i;
     bool ok;
@@ -120,7 +121,7 @@ extern void cpu_exec(cpu51_t *cpu, uint32_t num_inst){
 
         if(cpu->pc == cpu->breakpoint){
             printf("BREAKPOINT hit at %04Xh\n", cpu->breakpoint);
-            return;
+            return 2;
         }
 
         opcode = cpu_fetch(cpu);
@@ -137,12 +138,17 @@ extern void cpu_exec(cpu51_t *cpu, uint32_t num_inst){
         mcu_update(&cpu->mcu, 0);
         log_status(&(cpu->log), cpu->sfr.sp, cpu->a, cpu->sfr.psw);
 
+        cpu->log.executed_instructions++;
+
         /* Break execution on any kind of trouble */
         /* FIXME handle execution faults */
         if(!ok) {
+            return 1;
             break;
         }
     }
+
+    return 0;
 }
 
 /*-- Local functions ---------------------------------------------------------*/

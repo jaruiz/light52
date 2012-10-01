@@ -107,8 +107,11 @@ extern void cpu_reset(cpu51_t *cpu);
 
     @arg cpu CPU model.
     @arg num_inst Number of instructions to be run.
+    @return 0 if execution timed out,
+            1 if it was interrupted,
+            2 for breakpoints.
 */
-extern void cpu_exec(cpu51_t *cpu, uint32_t num_inst);
+extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst);
 
 /**
     Load object code onto XCODE memory.

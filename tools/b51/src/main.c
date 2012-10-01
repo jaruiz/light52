@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "b51_mcu.h"
 #include "b51_cpu.h"
@@ -22,7 +23,10 @@
 /** Value of command line parameters */
 static struct {
     char *hex_file_name;
-} cmd_line_params;
+    char *trace_logfile_name;
+    char *console_logfile_name;
+    uint32_t num_instructions;
+} args;
 
 
 
@@ -36,6 +40,7 @@ static void usage(void);
 
 int main(int argc, char **argv){
     cpu51_t cpu;
+    int32_t retval;
 
     cpu_init(&cpu);
 
@@ -43,19 +48,31 @@ int main(int argc, char **argv){
         exit(2);
     }
 
-    //if(!cpu_load_code(&cpu, "../../test/hello/Debug/Exe/hello.hex")){
-    //if(!cpu_load_code(&cpu, "../../../../test/cpu_test/bin/tb51_cpu.hex")){
-    if(!cpu_load_code(&cpu, cmd_line_params.hex_file_name)){
-    //if(!cpu_load_code(&cpu, "../../../../test/brd2.hex")){
+    if(!cpu_load_code(&cpu, args.hex_file_name)){
         exit(1);
     }
 
-    //log_init("sw_log.txt", "console_log.txt");
-    log_init("sw_log.txt", NULL);
+    log_init(args.trace_logfile_name, args.console_logfile_name);
+    printf("\n\n");
 
     //cpu_add_breakpoint(&cpu, 0x0003);
     cpu_reset(&cpu);
-    cpu_exec(&cpu, 55000);
+    retval = cpu_exec(&cpu, args.num_instructions);
+
+    printf("\n\nExecution finished after %d instructions.\n",
+           cpu.log.executed_instructions);
+
+    switch(retval){
+    case 1 :
+        printf("Execution interrupted, cause unknown.\n");
+        break;
+    case 2 :
+        printf("Execution hit a breakpoint.\n");
+        break;
+    default :
+        printf("Execution loop returned invalid code %d\n", retval);
+        break;
+    }
 
     log_close();
 
@@ -65,20 +82,68 @@ int main(int argc, char **argv){
 /*-- local functions ---------------------------------------------------------*/
 
 static bool parse_command_line(int argc, char **argv){
+    uint32_t i;
 
-    if(argc!=2){
+    /* Fill command line arguments with default values */
+    args.console_logfile_name = NULL; /* "console_log.txt"; */
+    args.trace_logfile_name = "sw_log.txt";
+    args.hex_file_name = NULL;
+    args.num_instructions = 9e8;
+
+    for(i=1;i<argc;i++){
+        if(strcmp(argv[i],"--nologs")==0){
+            /* disable logging */
+            args.console_logfile_name = NULL;
+            args.trace_logfile_name = NULL;
+        }
+        else if(strncmp(argv[i],"--hex=", strlen("--hex="))==0){
+            args.hex_file_name = &(argv[i][strlen("--hex=")]);
+        }
+        else if(strncmp(argv[i],"--log_con=", strlen("--log_con="))==0){
+            args.console_logfile_name = &(argv[i][strlen("--log_con=")]);
+        }
+        else if(strncmp(argv[i],"--log=", strlen("--log="))==0){
+            args.trace_logfile_name = &(argv[i][strlen("--log_con=")]);
+        }
+        else if(strncmp(argv[i],"--ninst=", strlen("--ninst="))==0){
+            /* Number of instructions as decimal integer */
+            if(sscanf(&(argv[i][strlen("--ninst=")]), "%u",
+                      &(args.num_instructions))==0){
+                printf("Error: expected decimal integer as argument of --ninst\n\n");
+                return false;
+            }
+        }
+        else{
+            printf("unknown argument '%s'\n\n",argv[i]);
+            usage();
+            return false;
+        }
+    }
+
+    if(args.hex_file_name==NULL){
+        printf("Error: Missing mandatory '--hex=' argument.\n");
         usage();
         return false;
     }
 
-    cmd_line_params.hex_file_name = argv[1];
     return true;
 }
 
 
 static void usage(void){
-    printf("Usage:\n");
-    printf("b51 <hex file name>       -"
-           " Load HEX file on code memory, reset CPU and run.\n");
-    printf("\n\n");
+    printf("B51: Batch-mode simulator for MCS51 architecture.\n\n");
+    printf("Usage: b51 [options]\n\n");
+    printf("Options:\n\n");
+    printf("  --hex=<filename>       -"
+           " (mandatory) Name of Intel HEX object code file.\n");
+    printf("  --nint=<dec. number>   -"
+           " No. of instructions to run. Defaults to a gazillion.\n");
+    printf("  --nologs               -"
+           " Disable console and execution logging.\n");
+    printf("\n");
+    printf("The program will load the object file, reset the CPU and execute "
+           "the specified\nnumber of instructions, then quit.\n");
+    printf("Simulation will only stop after <nint> instructions, when the CPU "
+           "enters a\nsingle-instruction endless loop or on an error "
+           "condition.\n\n");
 }

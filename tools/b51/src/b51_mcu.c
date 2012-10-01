@@ -38,7 +38,7 @@ extern void mcu_update(mcu51_t *mcu, uint32_t states){
                 case 3:     /* FIXME Timer 1 irq unimplemented */
                     break;
                 case 4:     /* Serial port irq */
-                    mcu->sfr.scon |= 0x02; /* FIXME Tx and Rx interrupts */
+                    mcu->sfr.scon |= 0x030; /* FIXME Tx and Rx interrupts */
                     break;
                 default:    /* BUG! wrong index */
                     ;
@@ -74,7 +74,7 @@ extern uint16_t mcu_set_sfr(mcu51_t *mcu, uint8_t dir, uint8_t value){
         log_con_output((char)value);
         /* Simulate a TI interrupt after 4 instruction cycles, arbitrarily */
         /* FIXME UAR simulation is in bare bones */
-        mcu->irq_countdown[4] = 4;
+        //mcu->irq_countdown[4] = 4;
         break;
     case 0x98:  /* SCON */
         mcu->sfr.scon = value;
@@ -129,7 +129,7 @@ extern uint16_t mcu_get_sfr(mcu51_t *mcu, uint8_t dir){
         return (uint16_t)mcu->sfr.sbuf;
         break;
     case 0x98:  /* SCON */
-        return (uint16_t)mcu->sfr.scon;
+        return (uint16_t)mcu->sfr.scon | 0x030;
         break;
     case 0x88:  /* TCON */
         return (uint16_t)mcu->sfr.tcon;
