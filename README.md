@@ -16,7 +16,7 @@ on actual hardware (DE-1 board from Terasic) -- benchmark results included in
 the datasheet. Yet, there are still many loose ends and a strong test bench 
 has yet to be developed.
 
-If you are curious, you can [take a look at the datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf).
+If you are curious, you can [take a look at the datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf?raw=true).
 
 
 The next step is adding some much-needed 'quick start' document showing how to 
