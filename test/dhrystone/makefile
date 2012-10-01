@@ -39,9 +39,8 @@ BIN :=  dhry.ihx
 
 # Toolchain flags
 # Note we ignore many of the warnings triggered by dhrystone
-LFLAGS = -o $(OBJDIR)/ --model-large
-CFLAGS = -o $(OBJDIR)/ --code-size 8192 --xram-size 512 \
-         -D__LIGHT52__=1 -DNOSTRUCTASSIGN=1 --model-large \
+LFLAGS = -o $(OBJDIR)/ --model-large --code-size 12000 --xram-size 2048
+CFLAGS = -o $(OBJDIR)/ -D__LIGHT52__=1 -DNOSTRUCTASSIGN=1 --model-large \
          --disable-warning 85 --disable-warning 84 --disable-warning 93
 AFLAGS = -c
 
