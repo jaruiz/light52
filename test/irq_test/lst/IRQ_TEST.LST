@@ -30,8 +30,8 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
    10:				        ; Include the definitions for the light52 derivative
    11:				        $nomod51
    12:				        $include (light52.mcu)
-   13: 1			;   Light52 processor definition file
-   14: 1			;   =================================
+   13: 1			;   Light52 processor definition file (for ASEM-51 assembler)
+   14: 1			;   =========================================================
    15: 1
    16: 1	N	 80	P0          DATA        080H
    17: 1	N	 81	SP          DATA        081H
@@ -78,10 +78,10 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
    51: 1	N	 AF	EA          BIT         0AFH
    52: 1
    53: 1			; SCON flags
-   54: 1	N	 98	RXIRQ       BIT         098H
-   55: 1	N	 99	TXIRQ       BIT         099H
-   56: 1	N	 9C	RXRDY       BIT         09CH
-   57: 1	N	 9D	TXRDY       BIT         09DH
+   54: 1	N	 98	TXIRQ       BIT         098H
+   55: 1	N	 99	RXIRQ       BIT         099H
+   56: 1	N	 9C	TXRDY       BIT         09CH
+   57: 1	N	 9D	RXRDY       BIT         09DH
    58: 1
    59: 1			; PSW flags
    60: 1	N	 D0	P           BIT        0D0H
@@ -416,8 +416,8 @@ QUIT				  CODE	    00A5	 200
 RESET				  CODE	    0000	  69
 RS0				  BIT	      D3	  62
 RS1				  BIT	      D4	  63
-RXIRQ				  BIT	      98	  54
-RXRDY				  BIT	      9C	  56
+RXIRQ				  BIT	      99	  55
+RXRDY				  BIT	      9D	  57
 SBUF				  DATA	      99	  29
 SCON				  DATA	      98	  28
 SINT				  CODE	    0023	  74
@@ -447,5 +447,5 @@ TIMER1				  CODE	    001B	  73
 TIMER2				  CODE	    002B	  75
 TL				  DATA	      8C	  23
 TSTAT				  DATA	      88	  21
-TXIRQ				  BIT	      99	  55
-TXRDY				  BIT	      9D	  57
+TXIRQ				  BIT	      98	  54
+TXRDY				  BIT	      9C	  56

@@ -52,8 +52,8 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
    32:				        ; Include the definitions for the light52 derivative
    33:				        $nomod51
    34:				        $include (light52.mcu)
-   35: 1			;   Light52 processor definition file
-   36: 1			;   =================================
+   35: 1			;   Light52 processor definition file (for ASEM-51 assembler)
+   36: 1			;   =========================================================
    37: 1
    38: 1	N	 80	P0          DATA        080H
    39: 1	N	 81	SP          DATA        081H

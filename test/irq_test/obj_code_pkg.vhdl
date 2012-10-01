@@ -1,12 +1,9 @@
 --------------------------------------------------------------------------------
 -- obj_code_pkg.vhdl -- Application object code in vhdl constant string format.
 --------------------------------------------------------------------------------
--- This is where the application code lives.
--- FIXME should only be used from top level entity
--- FIXME name of package should be application-related
--- FIXME convert to vhdl template
+-- Written by build_rom.py for project 'irq_test'.
 --------------------------------------------------------------------------------
--- Copyright (C) 2011 Jose A. Ruiz
+-- Copyright (C) 2012 Jose A. Ruiz
 --
 -- This source file may be used and distributed without
 -- restriction provided that this copyright statement is not
@@ -37,6 +34,12 @@ use work.light52_pkg.all;
 
 package obj_code_pkg is
 
+-- Size of XCODE memory in bytes.
+constant XCODE_SIZE : natural := 2048;
+-- Size of XDATA memory in bytes.
+constant XDATA_SIZE : natural := 512;
+
+-- Object code initialization constant.
 constant object_code : t_obj_code(0 to 355) := (
     X"02", X"00", X"30", X"02", X"00", X"d4", X"00", X"00", 
     X"00", X"00", X"00", X"02", X"00", X"e2", X"00", X"00", 

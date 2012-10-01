@@ -17,5 +17,8 @@
 @python %BR_PATH%\src\build_rom.py ^
      -f bin/tb51_cpu.hex  ^
      -v %BR_PATH%/templates/obj_code_pkg_template.vhdl ^
-     -o %VHDL_TB_PATH%/obj_code_pkg.vhdl
+     -o %VHDL_TB_PATH%/obj_code_pkg.vhdl ^
+     --xcode 40000 ^
+     --name cpu_test
+     
 

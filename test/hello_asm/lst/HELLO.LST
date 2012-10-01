@@ -32,8 +32,8 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
    12:				        ; Include the definitions for the light52 derivative
    13:				        $nomod51
    14:				        $include (light52.mcu)
-   15: 1			;   Light52 processor definition file
-   16: 1			;   =================================
+   15: 1			;   Light52 processor definition file (for ASEM-51 assembler)
+   16: 1			;   =========================================================
    17: 1
    18: 1	N	 80	P0          DATA        080H
    19: 1	N	 81	SP          DATA        081H
@@ -145,48 +145,48 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
   111:				        ; Set up stack.
   112:	  0030	75 81 40	        mov     SP,#stack
   113:
-  114:				        ; Clear ports P0 and P1, bearing in mind that P0 is looped back into
-  115:				        ; P2 and P1 to P3, and P1 is also connected to the external irq inputs.
-  116:	  0033	75 80 00	        mov     P0,#000h
-  117:	  0036	75 90 00	        mov     P1,#000h
-  118:
-  119:				        ; Initialize serial port...
-  120:				        ; (actually, leave it with its default configuration: 19200-8-N-1)
-  121:
-  122:				        ; ...and dump the hello string to the serial port.
-  123:	  0039	90 00 7E	        mov     DPTR,#text0
-  124:	  003C	12 00 59	        call    po_cstr
-  125:
+  114:				        ; Clear ports P0 and P1, bearing in mind that on the demo platform,
+  115:				        ; P0 is looped back into P2 and P1 to P3, and P1 is also connected to
+  116:				        ; the external irq inputs.
+  117:	  0033	75 80 00	        mov     P0,#000h
+  118:	  0036	75 90 00	        mov     P1,#000h
+  119:
+  120:				        ; Initialize serial port...
+  121:				        ; (actually, leave it with its default configuration: 19200-8-N-1)
+  122:
+  123:				        ; ...and dump the hello string to the serial port.
+  124:	  0039	90 00 7E	        mov     DPTR,#text0
+  125:	  003C	12 00 59	        call    po_cstr
   126:
-  127:				        ; Ok, now
-  128:	  003F	75 A8 00	        mov     IE,#000h
-  129:	  0042	75 88 00	        mov     TSTAT,#000h
-  130:	  0045	75 8F FC	        mov     TCH,#0fch
-  131:	  0048	75 8E 50	        mov     TCL,#050h
-  132:				        ; Enable timer interrupts and interrupts globally...
-  133:	  004B	75 A8 82	        mov     IE,#082h
-  134:				        ; ...and start the timer with autoreload.
-  135:	  004E	75 88 30	        mov     TSTAT,#030h
-  136:
+  127:
+  128:				        ; Ok, now
+  129:	  003F	75 A8 00	        mov     IE,#000h
+  130:	  0042	75 88 00	        mov     TSTAT,#000h
+  131:	  0045	75 8F FC	        mov     TCH,#0fch
+  132:	  0048	75 8E 50	        mov     TCL,#050h
+  133:				        ; Enable timer interrupts and interrupts globally...
+  134:	  004B	75 A8 82	        mov     IE,#082h
+  135:				        ; ...and start the timer with autoreload.
+  136:	  004E	75 88 30	        mov     TSTAT,#030h
   137:
-  138:				        ; End of test program, enter single-instruction endless loop.
-  139:				        ; The timer will keep triggering interrupts indefinitely.
-  140:	  0051	01 51		quit:   ajmp    $
-  141:
-  142:				; po_char:  Print character in ACC to console.
-  143:	  0053			po_char:
-  144:	  0053	F5 99		        mov     SBUF,a
-  145:	  0055			po_char_loop:
-  146:	  0055	30 9C FD	        jnb     TXRDY,po_char_loop
-  147:	  0058	22		        ret
-  148:
-  149:				; po_cstr:  Prints zero-terminated string at XCODE:DPTR to console.
-  150:				;           Returns after the whole string has been output.
-  151:	  0059			po_cstr:
-  152:	  0059	C0 30		        push    var0
-  153:	  005B	75 30 00	        mov     var0,#000h
-  154:	  005E			po_cstr_loop:
-  155:	  005E	E5 30		        mov     a,var0
+  138:
+  139:				        ; End of test program, enter single-instruction endless loop.
+  140:				        ; The timer will keep triggering interrupts indefinitely.
+  141:	  0051	01 51		quit:   ajmp    $
+  142:
+  143:				; po_char:  Print character in ACC to console.
+  144:	  0053			po_char:
+  145:	  0053	F5 99		        mov     SBUF,a
+  146:	  0055			po_char_loop:
+  147:	  0055	30 9C FD	        jnb     TXRDY,po_char_loop
+  148:	  0058	22		        ret
+  149:
+  150:				; po_cstr:  Prints zero-terminated string at XCODE:DPTR to console.
+  151:				;           Returns after the whole string has been output.
+  152:	  0059			po_cstr:
+  153:	  0059	C0 30		        push    var0
+  154:	  005B	75 30 00	        mov     var0,#000h
+  155:	  005E			po_cstr_loop:
 
 ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 4
 
@@ -194,40 +194,41 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
 
  Line  I  Addr  Code            Source
 
-  156:	  0060	05 30		        inc     var0
-  157:	  0062	93		        movc    a,@a+DPTR
-  158:	  0063	60 04		        jz      po_cstr_done
-  159:	  0065	11 53		        call    po_char
-  160:	  0067	80 F5		        sjmp    po_cstr_loop
-  161:	  0069			po_cstr_done:
-  162:	  0069	D0 30		        pop     var0
-  163:	  006B	22		        ret
-  164:
-  165:				        ; Unused interrupt routines, will never be reached.
-  166:	  006C			irq_unused:
-  167:	  006C	32		        reti
-  168:	  006D			irq_uart:
-  169:	  006D	32		        reti
-  170:
-  171:				        ; This timer routine is meant to show that the timer works; all it
-  172:				        ; does is display a message every timer interrupt.
-  173:	  006E			irq_timer:
-  174:	  006E	D2 88		        setb    TSTAT.0         ; Clear the timer irq flag writing a 1 on it
-  175:	  0070	C0 83		        push    DPH             ; Write a short message to the console...
-  176:	  0072	C0 82		        push    DPL
-  177:	  0074	90 00 8E	        mov     DPTR,#text1
-  178:	  0077	11 59		        call    po_cstr
-  179:	  0079	D0 82		        pop     DPL             ; ...and quit
-  180:	  007B	D0 83		        pop     DPH
-  181:	  007D	32		        reti
-  182:
-  183:	  007E	48 65 6C 6C	text0:  db      'Hello World!',13,10,00h,00h
+  156:	  005E	E5 30		        mov     a,var0
+  157:	  0060	05 30		        inc     var0
+  158:	  0062	93		        movc    a,@a+DPTR
+  159:	  0063	60 04		        jz      po_cstr_done
+  160:	  0065	11 53		        call    po_char
+  161:	  0067	80 F5		        sjmp    po_cstr_loop
+  162:	  0069			po_cstr_done:
+  163:	  0069	D0 30		        pop     var0
+  164:	  006B	22		        ret
+  165:
+  166:				        ; Unused interrupt routines, will never be reached.
+  167:	  006C			irq_unused:
+  168:	  006C	32		        reti
+  169:	  006D			irq_uart:
+  170:	  006D	32		        reti
+  171:
+  172:				        ; This timer routine is meant to show that the timer works; all it
+  173:				        ; does is display a message every timer interrupt.
+  174:	  006E			irq_timer:
+  175:	  006E	D2 88		        setb    TSTAT.0         ; Clear the timer irq flag writing a 1 on it
+  176:	  0070	C0 83		        push    DPH             ; Write a short message to the console...
+  177:	  0072	C0 82		        push    DPL
+  178:	  0074	90 00 8E	        mov     DPTR,#text1
+  179:	  0077	11 59		        call    po_cstr
+  180:	  0079	D0 82		        pop     DPL             ; ...and quit
+  181:	  007B	D0 83		        pop     DPH
+  182:	  007D	32		        reti
+  183:
+  184:	  007E	48 65 6C 6C	text0:  db      'Hello World!',13,10,00h,00h
 	  0082	6F 20 57 6F
 	  0086	72 6C 64 21
 	  008A	0D 0A 00 00
-  184:	  008E	54 69 63 6B	text1:  db      'Tick!',13,10,00h
+  185:	  008E	54 69 63 6B	text1:  db      'Tick!',13,10,00h
 	  0092	21 0D 0A 00
-  185:				        end
+  186:				        end
 
 
 
@@ -269,22 +270,22 @@ EXTI1				  CODE	    0013	  74
 EXTINT0				  DATA	      C0	  36
 F0				  BIT	      D5	  66
 IE				  DATA	      A8	  33
-IRQ_TIMER			  CODE	    006E	 173
-IRQ_UART			  CODE	    006D	 168
-IRQ_UNUSED			  CODE	    006C	 166
+IRQ_TIMER			  CODE	    006E	 174
+IRQ_UART			  CODE	    006D	 169
+IRQ_UNUSED			  CODE	    006C	 167
 OV				  BIT	      D2	  63
 P				  BIT	      D0	  62
 P0				  DATA	      80	  18
 P1				  DATA	      90	  29
 P2				  DATA	      A0	  32
 P3				  DATA	      B0	  34
-PO_CHAR				  CODE	    0053	 143
-PO_CHAR_LOOP			  CODE	    0055	 145
-PO_CSTR				  CODE	    0059	 151
-PO_CSTR_DONE			  CODE	    0069	 161
-PO_CSTR_LOOP			  CODE	    005E	 154
+PO_CHAR				  CODE	    0053	 144
+PO_CHAR_LOOP			  CODE	    0055	 146
+PO_CSTR				  CODE	    0059	 152
+PO_CSTR_DONE			  CODE	    0069	 162
+PO_CSTR_LOOP			  CODE	    005E	 155
 PSW				  DATA	      D0	  37
-QUIT				  CODE	    0051	 140
+QUIT				  CODE	    0051	 141
 RESET				  CODE	    0000	  71
 RS0				  BIT	      D3	  64
 RS1				  BIT	      D4	  65
@@ -301,7 +302,7 @@ T0CEN				  BIT	      8D	  44
 T0IRQ				  BIT	      88	  42
 TCH				  DATA	      8F	  28
 TCL				  DATA	      8E	  27
-TEXT0				  CODE	    007E	 183
+TEXT0				  CODE	    007E	 184
 
 ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 6
 
@@ -309,7 +310,7 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
 
 SYMBOL				  TYPE     VALUE	LINE
 ------------------------------------------------------------
-TEXT1				  CODE	    008E	 184
+TEXT1				  CODE	    008E	 185
 TH				  DATA	      8D	  26
 TIMER0				  CODE	    000B	  73
 TIMER1				  CODE	    001B	  75
