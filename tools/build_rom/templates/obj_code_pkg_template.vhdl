@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- obj_code_pkg.vhdl -- Application object code in vhdl constant string format.
 --------------------------------------------------------------------------------
--- Written by build_rom.py for project '@project_name@'
+-- Written by build_rom.py for project '@project_name@'.
 --------------------------------------------------------------------------------
 -- Copyright (C) 2012 Jose A. Ruiz
 --                                                              
@@ -34,6 +34,12 @@ use work.light52_pkg.all;
 
 package @obj_pkg_name@ is
 
+-- Size of XCODE memory in bytes.
+constant XCODE_SIZE : natural := @xcode_size@;
+-- Size of XDATA memory in bytes.
+constant XDATA_SIZE : natural := @xdata_size@;
+
+-- Object code initialization constant.
 constant object_code : t_obj_code(0 to @obj_size@) := (
     @obj_bytes@
     );

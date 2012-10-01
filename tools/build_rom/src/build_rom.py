@@ -8,7 +8,7 @@ __license__ = "LGPL"
 
 
 """
-FIXME bief explanation missing
+Please see the usage instructions and the comments for function 'main'.
 """
 
 
@@ -48,10 +48,12 @@ def help():
     print "Tags like @data31@ and @data20@ etc. can be used to initialize"
     print "memories in 16-bit buses, also split in byte columns.\n"
     print "Template tags are replaced as follows:"
-    print "@obj_pkg_name@        : Name of package in target vhdl file"
-    print "@const_name@          : Name of constant (VHDL table)"
-    print "@obj_size@            : Total size of code table in bytes"
-
+    print "@obj_pkg_name@        : Name of package in target vhdl file."
+    print "@const_name@          : Name of constant (VHDL table)."
+    print "@obj_size@            : Total size of code table in bytes."
+    print "@project@             : Project name."
+    print "@xcode_size@          : Size of XCODE memory."
+    print "@xdata_size@          : Size of XDATA memory."
 
 def parse_hex_line(line):
     """Parse code line in HEX object file."""
@@ -80,16 +82,24 @@ def parse_hex_line(line):
     
 def read_ihex_file(ihex_filename):
     """
+    Read Intel HEX file into a 64KB array.
+    The file is assumed not to have any object code outside the 64K boundary.
+    Return the 64K array plus the size and bounds of the read data.
     """
+    
+    # CODE array, initialized to 64K of zeros...
     xcode = [0, ] * 65536
+    # ...and code boundaries, initialized out of range.
     bottom = 100000
     top = -1
     (xcode, top, bottom)
 
+    # Read the whole file to a list of lines...
     fin = open(ihex_filename, "r")
     ihex_lines = fin.readlines()
     fin.close()
     
+    # ...and parse the lines one by one.
     total_bytes = 0
     for line in ihex_lines:
         (address, bytes) = parse_hex_line(line)
@@ -111,21 +121,31 @@ def read_ihex_file(ihex_filename):
     return (xcode, total_bytes, bottom, top)
 
     
-def build_vhdl_code(template_filename, xcode, rom_size):
+def build_vhdl_code(params, xcode, obj_size):
+    """
+    Read VHDL template file and replace all the tags with the values given in
+    the command line parameters.
+    Return the new file contents as a string.
+    """
+    
+    # The resulting VHDL text will be stored here.
+    vhdl_code = ""
 
-    fin = open(template_filename, "r")
+    
+    # Open file and read it into a list of lines.
+    fin = open(params['template'], "r")
     lines = fin.readlines()
     fin.close()
-    
-    vhdl_code = ""
-    
+        
+    # Now process the template lines one by one.
     for line in lines:
         line = line.strip()
         
         if line.rfind("@obj_bytes@") >= 0:
+            # insert object code as list of byte literals.
             obj_str = "    "
-            for i in range(rom_size):
-                if i != (rom_size-1):
+            for i in range(obj_size):
+                if i != (obj_size-1):
                     sbyte = "X\"%02x\", " % xcode[i]
                 else:
                     sbyte = "X\"%02x\" " % xcode[i]
@@ -134,30 +154,59 @@ def build_vhdl_code(template_filename, xcode, rom_size):
                     obj_str = obj_str + "\n    "
                 
             line = line.replace("@obj_bytes@",obj_str)
+        
         elif line.rfind("@obj_size@") >= 0:
-            line = line.replace("@obj_size@","%d" % (rom_size-1))
-            pass
-        elif line.rfind("@obj_pkg_name@") >= 0:
-            line = line.replace("@obj_pkg_name@","obj_code_pkg")
+            # Insert object code size (not necessarily equal to xcode_size)
+            line = line.replace("@obj_size@","%d" % (obj_size-1))
+
+        elif line.rfind("@xcode_size@") >= 0:
+            # Insert XCODE memory
+            line = line.replace("@xcode_size@","%d" % (params['xcode_size']))
+
+        elif line.rfind("@xdata_size@") >= 0:
+            # Insert XDATA memory
+            line = line.replace("@xdata_size@","%d" % (params['xdata_size']))
             
+        elif line.rfind("@obj_pkg_name@") >= 0:
+            # Insert package name: hardwired
+            line = line.replace("@obj_pkg_name@",params['package'])
+        
+        elif line.rfind("@project_name@") >= 0:
+            # Insert project name 
+            line = line.replace("@project_name@",params['project'])
+        
+        
         vhdl_code = vhdl_code + line + "\n"
     
     return vhdl_code
     
 
 def main(argv):
-
+    """Main body of the program."""
+    
+    # Parse command line parameters using GetOpt 
     try:                                
         opts, args = getopt.getopt(argv, "hf:n:p:c:o:i:v:", 
         ["help", "file=", "name=", "package=", "constant=", 
-         "output=", "indent=", "vhdl=", ])
+         "output=", "indent=", "vhdl=", "xcode=", "xdata=" ])
     except getopt.GetoptError, err:
         print ""
         print err
         usage()
         sys.exit(2)  
 
-    vhdl_filename = "./templates/obj_code_pkg_template.vhdl"
+    # Command line parameters, initialized to their default values
+    params = {'project':    '<unknown>',
+              'package':    'obj_code_pkg',
+              'indent':     4,
+              'constant':   'obj_code',
+              'target':     'obj_code_pkg.vhdl',
+              'hex':        '',
+              'xcode_size': 2048,
+              'xdata_size': 512,
+              'template':   "./templates/obj_code_pkg_template.vhdl"
+              }
+                
 
     # Parse coommand line parameters
     for opt, arg in opts:
@@ -166,43 +215,58 @@ def main(argv):
             help()
             exit(1)
         if opt in ("-v", "--vhdl"):
-            vhdl_filename = arg
+            params['template'] = arg
         elif opt in ("-o", "--output"):
-            target_filename = arg
+            params['target'] = arg
         elif opt in ("-c", "--constant"):
-            constant_name = arg
+            params['constant'] = arg
         elif opt in ("-f", "--file"):
-            hex_filename = arg
+            params['hex'] = arg
         elif opt in ("-p", "--package"):
-            package_name = arg
+            params['package'] = arg
         elif opt in ("-n", "--name"):
-            proj_name = arg
+            params['project'] = arg
         elif opt in ("-i", "--indent"):
-            indent = int(arg)
+            params['indent'] = int(arg)
+        elif opt in ("--xcode"):
+            params['xcode_size'] = int(arg)
+        elif opt in ("--xdata"):
+            params['xdata_size'] = int(arg)
 
+    # Ok, now 
+    if params['hex']:
+        (xcode, total_bytes, bottom, top) = read_ihex_file(params['hex']);
+    else:
+        print "Object HEX file name missing.";
+        usage()
+        return 1
     
-    (xcode, total_bytes, bottom, top) = read_ihex_file(hex_filename);
-    template_filename = vhdl_filename
-    vhdl_code = build_vhdl_code(template_filename, xcode, top);
     
+    # Make sure the object code fits the implemented XCODE space.
+    # If it doesn't, print a warning and let the user deal with it.
+    # Assuming that XCODE starts at address zero -- that's how the core works.
+    if params['xcode_size'] < top:
+        print "\nWARNING: Object code does not fit XCODE space!\n"
+        
+
+    # Build the package source...
+    vhdl_code = build_vhdl_code(params, xcode, top);
+    
+    # ...and write it to the target file.
     fout = None
     try:
-        fout = open(target_filename, "w")
+        fout = open(params['target'], "w")
         fout.write(vhdl_code)
         fout.close()
-        print "VHDL code table written to %s" % target_filename
+        print "VHDL code table written to %s" % params['target']
     except:
-        print "Trouble opening %s for output" % target_filename
+        print "Trouble opening %s for output" % params['target']
     finally:
         if fout: fout.close()
     
     
-    
-    
-
 if __name__ == "__main__":
     main(sys.argv[1:])
-
     sys.exit(0)
 
  

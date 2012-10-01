@@ -10,16 +10,6 @@ LD = SDCC
 RM = rm
 CP = cp
 
-#-- Configuration of the MCU ---------------------------------------------------
-
-# The parameters we set here will end in the object code VHDL package and will 
-# be passed to the MCU core as generics.
-
-# XROM size in bytes.
-XROM_SIZE = 16384 
-# XRAM size in bytes.
-XRAM_SIZE = 1024
-
 #-- Project directories, files and flags ---------------------------------------
  
 # Directories              
@@ -30,6 +20,19 @@ BRPATH = ../../tools/build_rom
 VHDL_TB_PATH = .
 COMDIR = ../common
 
+#-- Project configuration ------------------------------------------------------
+
+# The parameters we set here will end in the object code VHDL package and will 
+# be passed to the MCU core as generics.
+
+PROJ_NAME = Dhrystone
+# XROM size in bytes.
+XCODE_SIZE = 12288
+# XRAM size in bytes.
+XDATA_SIZE = 2048
+
+
+
 # Source files 
 SRC :=  $(SRCDIR)/dhry21a.c $(SRCDIR)/dhry21b.c \
         $(SRCDIR)/estubs.c $(SRCDIR)/timers_b.c \
@@ -39,7 +42,7 @@ BIN :=  dhry.ihx
 
 # Toolchain flags
 # Note we ignore many of the warnings triggered by dhrystone
-LFLAGS = -o $(OBJDIR)/ --model-large --code-size 12000 --xram-size 2048
+LFLAGS = -o $(OBJDIR)/ --model-large --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE)
 CFLAGS = -o $(OBJDIR)/ -D__LIGHT52__=1 -DNOSTRUCTASSIGN=1 --model-large \
          --disable-warning 85 --disable-warning 84 --disable-warning 93
 AFLAGS = -c
@@ -78,6 +81,7 @@ package: $(BINDIR)/$(BIN)
 	@python $(BRPATH)/src/build_rom.py \
 		-f $(BINDIR)/$(BIN)  \
 		-v $(BRPATH)/templates/obj_code_pkg_template.vhdl \
+		--xcode $(XCODE_SIZE) --xdata $(XDATA_SIZE) -n $(PROJ_NAME) \
 		-o $(VHDL_TB_PATH)/obj_code_pkg.vhdl
 
 #-- And now the usual housekeeping stuff ---------------------------------------

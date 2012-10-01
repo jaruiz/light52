@@ -144,11 +144,10 @@ begin
   -- SOC instantiation 
   mcu: entity work.light52_mcu 
   generic map (
-    -- Enough code space for Dhrystone demo, modify as needed.
-    -- FIXME should read these from obj_code_pkg too.
-    CODE_ROM_SIZE => 12*1024,
-    XDATA_RAM_SIZE => 2*1024,
-    -- Take object code from this constant
+    -- Memory size is defined in package obj_code_pkg...
+    CODE_ROM_SIZE => work.obj_code_pkg.XCODE_SIZE,
+    XDATA_RAM_SIZE => work.obj_code_pkg.XDATA_SIZE,
+    -- ...as is the object code initialization constant.
     OBJ_CODE => work.obj_code_pkg.object_code,
     -- UART baud rate isn't programmable in run time
     UART_HARDWIRED => true,
