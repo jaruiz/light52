@@ -4,4 +4,4 @@
 @set B51=..\..\tools\b51\bin\b51.exe
 
 @rem Launch with no arguments: run to completion (endless loop).
-%B51% ./bin/dhry.ihx
+%B51% --hex=./bin/dhry.ihx
