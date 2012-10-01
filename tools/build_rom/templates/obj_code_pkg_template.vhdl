@@ -1,12 +1,9 @@
 --------------------------------------------------------------------------------
 -- obj_code_pkg.vhdl -- Application object code in vhdl constant string format.
 --------------------------------------------------------------------------------
--- This is where the application code lives.
--- FIXME should only be used from top level entity
--- FIXME name of package should be application-related
--- FIXME convert to vhdl template
+-- Written by build_rom.py for project '@project_name@'
 --------------------------------------------------------------------------------
--- Copyright (C) 2011 Jose A. Ruiz
+-- Copyright (C) 2012 Jose A. Ruiz
 --                                                              
 -- This source file may be used and distributed without         
 -- restriction provided that this copyright statement is not    
