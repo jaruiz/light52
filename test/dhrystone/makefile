@@ -41,7 +41,7 @@ SRC :=  $(SRCDIR)/dhry21a.c $(SRCDIR)/dhry21b.c \
 BIN :=  dhry.ihx
 
 # Toolchain flags
-# Note we ignore many of the warnings triggered by dhrystone
+# Note we ignore many of the warnings triggered by dhrystone.
 LFLAGS = -o $(OBJDIR)/ --model-large --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE)
 CFLAGS = -o $(OBJDIR)/ -D__LIGHT52__=1 -DNOSTRUCTASSIGN=1 --model-large \
          --disable-warning 85 --disable-warning 84 --disable-warning 93

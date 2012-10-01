@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- obj_code_pkg.vhdl -- Application object code in vhdl constant string format.
 --------------------------------------------------------------------------------
--- Written by build_rom.py for project 'hello_c'.
+-- Written by build_rom.py for project 'Hello World'.
 --------------------------------------------------------------------------------
 -- Copyright (C) 2012 Jose A. Ruiz
 --

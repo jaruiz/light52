@@ -10,16 +10,6 @@ LD = SDCC
 RM = rm
 CP = cp
 
-#-- Configuration of the MCU ---------------------------------------------------
-
-# The parameters we set here will end in the object code VHDL package and will 
-# be passed to the MCU core as generics.
-
-# XROM size in bytes.
-XROM_SIZE = 16384 
-# XRAM size in bytes.
-XRAM_SIZE = 1024
-
 #-- Project directories, files and flags ---------------------------------------
  
 # Directories              
@@ -28,6 +18,20 @@ OBJDIR = obj
 SRCDIR = src
 BRPATH = ../../tools/build_rom
 VHDL_TB_PATH = .
+COMDIR = ../common
+
+#-- Project configuration ------------------------------------------------------
+
+# The parameters we set here will end in the object code VHDL package and will 
+# be passed to the MCU core as generics.
+
+PROJ_NAME = "Hello World"
+# XROM size in bytes.
+XCODE_SIZE = 2048
+# XRAM size in bytes -- should be zero but the HW does not support that yet.
+XDATA_SIZE = 512
+
+
 
 # Source files 
 SRC :=  $(SRCDIR)/hello.c
@@ -35,8 +39,8 @@ SRC :=  $(SRCDIR)/hello.c
 BIN :=  hello.ihx
 
 # Toolchain flags 
-LFLAGS = -o $(OBJDIR)/ 
-CFLAGS = -o $(OBJDIR)/
+LFLAGS = -o $(OBJDIR)/ --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE) 
+CFLAGS = -o $(OBJDIR)/ -D__LIGHT52__=1
 AFLAGS = -c
 
 #-- A bit of 'make magic' to simplify the rules
@@ -58,7 +62,7 @@ $(OBJDIR)/%.rel : %.c
 $(BINDIR)/$(BIN): $(OBJS)
 	@echo Building executable file $@ ...
 	$(LD) $(OBJS) $(LFLAGS)
-	$(CP) $(OBJDIR)/$(BIN) $(BINDIR)/$(BIN)
+	$(CP) $(OBJDIR)/*.ihx $(BINDIR)/$(BIN)
 
 # Root target
 all: $(BINDIR)/$(BIN) package
@@ -73,6 +77,7 @@ package: $(BINDIR)/$(BIN)
 	@python $(BRPATH)/src/build_rom.py \
 		-f $(BINDIR)/$(BIN)  \
 		-v $(BRPATH)/templates/obj_code_pkg_template.vhdl \
+		--xcode $(XCODE_SIZE) --xdata $(XDATA_SIZE) -n $(PROJ_NAME) \
 		-o $(VHDL_TB_PATH)/obj_code_pkg.vhdl
 
 #-- And now the usual housekeeping stuff ---------------------------------------
