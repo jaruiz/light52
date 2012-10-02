@@ -23,6 +23,13 @@ constant BRAM_ADDR_LEN : integer := log2(BRAM_SIZE);
 subtype t_bram_addr is unsigned(BRAM_ADDR_LEN-1 downto 0);
 
 
+type t_opcode_cycle_count is record
+    min :                   natural;    -- Minimum observed cycle count
+    max :                   natural;    -- Maximum observed cycle count
+    exe :                   natural;    -- No. times the opcode was executed
+end record t_opcode_cycle_count;
+
+type t_cycle_count is array(0 to 255) of t_opcode_cycle_count;
 
 type t_log_info is record
     acc_input :             t_byte;
@@ -63,6 +70,13 @@ type t_log_info is record
     sfr_wr :                t_byte;
     sfr_addr :              t_byte;
     
+    -- Observed cycle count for all executed opcodes.
+    cycles :                t_cycle_count;
+    last_opcode :           std_logic_vector(7 downto 0);
+    opcode :                std_logic_vector(7 downto 0);
+    code_rd :               std_logic_vector(7 downto 0);
+    cycle_count :           natural;
+    
     -- Console log line buffer --------------------------------------
     con_line_buf :         string(1 to CONSOLE_LOG_LINE_SIZE);
     con_line_ix :          integer;
@@ -98,6 +112,10 @@ procedure log_cpu_activity(
 procedure log_flush_console(
                 signal info :   in t_log_info;
                 file con_file : TEXT);
+
+-- Log cycle count data to file.
+procedure log_cycle_counts(
+                signal info :   in t_log_info);
                 
 end package;
 
@@ -114,8 +132,39 @@ procedure log_cpu_status(
                 file l_file :   TEXT;
                 file con_file : TEXT) is
 variable bram_wr_addr : unsigned(7 downto 0);
+variable opc : natural;
+variable num_cycles : natural;
 begin
 
+    -- Update the opcode observed cycle counters.
+    -- For every opcode, we count the cycles from its decode_0 state to the 
+    -- next fetch_1 state. To this we have to add 2 (one each for states 
+    -- decode_0 and fetch_1) and we have the cycle count.
+    -- we store the min and the max because of conditional jumps.
+    if (info.ps=decode_0) then
+        info.opcode <= info.last_opcode;
+        info.cycle_count <= 0;
+    else
+        if (info.ps=fetch_1) then
+            -- In state fetch_1, get the opcode from the bus
+            info.last_opcode <= info.code_rd;
+            
+            if info.opcode/="UUUUUUUU" then
+                opc := to_integer(unsigned(info.opcode));
+                num_cycles := info.cycle_count + 2;
+                if info.cycles(opc).min > num_cycles then
+                    info.cycles(opc).min <= num_cycles;
+                end if;
+                if info.cycles(opc).max < num_cycles then
+                    info.cycles(opc).max <= num_cycles;
+                end if;
+                info.cycles(opc).exe <= info.cycles(opc).exe + 1;
+            end if;
+        end if;
+        info.cycle_count <= info.cycle_count + 1;
+    end if;
+    
+    
     bram_wr_addr := info.bram_wr_addr(7 downto 0);
 
     -- Log writes to IDATA BRAM
@@ -238,7 +287,10 @@ begin
     -- cleanly end the simulation.
     -- FIXME use some jump signal, not a single state
     if info.ps = long_jump and (info.pc = info.next_pc) then
-        assert 1 = 0
+        -- Before quitting, optionally log cycle count table to separate file.
+        log_cycle_counts(info);
+        
+        assert false
         report "NONE. Endless loop encountered. Simulation terminated."
         severity failure;
     end if;
@@ -296,6 +348,7 @@ begin
     init_signal_spy(mcu& "/"&"xdata_vma",        iname&".xdata_vma", 0);
     init_signal_spy(mcu& "/"&"xdata_addr",       iname&".xdata_addr", 0);
     init_signal_spy(mcu& "/"&"xdata_wr",         iname&".xdata_wr", 0);
+    init_signal_spy(mcu& "/cpu/"&"code_rd",      iname&".code_rd", 0);
     
     -- We force both 'rdy' uart outputs to speed up the simulation (since the
     -- UART operation is not simulated by B51, just logged).
@@ -311,7 +364,13 @@ begin
     -- ...and take note of the ROM size 
     -- FIXME this should not be necessary, we know the array size already.
     info.rom_size <= rom_size;
+
+    -- Initialize the observed cycle counting logic...
+    info.cycles <= (others => (999,0,0));
+    info.cycle_count <= 0;
+    info.last_opcode <= "UUUUUUUU";
     
+    -- ...and we're ready to start monitoring the system
     while done='0' loop
         wait until clk'event and clk='1';
         if reset='1' then
@@ -332,6 +391,9 @@ begin
             log_cpu_status(info, l_file, con_file);
         end if;
     end loop;
+    
+    -- Once finished, optionally log the cycle count table to a separate file.
+    log_cycle_counts(info);
 
 end procedure log_cpu_activity;
 
@@ -349,5 +411,25 @@ begin
         writeline(con_file, l);
     end if;    
 end procedure log_flush_console;
+
+procedure log_cycle_counts(
+                signal info :   in t_log_info) is
+variable cc : t_opcode_cycle_count;
+variable opc : natural;
+file log_cycles_file: TEXT open write_mode is "cycle_count_log.csv";
+begin
+    
+    for row in 0 to 15 loop
+        for col in 0 to 15 loop 
+            opc := col*16 + row;
+            cc := info.cycles(opc);
+            print(log_cycles_file,
+                  ""& hstr(to_unsigned(opc,8))& ","& 
+                  str(cc.min)& ","& str(cc.max)& ","& str(cc.exe));
+        end loop;
+    end loop;
+
+end procedure log_cycle_counts;
+
 
 end package body;
