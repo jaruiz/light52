@@ -11,7 +11,7 @@ This project is in a very early state:
 * Hardly debugged.
 
 The design and most of the implementation is done.
-The core has already passed a basic test bench and executed a Drhystone benchmark
+The core has already passed a basic test bench and executed a Dhrystone benchmark
 on actual hardware (DE-1 board from Terasic) -- benchmark results included in 
 the datasheet. Yet, there are still many loose ends and a strong test bench 
 has yet to be developed.
