@@ -43,20 +43,17 @@ end;
 
 architecture testbench of light52_tb is
 
+--------------------------------------------------------------------------------
+-- Simulation parameters
 -- FIXME these should be in parameter package
 
 -- Simulated clock period is the same as the usual target, the DE-1 board
 constant T : time := 20 ns; -- 50MHz
 constant SIMULATION_LENGTH : integer := 400000;
 
--- We'll simulate the full code space; the instruction tester will need to test 
--- jumps and calls to different pages.
-constant ROM_SIZE : natural := 65536;
-
-signal done :               std_logic := '0';
-
-
+--------------------------------------------------------------------------------
 -- MPU interface 
+
 signal clk :                std_logic := '0';
 signal reset :              std_logic := '1';
 
@@ -70,7 +67,10 @@ signal external_irq :       std_logic_vector(7 downto 0);
 signal txd, rxd :           std_logic;
 
 --------------------------------------------------------------------------------
--- Logging signals
+-- Logging signals & simulation control 
+
+-- Asserted high to disable the clock and terminate the simulation.
+signal done :               std_logic := '0';
 
 -- Log file
 file log_file: TEXT open write_mode is "hw_sim_log.txt";
@@ -85,8 +85,9 @@ begin
 
 uut: entity work.light52_mcu
     generic map (
-        CODE_ROM_SIZE => ROM_SIZE,
-        OBJ_CODE => object_code
+        CODE_ROM_SIZE =>    work.obj_code_pkg.XCODE_SIZE,
+        XDATA_RAM_SIZE =>   work.obj_code_pkg.XDATA_SIZE,
+        OBJ_CODE =>         work.obj_code_pkg.object_code
     )
     port map (
         clk             => clk,
@@ -153,7 +154,7 @@ uut: entity work.light52_mcu
     begin
         -- Log cpu activity until done='1'.
         log_cpu_activity(clk, reset, done, "/uut",
-                         log_info, ROM_SIZE, "log_info", 
+                         log_info, work.obj_code_pkg.XCODE_SIZE, "log_info", 
                          X"0000", log_file, con_file);
         
         -- Flush console log file when finished.
