@@ -841,7 +841,7 @@ begin
         if jump_condition='1' then
             ns <= rel_jump;
         else
-            ns <= fetch_0;
+            ns <= fetch_1;
         end if;
     when rel_jump =>
         ns <= fetch_0;
