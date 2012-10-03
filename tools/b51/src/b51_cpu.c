@@ -301,10 +301,12 @@ static uint8_t cpu_update_flags(cpu51_t *cpu, uint8_t s, uint8_t d, cpu_op_t op)
         }
         cy = (res & 0x0100)? 1 : 0;
 
-        if((x < 0x80) && (y < 0x80)){
+        if((x < 0x80) && (y >= 0x80)){
+            /* positive - negative = positive, otherwise OV */
             ov = (res & 0x0080)? 1 : 0;
         }
-        else if((x >= 0x80) && (y >= 0x80)){
+        else if((x >= 0x80) && (y < 0x80)){
+            /* negative - positive = negative, otherwise OV */
             ov = (~(res & 0x0080))? 1 : 0;
         }
         else{
