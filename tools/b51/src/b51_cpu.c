@@ -1066,6 +1066,12 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         res = cpu_get_idata(cpu, dir);
         cpu_set_idata(cpu, dir, res + 1);
         break;
+    case 0x16:  /* DEC @Ri */
+    case 0x17:
+        dir = cpu_get_rn(cpu, opcode & 0x01);
+        res = cpu_get_idata(cpu, dir);
+        cpu_set_idata(cpu, dir, res - 1);
+        break;
     case 0x26:  /* ADD A, @Ri */
     case 0x27:
         dir = cpu_get_rn(cpu, opcode & 0x01);
