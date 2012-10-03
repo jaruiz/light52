@@ -117,6 +117,8 @@ signal div_ov :             std_logic;
 signal mul_ov :             std_logic;
 signal ext_ov :             std_logic;
 signal arith_ov :           std_logic;
+signal arith_ov_add :       std_logic;
+signal arith_ov_sub :       std_logic;
 
 signal bitfield_result :    t_byte;
 signal bitfield_mask :      t_byte;
@@ -325,11 +327,18 @@ adder_op_1 <= adder_op_1_comp;-- + adder_cy_integer;
 alu_adder_result <= adder_op_0 + adder_op_1 + adder_cy_integer;
 
 -- Compute OV by comparing operand and result signs.
-arith_ov <= '1' when 
+arith_ov_add <= '1' when 
     (alu_op_0(7)='0' and alu_op_1(7)='0' and alu_adder_result(7)='1') or
     (alu_op_0(7)='1' and alu_op_1(7)='1' and alu_adder_result(7)='0') 
     else '0';
 
+arith_ov_sub <= '1' when 
+    (alu_op_0(7)='0' and alu_op_1(7)='1' and alu_adder_result(7)='1') or
+    (alu_op_0(7)='1' and alu_op_1(7)='0' and alu_adder_result(7)='0') 
+    else '0';
+
+arith_ov <= arith_ov_add when alu_ctrl_fn_arith(0)='0' else arith_ov_sub;
+    
 -- Carry/borrow output is the 9th bit of the result.
 alu_cy_arith <= alu_adder_result(8);     
 
