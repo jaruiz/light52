@@ -815,7 +815,7 @@ tf_mf   macro   rn, n, error_loc
         tf_mf   r1,1,tf_f0
         tf_mf   r2,2,tf_f0
         tf_mf   r3,3,tf_f0
-        tf_mf   r5,4,tf_f0
+        tf_mf   r4,4,tf_f0
         tf_mf   r5,5,tf_f0
         tf_mf   r6,6,tf_f0
         tf_mf   r7,7,tf_f0

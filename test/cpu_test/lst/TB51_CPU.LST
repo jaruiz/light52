@@ -2189,10 +2189,10 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
  1931+ 1  07C0	74 94		        mov     a,#(091h+3)
  1932+ 1  07C2	FB		        mov     r3,a
  1933+ 1  07C3	BB 94 1D	        cjne    r3,#(091h+3),tf_f0
- 1934:				        tf_mf   r5,4,tf_f0
+ 1934:				        tf_mf   r4,4,tf_f0
  1935+ 1  07C6	74 95		        mov     a,#(091h+4)
- 1936+ 1  07C8	FD		        mov     r5,a
- 1937+ 1  07C9	BD 95 17	        cjne    r5,#(091h+4),tf_f0
+ 1936+ 1  07C8	FC		        mov     r4,a
+ 1937+ 1  07C9	BC 95 17	        cjne    r4,#(091h+4),tf_f0
  1938:				        tf_mf   r5,5,tf_f0
  1939+ 1  07CC	74 96		        mov     a,#(091h+5)
  1940+ 1  07CE	FD		        mov     r5,a
