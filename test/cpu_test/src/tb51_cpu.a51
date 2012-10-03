@@ -696,34 +696,41 @@ te_mf   macro   target, error_loc
         cjne    target,#0ffh,error_loc
         endm
 
-        te_ma   a,te_f0             ; Test <INC A>
+        te_mf   a,te_f0             ; Test <DEC A>
 
         eot     'f',te_f0
 
         mov     r0,#066h
 
-        te_ma   r0,te_g0
-        te_ma   r1,te_g0
-        te_ma   r2,te_g0
-        te_ma   r3,te_g0
-        te_ma   r4,te_g0
-        te_ma   r5,te_g0
-        te_ma   r6,te_g0
-        te_ma   r7,te_g0
+        te_mf   r0,te_g0
+        te_mf   r1,te_g0
+        te_mf   r2,te_g0
+        te_mf   r3,te_g0
+        te_mf   r4,te_g0
+        te_mf   r5,te_g0
+        te_mf   r6,te_g0
+        te_mf   r7,te_g0
 
         eot     'g',te_g0
 
         mov     r0,#dir0
         mov     r1,#031h
 
-        te_ma   @r0,te_h0
-        te_ma   @r1,te_h0
+        te_mf   @r0,te_h0
+        te_mf   @r1,te_h0
 
         eot     'h',te_h0
 
-        mov     dir0,#034h          ; Test <MOV dir,#imm> before using it in
-        mov     a,dir0              ; subsequent tests
-        cjne    a,#034h,te_i0
+        mov     039h,#001h
+        dec     039h
+        mov     a,039h
+        cjne    a,#00h,te_i0
+        mov     039h,#000h
+        clr     c
+        dec     039h
+        jc      te_i0
+        mov     a,039h
+        cjne    a,#0ffh,te_i0
 
         eot     'i',te_i0
 
