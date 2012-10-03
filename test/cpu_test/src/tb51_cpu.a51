@@ -934,8 +934,9 @@ tf_mf   macro   rn, n, error_loc
         ; b.- <OP A, Rn> (n=2,3)
         ; c.- <OP A, Rn> (n=4,5)
         ; d.- <OP A, Rn> (n=6,7)
-        ; e.- <OP dir,#imm>, <OP A,#imm>
-        ; f.- <OP dir,A>
+        ; e.- <OP dir,#imm>
+        ; f.- <OP A,#imm>
+        ; g.- <OP dir,A>
 
         ;store psw away for later comparison
 save_psw macro
@@ -962,7 +963,7 @@ cy_val  set     (flags and 1)
         endif
         endm
 
-        ;
+        ; Test instruction <op> A, src
         ;
         ; flags = (<expected PSW> & 0xfe) | <input cy>
         ; (P flag result is not tested)
@@ -982,12 +983,14 @@ top_ma  macro   op,src,error_loc,flags
         endif
         endm
 
+        ; Test instruction <op> dst, #arg0
+        ; (<flags> same as top_ma)
 top_mb  macro   op,dst,error_loc,flags
-        mov     dst,#arg0
+        mov     dst,#arg1
         ifnb    <flags>
         set_cy  flags
         endif
-        op      dst,#arg1
+        op      dst,#arg0
         ifnb    <flags>
         save_psw
         endif
@@ -998,6 +1001,8 @@ top_mb  macro   op,dst,error_loc,flags
         endif
         endm
 
+        ; Test instruction <op> dir, A
+        ; (<flags> same as top_ma)
 top_mc  macro   op,error_loc,flags
         mov     dir0,#arg0
         mov     a,#arg1
@@ -1015,26 +1020,37 @@ top_mc  macro   op,error_loc,flags
         endif
         endm
 
-        ;
-        ;
-tst_alu macro   op,a0,a1,r,flags
+        ; Test ALU instruction with all addressing modes.
+        ; FIXME <op> A, #imm not tested!
+        ; op : Opcode to be tested
+        ; a0, a1 : Values used as 1st and 2nd args in all addressing modes
+        ; r : Expected result
+        ; am :
+        ; flags : <Expected PSW value>&0xfe | <input cy>
+        ; (if the parameter is unused, the macro skips the flag check)
+tst_alu macro   op,a0,a1,r,am,flags
         local   tall_0d
         local   tall_0a
         local   tall_0b
         local   tall_0c
         local   tall_1
         local   tall_2
-
+        local   tall_3
+        ; Put the argument and result data into variables for easier access
         arg0    set a0
         arg1    set a1
         res     set r
 
+        ; Test <op> A, dir
         top_ma  op,dir0,tall_0a,<flags>
+        ; Test <op> A, @R0
         mov     r0,#dir0
         top_ma  op,@r0,tall_0a,<flags>
+        ; Test <op> A, @R1
         mov     r1,#031h
         top_ma  op,@r1,tall_0a,<flags>
 
+        ; Now test <op> A, Rn for n in 0..7
         top_ma  op,r0,tall_0a,<flags>
         top_ma  op,r1,tall_0a,<flags>
 
@@ -1054,18 +1070,28 @@ tst_alu macro   op,a0,a1,r,flags
         top_ma  op,r7,tall_0d,<flags>
 
         eot     'd',tall_0d
+        ; Ok, <op> A, {dir | @Ri | Rn} done.
         
-        ifb     <flags>
-
+        ; Optionally test immediate addressing modes.
+        
+        if      (am and 1) ne 0
+        ; Test <op> A, #arg1...
         top_mb  op,a,tall_1,<flags>
-        top_mb  op,dir0,tall_1,<flags>
-
         eot     'e',tall_1
-
-        top_mc  op,tall_2,<flags>
-
+        endif
+        
+        if      (am and 2) ne 0
+        ; ...and <op> dir, #arg1
+        top_mb  op,dir0,tall_2,<flags>
         eot     'f',tall_2
         endif
+        
+        ; Optionally test <op> dir, A
+        if      (am and 4) ne 0
+        top_mc  op,tall_3,<flags>
+        eot     'g',tall_3
+        endif
+        
         endm
 
 
@@ -1075,7 +1101,7 @@ tst_alu macro   op,a0,a1,r,flags
 
         putc    #'H'                ; start of test series
         
-        tst_alu anl,03ch,099h,018h,
+        tst_alu anl,03ch,099h,018h,07h,
 
         put_crlf                    ; end of test series
 
@@ -1086,7 +1112,7 @@ tst_alu macro   op,a0,a1,r,flags
 
         putc    #'I'                ; start of test series
 
-        tst_alu orl,051h,092h,0d3h,
+        tst_alu orl,051h,092h,0d3h,07h,
 
         put_crlf                    ; end of test series
 
@@ -1097,7 +1123,7 @@ tst_alu macro   op,a0,a1,r,flags
 
         putc    #'J'                ; start of test series
 
-        tst_alu xrl,051h,033h,062h,
+        tst_alu xrl,051h,033h,062h,07h,
 
         put_crlf                    ; end of test series
 
@@ -1145,13 +1171,13 @@ tk_ma0: dec     a
         putc    #'L'                ; start of test series
 
         putc    #'0'
-        tst_alu add,051h,033h,084h,004h     ; /CY /AC  OV
+        tst_alu add,051h,033h,084h,01h,004h     ; /CY /AC  OV
         putc    #'1'
-        tst_alu add,081h,093h,014h,084h     ;  CY /AC  OV
+        tst_alu add,081h,093h,014h,01h,084h     ;  CY /AC  OV
         putc    #'2'
-        tst_alu add,088h,098h,020h,0c4h     ;  CY  AC  OV
+        tst_alu add,088h,098h,020h,01h,0c4h     ;  CY  AC  OV
         putc    #'3'
-        tst_alu add,043h,0fbh,03eh,080h     ;  CY /AC /OV
+        tst_alu add,043h,0fbh,03eh,01h,080h     ;  CY /AC /OV
 
         put_crlf                    ; end of test series
 
@@ -1164,15 +1190,15 @@ tk_ma0: dec     a
         putc    #'M'                ; start of test series
 
         putc    #'0'
-        tst_alu addc,051h,033h,084h,004h     ; /CY /AC  OV
+        tst_alu addc,051h,033h,084h,01h,004h     ; /CY /AC  OV
         putc    #'1'
-        tst_alu addc,081h,093h,014h,084h     ;  CY /AC  OV
+        tst_alu addc,081h,093h,014h,01h,084h     ;  CY /AC  OV
         putc    #'2'
-        tst_alu addc,088h,098h,020h,0c4h     ;  CY  AC  OV
+        tst_alu addc,088h,098h,020h,01h,0c4h     ;  CY  AC  OV
         putc    #'3'
-        tst_alu addc,088h,098h,021h,0c5h     ;  CY  AC  OV (CY input)
+        tst_alu addc,088h,098h,021h,01h,0c5h     ;  CY  AC  OV (CY input)
         putc    #'4'
-        tst_alu addc,043h,0fbh,03fh,081h     ;  CY /AC /OV (CY input)
+        tst_alu addc,043h,0fbh,03fh,01h,081h     ;  CY /AC /OV (CY input)
 
 
         put_crlf                    ; end of test series
@@ -1185,17 +1211,14 @@ tk_ma0: dec     a
 
         putc    #'N'                ; start of test series
 
-        ;tst_alu <arg2>,<A value>,<result>,<PSW | CY input>
-        ;
-
         putc    #'0'
-        tst_alu subb,070h,073h,003h,000h     ; /CY /AC /OV
+        tst_alu subb,070h,073h,003h,01h,000h     ; /CY /AC /OV
         putc    #'1'
-        tst_alu subb,070h,073h,002h,001h     ; /CY /AC /OV (CY input)
+        tst_alu subb,070h,073h,002h,01h,001h     ; /CY /AC /OV (CY input)
         putc    #'2'
-        tst_alu subb,0c3h,0c5h,002h,004h     ; /CY  AC  OV
+        tst_alu subb,0c3h,0c5h,002h,01h,000h     ; /CY  AC /OV
         putc    #'3'
-        tst_alu subb,0c3h,0c5h,001h,005h     ; /CY  AC  OV (CY input)
+        tst_alu subb,0c3h,0c5h,001h,01h,001h     ; /CY  AC  OV (CY input)
 
         ; FIXME subb tests are specially weak
 
