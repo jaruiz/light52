@@ -1416,14 +1416,15 @@ tq0:    cjne    a,#21h,tq_a0
 
 
         ;-- Test series R ------------------------------------------------------
-        ; ACALL, LCALL, JMP @A+DPTR, LJMP instructions
+        ; ACALL, LCALL, JMP @A+DPTR, LJMP, AJMP instructions
         ; a.- <ACALL addr8>     <-- uses LJMP too
         ; b.- <LCALL addr16>    <-- uses LJMP too
         ; c.- <JMP @A+DPTR>
         ; d.- <LJMP addr16>
+        ; e.- <AJMP addr8>
         ;
         ; Biggest limitations:
-        ; .- Only long jumps; jumps to same page (== H addr byte) untested.
+        ; .- Jumps to same page (== H addr byte) tested only at one page.
         ;
         ; Note RET is NOT tested here! we don't return from these calls, just
         ; use them as jumps.
@@ -1474,7 +1475,7 @@ tr_rv3: mov     a,#00h
         
         eot     'c',tr_c0
 
-        ; c.- <LJMP addr16>
+        ; d.- <LJMP addr16>
         ljmp    tr_sub3
         jmp     tr_d0
         nop
@@ -1482,6 +1483,19 @@ tr_rv3: mov     a,#00h
 tr_rv4: nop
         nop
         eot     'd',tr_d0
+
+        ; e.- <AJMP addr8>
+        ; We should test all code pages eventually...
+        mov     a,#00h
+        ajmp    tr_ajmp0            ; Do the jump...
+        sjmp    tr_rv5
+tr_ajmp0:
+        mov     a,#042h
+tr_rv5:
+        cjne    A,#42h,tr_e0       ; ...and make sure we've actually been there
+        nop
+        
+        eot     'e',tr_e0
 
         put_crlf                    ; end of test series
 
@@ -1818,5 +1832,5 @@ tr_sub1:
 tr_sub1_fail:
         ljmp    tr_b0
 
-    
+
         end
