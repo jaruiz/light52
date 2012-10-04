@@ -23,7 +23,7 @@
 ;   2.- <#imm> instructions are tested with one imm value only.
 ;   3.- <rel> jumps tested with small values (not near corner values).
 ;   4.- <bit> tested on 1 byte only, on 2 bits only.
-;   5.- BCD instructions (DA, XCHG) not tested at all.
+;   5.- BCD instructions (DA, XCHD) not tested at all.
 ;
 ; Note there are too many limitations to list. Use this test bench as a first
 ; approximation only. If your CPU fails this test, it must be dead!
@@ -911,21 +911,40 @@ tf_mf   macro   rn, n, error_loc
         ; d.- <XCH A,@Ri>
         mov     a,#91h
         mov     29h,#78h
-        mov     r1,#29h
-        xch     a,@r1
+        mov     r0,#29h
+        xch     a,@r0
         cjne    a,#78h,tg_d0
         mov     a,29h
         cjne    a,#91h,tg_d0
 
+        mov     a,#92h
+        mov     2ah,#78h
+        mov     r1,#2ah
+        xch     a,@r1
+        cjne    a,#78h,tg_d0
+        mov     a,2ah
+        cjne    a,#92h,tg_d0
+        
         eot     'd',tg_d0
 
         ; e.- <XCHG A,Rn>
-        mov     a,#43h
-        mov     r6,#0a2h
-        xch     a,r6
-        cjne    a,#0a2h,tg_e0
-        mov     a,r6
-        cjne    a,#43h,tg_e0
+
+tg_ma   macro   rn, n, error_loc
+        mov     a,#(0c1h+n)
+        mov     rn,#(042h+n)
+        xch     a,rn
+        cjne    rn,#(0c1h+n),error_loc
+        cjne    a,#(042h+n),error_loc
+        endm
+
+        tg_ma   r0, 19, tg_e0
+        tg_ma   r1, 18, tg_e0
+        tg_ma   r2, 17, tg_e0
+        tg_ma   r3, 16, tg_e0
+        tg_ma   r4, 15, tg_e0
+        tg_ma   r5, 14, tg_e0
+        tg_ma   r6, 13, tg_e0
+        tg_ma   r7, 12, tg_e0
 
         eot     'e',tg_e0
 
