@@ -478,12 +478,10 @@ begin
                 ns <= movx_dptr_a_0;
             when F_MOVX_A_DPTR =>
                 ns <= movx_a_dptr_0;
-            when F_MOVX_RI =>
-                if uc_class_decode_0(0)='0' then
-                    ns <= movx_a_ri_0;
-                else
-                    ns <= movx_ri_a_0;
-                end if;
+            when F_MOVX_A_RI =>
+                ns <= movx_a_ri_0;
+            when F_MOVX_RI_A =>
+                ns <= movx_ri_a_0;
             when F_MOVC_PC =>
                 ns <= movc_pc_0;
             when F_MOVC_DPTR =>
@@ -592,7 +590,11 @@ begin
         ns <= fetch_1;
             
     when movx_ri_a_0 =>
-        ns <= bug_bad_opcode_class;
+        ns <= movx_ri_a_1;
+    when movx_ri_a_1 =>
+        ns <= movx_ri_a_2;
+    when movx_ri_a_2 =>
+        ns <= fetch_1;
     
     -- XCH instructions ----------------------------------------------
     when xch_dir_0 =>
@@ -1805,12 +1807,13 @@ with ps select xdata_addr <=
     std_logic_vector(DPTR_reg)              when others;
 
 with ps select xdata_vma <= 
-    '1' when movx_dptr_a_0,
-    '1' when movx_a_dptr_0,
+    '1' when movx_dptr_a_0 | movx_a_dptr_0,
+    '1' when movx_a_ri_2 | movx_ri_a_2,
     '0' when others;
 
 with ps select xdata_we <= 
     '1' when movx_dptr_a_0,
+    '1' when movx_ri_a_2,
     '0' when others;
 
 

@@ -50,7 +50,8 @@ constant F_CJNE_RI_IMM :        t_class := "010010";
 constant F_CJNE_RN_IMM :        t_class := "010011";
 constant F_MOVX_DPTR_A :        t_class := "010100";
 constant F_MOVX_A_DPTR :        t_class := "010101";
-constant F_MOVX_RI :            t_class := "010110"; -- FIXME explain bit 9
+constant F_MOVX_A_RI :          t_class := "010110";
+constant F_MOVX_RI_A :          t_class := "101110";
 constant F_DJNZ_DIR :           t_class := "011000";
 constant F_DJNZ_RN :            t_class := "011001";
 constant F_MOVC_PC :            t_class := "011010";
@@ -462,10 +463,10 @@ begin
     dt(16#e0#) := F_MOVX_A_DPTR & "0000000000";     -- MOVX A, @DPTR
     dt(16#f0#) := F_MOVX_DPTR_A & "0000000000";     -- MOVX @DPTR, A
 
-    dt(16#e2#) := F_MOVX_RI & "0" & "000" & A_ORL;  -- MOVX A, @R0
-    dt(16#e3#) := F_MOVX_RI & "0" & "000" & A_ORL;  -- MOVX A, @R1
-    dt(16#f2#) := F_MOVX_RI & "1" & "000" & A_ORL;  -- MOVX @R0, A
-    dt(16#f3#) := F_MOVX_RI & "1" & "000" & A_ORL;  -- MOVX @R1, A
+    dt(16#e2#) := F_MOVX_A_RI & "0" & "000" & A_ORL;  -- MOVX A, @R0
+    dt(16#e3#) := F_MOVX_A_RI & "0" & "000" & A_ORL;  -- MOVX A, @R1
+    dt(16#f2#) := F_MOVX_RI_A & "1" & "000" & A_ORL;  -- MOVX @R0, A
+    dt(16#f3#) := F_MOVX_RI_A & "1" & "000" & A_ORL;  -- MOVX @R1, A
     
     dt(16#83#) := F_MOVC_PC   & "0000000000";       -- MOVC A, @A+PC @R1, A
     dt(16#93#) := F_MOVC_DPTR & "0000000000";       -- MOVC A, @A+DPTR
