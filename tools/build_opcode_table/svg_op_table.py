@@ -66,7 +66,12 @@ def read_opcode_info(filename):
         info[i] = [mnemonic.strip(), operands.strip(), int(nbytes)]
     
     return info
-    
+   
+def opcode_unimplemented(opc):
+    """Return true if the opcode is not implemented (implemented as NOP)."""
+    # FIXME this should be optional, like the implementation itself.
+    return opc=="DA" or opc=="XCHD"
+   
     
 def build_svg_table(info, cycles, part):
     """
@@ -197,7 +202,11 @@ def build_svg_table(info, cycles, part):
                 color = "#e0e0e0"
             
             # Render the cell with all its parameters.
+            if opcode_unimplemented(info[opc][0]):
+                color = "#f08080"
+            
             cell = base_cell % (x, y, scale, color, info[opc][0], info[opc][1], count, info[opc][2])
+                
             svg = svg + cell
     
     # Done, close the SVG element and we're done.
