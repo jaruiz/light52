@@ -16,7 +16,7 @@
 ; In the latter case you can use the co-simulation features of the light52
 ; project to pinpoint bugs.
 ;
-; FIXME add assembly option to run tests in an (possibly infinite) loop.
+; FIXME add assembly option to run tests in a (possibly infinite) loop.
 ;-------------------------------------------------------------------------------
 ; Major limitations:
 ;   1.- PSW is not checked for undue changes.
@@ -1781,6 +1781,53 @@ tu_a_done:
 
         put_crlf                    ; end of test series
         
+        
+        ;-- Test series V ------------------------------------------------------
+        ; NOP and unimplemented opcodes.
+        ; In order to make an instruction does nothing we should have to check
+        ; everything: IRAM, XRAM and SFRs. We will leave that to the
+        ; zexall-style tester. in this test we rely on the cosimulation with
+        ; software simulator B51.
+        ;
+        ; a.- Opcode 0A5h
+        ; b.- Unimplemented DA
+        ; c.- Unimplemented XCHD @Ri
+        ; FIXME tests b and  c should be optional
+
+        putc    #'V'                ; start of test series
+
+
+        ; a.- <0A5>
+        db      0a5h                ; Put opcode right there...
+        nop                         ; and do no check at all -- rely on B51.
+        
+        eot     'a',tv_a0
+
+        ; b.- <DA5>
+        mov     a,01ah              ; This should be adjusted to 020h...
+        da      a                   ; ...make sure it isn't
+        cjne    a,01ah,tv_b0
+        nop
+        
+        eot     'b',tv_b0
+
+        ; c.- XCHD a,@ri
+        mov     r0,#031h
+        mov     r1,#032h
+        mov     a,#042h
+        mov     @r0,a
+        mov     @r1,a
+        mov     a,#76h
+        xchd    a,@r0
+        cjne    a,#076h,tv_c0
+        mov     a,#76h
+        xchd    a,@r0
+        cjne    a,#076h,tv_c0
+        
+        eot     'c',tv_c0
+
+        put_crlf                    ; end of test series
+
         
         ;-- Template for test series -------------------------------------------
 

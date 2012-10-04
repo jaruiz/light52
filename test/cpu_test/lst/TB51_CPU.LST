@@ -36,7 +36,7 @@ ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. 
    16:				; In the latter case you can use the co-simulation features of the light52
    17:				; project to pinpoint bugs.
    18:				;
-   19:				; FIXME add assembly option to run tests in an (possibly infinite) loop.
+   19:				; FIXME add assembly option to run tests in a (possibly infinite) loop.
    20:				;-------------------------------------------------------------------------------
    21:				; Major limitations:
    22:				;   1.- PSW is not checked for undue changes.
@@ -11453,17 +11453,17 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 10157+ 2  209D	75 99 0A	        mov     SBUF,#10
 10158:
 10159:
-10160:				        ;-- Template for test series -------------------------------------------
-10161:
-10162:				        ;-- Test series X ------------------------------------------------------
-10163:				        ;
-10164:				        ; a.-
-10165:
-10166:				        ;putc    #'X'                ; start of test series
-10167:				        ;put_crlf                    ; end of test series
-10168:
-10169:				        ;-----------------------------------------------------------------------
-10170:
+10160:				        ;-- Test series V ------------------------------------------------------
+10161:				        ; NOP and unimplemented opcodes.
+10162:				        ; In order to make an instruction does nothing we should have to check
+10163:				        ; everything: IRAM, XRAM and SFRs. We will leave that to the
+10164:				        ; zexall-style tester. in this test we rely on the cosimulation with
+10165:				        ; software simulator B51.
+10166:				        ;
+10167:				        ; a.- Opcode 0A5h
+10168:				        ; b.- Unimplemented DA
+10169:				        ; c.- Unimplemented XCHD @Ri
+10170:				        ; FIXME tests b and  c should be optional
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 183
 
@@ -11471,62 +11471,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
-10171:				        ; Test cases finished. Now print completion message dependent on the
-10172:				        ; value of the fail flag.
-10173:
-10174:	  20A0	E5 6E		        mov     a,fail
-10175:	  20A2	70 1A		        jnz     test_failed
-10176:
-10177:				        put_crlf
-10178+ 1			        putc    #13
-10179+ 2  20A4			??0872:
-10180+ 2			        ;jnb     SCON.1,putc_loop
-10181+ 2			        ;clr     SCON.1
-10182+ 2  20A4	75 99 0D	        mov     SBUF,#13
-10183+ 1			        putc    #10
-10184+ 2  20A7			??0873:
-10185+ 2			        ;jnb     SCON.1,putc_loop
-10186+ 2			        ;clr     SCON.1
-10187+ 2  20A7	75 99 0A	        mov     SBUF,#10
-10188:				        putc    #'P'
-10189+ 1  20AA			??0874:
-10190+ 1			        ;jnb     SCON.1,putc_loop
-10191+ 1			        ;clr     SCON.1
-10192+ 1  20AA	75 99 50	        mov     SBUF,#'P'
-10193:				        putc    #'A'
-10194+ 1  20AD			??0875:
-10195+ 1			        ;jnb     SCON.1,putc_loop
-10196+ 1			        ;clr     SCON.1
-10197+ 1  20AD	75 99 41	        mov     SBUF,#'A'
-10198:				        putc    #'S'
-10199+ 1  20B0			??0876:
-10200+ 1			        ;jnb     SCON.1,putc_loop
-10201+ 1			        ;clr     SCON.1
-10202+ 1  20B0	75 99 53	        mov     SBUF,#'S'
-10203:				        putc    #'S'
-10204+ 1  20B3			??0877:
-10205+ 1			        ;jnb     SCON.1,putc_loop
-10206+ 1			        ;clr     SCON.1
-10207+ 1  20B3	75 99 53	        mov     SBUF,#'S'
-10208:				        put_crlf
-10209+ 1			        putc    #13
-10210+ 2  20B6			??0878:
-10211+ 2			        ;jnb     SCON.1,putc_loop
-10212+ 2			        ;clr     SCON.1
-10213+ 2  20B6	75 99 0D	        mov     SBUF,#13
-10214+ 1			        putc    #10
-10215+ 2  20B9			??0879:
-10216+ 2			        ;jnb     SCON.1,putc_loop
-10217+ 2			        ;clr     SCON.1
-10218+ 2  20B9	75 99 0A	        mov     SBUF,#10
-10219:	  20BC	80 1A		        sjmp    quit
-10220:
-10221:	  20BE			test_failed:
-10222:				        put_crlf
-10223+ 1			        putc    #13
-10224+ 2  20BE			??0880:
-10225+ 2			        ;jnb     SCON.1,putc_loop
-10226+ 2			        ;clr     SCON.1
+10171:
+10172:				        putc    #'V'                ; start of test series
+10173+ 1  20A0			??0872:
+10174+ 1			        ;jnb     SCON.1,putc_loop
+10175+ 1			        ;clr     SCON.1
+10176+ 1  20A0	75 99 56	        mov     SBUF,#'V'
+10177:
+10178:
+10179:				        ; a.- <0A5>
+10180:	  20A3	A5		        db      0a5h                ; Put opcode right there...
+10181:	  20A4	00		        nop                         ; and do no check at all -- rely on B51.
+10182:
+10183:				        eot     'a',tv_a0
+10184+ 1			        putc    #'a'
+10185+ 2  20A5			??0874:
+10186+ 2			        ;jnb     SCON.1,putc_loop
+10187+ 2			        ;clr     SCON.1
+10188+ 2  20A5	75 99 61	        mov     SBUF,#'a'
+10189+ 1  20A8	80 06		        sjmp    ??0873
+10190+ 1  20AA			tv_a0:  putc    #'?'
+10191+ 2  20AA			??0875:
+10192+ 2			        ;jnb     SCON.1,putc_loop
+10193+ 2			        ;clr     SCON.1
+10194+ 2  20AA	75 99 3F	        mov     SBUF,#'?'
+10195+ 1  20AD	75 6E 01	        mov     fail,#001h
+10196+ 1  20B0			??0873:
+10197:
+10198:				        ; b.- <DA5>
+10199:	  20B0	E5 1A		        mov     a,01ah              ; This should be adjusted to 020h...
+10200:	  20B2	D4		        da      a                   ; ...make sure it isn't
+10201:	  20B3	B5 1A 06	        cjne    a,01ah,tv_b0
+10202:	  20B6	00		        nop
+10203:
+10204:				        eot     'b',tv_b0
+10205+ 1			        putc    #'b'
+10206+ 2  20B7			??0877:
+10207+ 2			        ;jnb     SCON.1,putc_loop
+10208+ 2			        ;clr     SCON.1
+10209+ 2  20B7	75 99 62	        mov     SBUF,#'b'
+10210+ 1  20BA	80 06		        sjmp    ??0876
+10211+ 1  20BC			tv_b0:  putc    #'?'
+10212+ 2  20BC			??0878:
+10213+ 2			        ;jnb     SCON.1,putc_loop
+10214+ 2			        ;clr     SCON.1
+10215+ 2  20BC	75 99 3F	        mov     SBUF,#'?'
+10216+ 1  20BF	75 6E 01	        mov     fail,#001h
+10217+ 1  20C2			??0876:
+10218:
+10219:				        ; c.- XCHD a,@ri
+10220:	  20C2	78 31		        mov     r0,#031h
+10221:	  20C4	79 32		        mov     r1,#032h
+10222:	  20C6	74 42		        mov     a,#042h
+10223:	  20C8	F6		        mov     @r0,a
+10224:	  20C9	F7		        mov     @r1,a
+10225:	  20CA	74 76		        mov     a,#76h
+10226:	  20CC	D6		        xchd    a,@r0
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 184
 
@@ -11534,62 +11534,62 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
-10227+ 2  20BE	75 99 0D	        mov     SBUF,#13
-10228+ 1			        putc    #10
-10229+ 2  20C1			??0881:
-10230+ 2			        ;jnb     SCON.1,putc_loop
-10231+ 2			        ;clr     SCON.1
-10232+ 2  20C1	75 99 0A	        mov     SBUF,#10
-10233:				        putc    #'F'
-10234+ 1  20C4			??0882:
-10235+ 1			        ;jnb     SCON.1,putc_loop
-10236+ 1			        ;clr     SCON.1
-10237+ 1  20C4	75 99 46	        mov     SBUF,#'F'
-10238:				        putc    #'A'
-10239+ 1  20C7			??0883:
-10240+ 1			        ;jnb     SCON.1,putc_loop
-10241+ 1			        ;clr     SCON.1
-10242+ 1  20C7	75 99 41	        mov     SBUF,#'A'
-10243:				        putc    #'I'
-10244+ 1  20CA			??0884:
-10245+ 1			        ;jnb     SCON.1,putc_loop
-10246+ 1			        ;clr     SCON.1
-10247+ 1  20CA	75 99 49	        mov     SBUF,#'I'
-10248:				        putc    #'L'
-10249+ 1  20CD			??0885:
-10250+ 1			        ;jnb     SCON.1,putc_loop
-10251+ 1			        ;clr     SCON.1
-10252+ 1  20CD	75 99 4C	        mov     SBUF,#'L'
-10253:				        put_crlf
-10254+ 1			        putc    #13
-10255+ 2  20D0			??0886:
-10256+ 2			        ;jnb     SCON.1,putc_loop
-10257+ 2			        ;clr     SCON.1
-10258+ 2  20D0	75 99 0D	        mov     SBUF,#13
-10259+ 1			        putc    #10
-10260+ 2  20D3			??0887:
-10261+ 2			        ;jnb     SCON.1,putc_loop
-10262+ 2			        ;clr     SCON.1
-10263+ 2  20D3	75 99 0A	        mov     SBUF,#10
-10264:	  20D6	80 00		        sjmp    quit
+10227:	  20CD	B4 76 0B	        cjne    a,#076h,tv_c0
+10228:	  20D0	74 76		        mov     a,#76h
+10229:	  20D2	D6		        xchd    a,@r0
+10230:	  20D3	B4 76 05	        cjne    a,#076h,tv_c0
+10231:
+10232:				        eot     'c',tv_c0
+10233+ 1			        putc    #'c'
+10234+ 2  20D6			??0880:
+10235+ 2			        ;jnb     SCON.1,putc_loop
+10236+ 2			        ;clr     SCON.1
+10237+ 2  20D6	75 99 63	        mov     SBUF,#'c'
+10238+ 1  20D9	80 06		        sjmp    ??0879
+10239+ 1  20DB			tv_c0:  putc    #'?'
+10240+ 2  20DB			??0881:
+10241+ 2			        ;jnb     SCON.1,putc_loop
+10242+ 2			        ;clr     SCON.1
+10243+ 2  20DB	75 99 3F	        mov     SBUF,#'?'
+10244+ 1  20DE	75 6E 01	        mov     fail,#001h
+10245+ 1  20E1			??0879:
+10246:
+10247:				        put_crlf                    ; end of test series
+10248+ 1			        putc    #13
+10249+ 2  20E1			??0882:
+10250+ 2			        ;jnb     SCON.1,putc_loop
+10251+ 2			        ;clr     SCON.1
+10252+ 2  20E1	75 99 0D	        mov     SBUF,#13
+10253+ 1			        putc    #10
+10254+ 2  20E4			??0883:
+10255+ 2			        ;jnb     SCON.1,putc_loop
+10256+ 2			        ;clr     SCON.1
+10257+ 2  20E4	75 99 0A	        mov     SBUF,#10
+10258:
+10259:
+10260:				        ;-- Template for test series -------------------------------------------
+10261:
+10262:				        ;-- Test series X ------------------------------------------------------
+10263:				        ;
+10264:				        ; a.-
 10265:
-10266:				        ;-- End of test program, enter single-instruction endless loop
-10267:	  20D8	01 D8		quit:   ajmp    $
+10266:				        ;putc    #'X'                ; start of test series
+10267:				        ;put_crlf                    ; end of test series
 10268:
-10269:
-10270:				        ; We'll place a few test routines in the 2nd half of the code space so
-10271:				        ; we can test long jumps and calls onto different code pages.
-10272:		N      8000	        org     8000h
+10269:				        ;-----------------------------------------------------------------------
+10270:
+10271:				        ; Test cases finished. Now print completion message dependent on the
+10272:				        ; value of the fail flag.
 10273:
-10274:				        ; tr_sub2: part of the JMP @A+DPTR test.
-10275:				        ; HAS TO BE in 8000h so we can test the A+DPTR carry propagation!
-10276:	  8000			tr_sub2:
-10277:	  8000	02 1E BD	        jmp     tr_rv3
-10278:	  8003	02 1E CA	        jmp     tr_c0
-10279:				        ; Make sure the assumption we'll make in the test is actually valid
-10280:		N      0000	        if      LOW(tr_sub2) ne 0
-10281:				        $error("Label 'tr_sub2' must be at an address multiple of 256 to properly test JMP @A+DPTR")
-10282:				        endif
+10274:	  20E7	E5 6E		        mov     a,fail
+10275:	  20E9	70 1A		        jnz     test_failed
+10276:
+10277:				        put_crlf
+10278+ 1			        putc    #13
+10279+ 2  20EB			??0884:
+10280+ 2			        ;jnb     SCON.1,putc_loop
+10281+ 2			        ;clr     SCON.1
+10282+ 2  20EB	75 99 0D	        mov     SBUF,#13
 
 ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 185
 
@@ -11597,26 +11597,140 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
  Line  I  Addr  Code            Source
 
-10283:
-10284:				        ; tr_sub3: part of the LJMP test.
-10285:	  8006			tr_sub3:
-10286:	  8006	02 1E D8	        jmp     tr_rv4
-10287:	  8009	02 1E DF	        jmp     tr_d0
-10288:
-10289:				        ; tr_sub1: part of the LCALL test.
-10290:	  800C			tr_sub1:
-10291:	  800C	E5 81		        mov     A,SP
-10292:	  800E	B4 53 0D	        cjne    A,#53h,tr_sub1_fail ; ...verify the SP value...
-10293:	  8011	E5 52		        mov     A,52h               ; ...and verify the pushed ret address
-10294:	  8013	B4 A4 08	        cjne    A,#LOW(tr_rv1),tr_sub1_fail
-10295:	  8016	E5 53		        mov     A,53h
-10296:	  8018	B4 1E 03	        cjne    A,#HIGH(tr_rv1),tr_sub1_fail
-10297:	  801B	02 1E A6	        ljmp    tr_rv2
-10298:	  801E			tr_sub1_fail:
-10299:	  801E	02 1E AC	        ljmp    tr_b0
-10300:
-10301:
-10302:				        end
+10283+ 1			        putc    #10
+10284+ 2  20EE			??0885:
+10285+ 2			        ;jnb     SCON.1,putc_loop
+10286+ 2			        ;clr     SCON.1
+10287+ 2  20EE	75 99 0A	        mov     SBUF,#10
+10288:				        putc    #'P'
+10289+ 1  20F1			??0886:
+10290+ 1			        ;jnb     SCON.1,putc_loop
+10291+ 1			        ;clr     SCON.1
+10292+ 1  20F1	75 99 50	        mov     SBUF,#'P'
+10293:				        putc    #'A'
+10294+ 1  20F4			??0887:
+10295+ 1			        ;jnb     SCON.1,putc_loop
+10296+ 1			        ;clr     SCON.1
+10297+ 1  20F4	75 99 41	        mov     SBUF,#'A'
+10298:				        putc    #'S'
+10299+ 1  20F7			??0888:
+10300+ 1			        ;jnb     SCON.1,putc_loop
+10301+ 1			        ;clr     SCON.1
+10302+ 1  20F7	75 99 53	        mov     SBUF,#'S'
+10303:				        putc    #'S'
+10304+ 1  20FA			??0889:
+10305+ 1			        ;jnb     SCON.1,putc_loop
+10306+ 1			        ;clr     SCON.1
+10307+ 1  20FA	75 99 53	        mov     SBUF,#'S'
+10308:				        put_crlf
+10309+ 1			        putc    #13
+10310+ 2  20FD			??0890:
+10311+ 2			        ;jnb     SCON.1,putc_loop
+10312+ 2			        ;clr     SCON.1
+10313+ 2  20FD	75 99 0D	        mov     SBUF,#13
+10314+ 1			        putc    #10
+10315+ 2  2100			??0891:
+10316+ 2			        ;jnb     SCON.1,putc_loop
+10317+ 2			        ;clr     SCON.1
+10318+ 2  2100	75 99 0A	        mov     SBUF,#10
+10319:	  2103	80 1A		        sjmp    quit
+10320:
+10321:	  2105			test_failed:
+10322:				        put_crlf
+10323+ 1			        putc    #13
+10324+ 2  2105			??0892:
+10325+ 2			        ;jnb     SCON.1,putc_loop
+10326+ 2			        ;clr     SCON.1
+10327+ 2  2105	75 99 0D	        mov     SBUF,#13
+10328+ 1			        putc    #10
+10329+ 2  2108			??0893:
+10330+ 2			        ;jnb     SCON.1,putc_loop
+10331+ 2			        ;clr     SCON.1
+10332+ 2  2108	75 99 0A	        mov     SBUF,#10
+10333:				        putc    #'F'
+10334+ 1  210B			??0894:
+10335+ 1			        ;jnb     SCON.1,putc_loop
+10336+ 1			        ;clr     SCON.1
+10337+ 1  210B	75 99 46	        mov     SBUF,#'F'
+10338:				        putc    #'A'
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 186
+
+
+
+ Line  I  Addr  Code            Source
+
+10339+ 1  210E			??0895:
+10340+ 1			        ;jnb     SCON.1,putc_loop
+10341+ 1			        ;clr     SCON.1
+10342+ 1  210E	75 99 41	        mov     SBUF,#'A'
+10343:				        putc    #'I'
+10344+ 1  2111			??0896:
+10345+ 1			        ;jnb     SCON.1,putc_loop
+10346+ 1			        ;clr     SCON.1
+10347+ 1  2111	75 99 49	        mov     SBUF,#'I'
+10348:				        putc    #'L'
+10349+ 1  2114			??0897:
+10350+ 1			        ;jnb     SCON.1,putc_loop
+10351+ 1			        ;clr     SCON.1
+10352+ 1  2114	75 99 4C	        mov     SBUF,#'L'
+10353:				        put_crlf
+10354+ 1			        putc    #13
+10355+ 2  2117			??0898:
+10356+ 2			        ;jnb     SCON.1,putc_loop
+10357+ 2			        ;clr     SCON.1
+10358+ 2  2117	75 99 0D	        mov     SBUF,#13
+10359+ 1			        putc    #10
+10360+ 2  211A			??0899:
+10361+ 2			        ;jnb     SCON.1,putc_loop
+10362+ 2			        ;clr     SCON.1
+10363+ 2  211A	75 99 0A	        mov     SBUF,#10
+10364:	  211D	80 00		        sjmp    quit
+10365:
+10366:				        ;-- End of test program, enter single-instruction endless loop
+10367:	  211F	21 1F		quit:   ajmp    $
+10368:
+10369:
+10370:				        ; We'll place a few test routines in the 2nd half of the code space so
+10371:				        ; we can test long jumps and calls onto different code pages.
+10372:		N      8000	        org     8000h
+10373:
+10374:				        ; tr_sub2: part of the JMP @A+DPTR test.
+10375:				        ; HAS TO BE in 8000h so we can test the A+DPTR carry propagation!
+10376:	  8000			tr_sub2:
+10377:	  8000	02 1E BD	        jmp     tr_rv3
+10378:	  8003	02 1E CA	        jmp     tr_c0
+10379:				        ; Make sure the assumption we'll make in the test is actually valid
+10380:		N      0000	        if      LOW(tr_sub2) ne 0
+10381:				        $error("Label 'tr_sub2' must be at an address multiple of 256 to properly test JMP @A+DPTR")
+10382:				        endif
+10383:
+10384:				        ; tr_sub3: part of the LJMP test.
+10385:	  8006			tr_sub3:
+10386:	  8006	02 1E D8	        jmp     tr_rv4
+10387:	  8009	02 1E DF	        jmp     tr_d0
+10388:
+10389:				        ; tr_sub1: part of the LCALL test.
+10390:	  800C			tr_sub1:
+10391:	  800C	E5 81		        mov     A,SP
+10392:	  800E	B4 53 0D	        cjne    A,#53h,tr_sub1_fail ; ...verify the SP value...
+10393:	  8011	E5 52		        mov     A,52h               ; ...and verify the pushed ret address
+10394:	  8013	B4 A4 08	        cjne    A,#LOW(tr_rv1),tr_sub1_fail
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 187
+
+
+
+ Line  I  Addr  Code            Source
+
+10395:	  8016	E5 53		        mov     A,53h
+10396:	  8018	B4 1E 03	        cjne    A,#HIGH(tr_rv1),tr_sub1_fail
+10397:	  801B	02 1E A6	        ljmp    tr_rv2
+10398:	  801E			tr_sub1_fail:
+10399:	  801E	02 1E AC	        ljmp    tr_b0
+10400:
+10401:
+10402:				        end
 
 
 
@@ -11629,7 +11743,7 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
 
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 186
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 188
 
 
 
@@ -11692,7 +11806,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0048				  CODE	    0185	 491
 ??0049				  CODE	    018A	 497
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 187
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 189
 
 
 
@@ -11755,7 +11869,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0104				  CODE	    0380	 961
 ??0105				  CODE	    0385	 967
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 188
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 190
 
 
 
@@ -11818,7 +11932,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0160				  CODE	    0693	1664
 ??0161				  CODE	    0688	1653
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 189
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 191
 
 
 
@@ -11881,7 +11995,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0216				  CODE	    0941	2444
 ??0217				  CODE	    09C8	2672
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 190
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 192
 
 
 
@@ -11944,7 +12058,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0272				  CODE	    0AC8	3094
 ??0273				  CODE	    0AE5	3132
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 191
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 193
 
 
 
@@ -12007,7 +12121,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0328				  CODE	    0C50	3654
 ??0329				  CODE	    0D71	4013
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 192
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 194
 
 
 
@@ -12070,7 +12184,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0388				  CODE	    0E83	4373
 ??0389				  NUMBER    0000	4385
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 193
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 195
 
 
 
@@ -12133,7 +12247,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0448				  CODE	    10A7	5091
 ??0449				  NUMBER    0000	5103
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 194
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 196
 
 
 
@@ -12196,7 +12310,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0506				  CODE	    12C6	5814
 ??0507				  CODE	    13E7	6173
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 195
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 197
 
 
 
@@ -12259,7 +12373,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0566				  CODE	    14F9	6533
 ??0567				  NUMBER    0000	6545
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 196
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 198
 
 
 
@@ -12322,7 +12436,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0626				  CODE	    171D	7251
 ??0627				  NUMBER    0001	7263
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 197
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 199
 
 
 
@@ -12385,7 +12499,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0684				  CODE	    193C	7975
 ??0685				  CODE	    1A5D	8334
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 198
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 200
 
 
 
@@ -12448,7 +12562,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0744				  CODE	    1B6F	8694
 ??0745				  NUMBER    0000	8706
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 199
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 201
 
 
 
@@ -12511,7 +12625,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0802				  CODE	    1D8C	9372
 ??0803				  CODE	    1D91	9378
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 200
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 202
 
 
 
@@ -12574,7 +12688,7 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0858				  CODE	    1FB1	9966
 ??0859				  CODE	    1FA6	9955
 
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 201
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 203
 
 
 
@@ -12592,22 +12706,34 @@ SYMBOL				  TYPE     VALUE	LINE
 ??0869				  CODE	    2094       10140
 ??0870				  CODE	    209A       10149
 ??0871				  CODE	    209D       10154
-??0872				  CODE	    20A4       10179
-??0873				  CODE	    20A7       10184
-??0874				  CODE	    20AA       10189
-??0875				  CODE	    20AD       10194
-??0876				  CODE	    20B0       10199
-??0877				  CODE	    20B3       10204
-??0878				  CODE	    20B6       10210
-??0879				  CODE	    20B9       10215
-??0880				  CODE	    20BE       10224
-??0881				  CODE	    20C1       10229
-??0882				  CODE	    20C4       10234
-??0883				  CODE	    20C7       10239
-??0884				  CODE	    20CA       10244
-??0885				  CODE	    20CD       10249
-??0886				  CODE	    20D0       10255
-??0887				  CODE	    20D3       10260
+??0872				  CODE	    20A0       10173
+??0873				  CODE	    20B0       10196
+??0874				  CODE	    20A5       10185
+??0875				  CODE	    20AA       10191
+??0876				  CODE	    20C2       10217
+??0877				  CODE	    20B7       10206
+??0878				  CODE	    20BC       10212
+??0879				  CODE	    20E1       10245
+??0880				  CODE	    20D6       10234
+??0881				  CODE	    20DB       10240
+??0882				  CODE	    20E1       10249
+??0883				  CODE	    20E4       10254
+??0884				  CODE	    20EB       10279
+??0885				  CODE	    20EE       10284
+??0886				  CODE	    20F1       10289
+??0887				  CODE	    20F4       10294
+??0888				  CODE	    20F7       10299
+??0889				  CODE	    20FA       10304
+??0890				  CODE	    20FD       10310
+??0891				  CODE	    2100       10315
+??0892				  CODE	    2105       10324
+??0893				  CODE	    2108       10329
+??0894				  CODE	    210B       10334
+??0895				  CODE	    210E       10339
+??0896				  CODE	    2111       10344
+??0897				  CODE	    2114       10349
+??0898				  CODE	    2117       10355
+??0899				  CODE	    211A       10360
 ??ASEM_51			  NUMBER    8051
 ??VERSION			  NUMBER    0130
 AC				  BIT	      D6	  87
@@ -12624,6 +12750,13 @@ EA				  BIT	      AF	  73
 EOT				  MACRO	        	 131
 ES				  BIT	      AC	  71
 ET0				  BIT	      A9	  68
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 204
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
 EX0				  BIT	      A8	  67
 EXTI0				  CODE	    0003	  92
 EXTI1				  CODE	    0013	  94
@@ -12636,19 +12769,12 @@ OV				  BIT	      D2	  83
 P				  BIT	      D0	  82
 P0				  DATA	      80	  38
 P1				  DATA	      90	  49
-
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 202
-
-
-
-SYMBOL				  TYPE     VALUE	LINE
-------------------------------------------------------------
 P2				  DATA	      A0	  52
 P3				  DATA	      B0	  54
 PSW				  DATA	      D0	  57
 PUTC				  MACRO	        	 112
 PUT_CRLF			  MACRO	        	 121
-QUIT				  CODE	    20D8       10267
+QUIT				  CODE	    211F       10367
 RES				  NUMBER    0001	2453
 RESET				  CODE	    0000	  91
 RS0				  BIT	      D3	  84
@@ -12687,6 +12813,13 @@ TB_B2				  CODE	    00EE	 374
 TB_C0				  CODE	    0171	 480
 TB_C1				  CODE	    0179	 483
 TB_C2				  CODE	    018A	 496
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 205
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
 TB_C3				  CODE	    017E	 485
 TB_C4				  CODE	    0183	 487
 TB_D0				  CODE	    01A1	 519
@@ -12699,13 +12832,6 @@ TB_F4				  CODE	    020A	 614
 TB_G0				  CODE	    0243	 662
 TB_G1				  CODE	    0231	 645
 TB_G2				  CODE	    023C	 653
-
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 203
-
-
-
-SYMBOL				  TYPE     VALUE	LINE
-------------------------------------------------------------
 TB_MA				  MACRO	        	 302
 TB_MC				  MACRO	        	 380
 TB_ME				  MACRO	        	 527
@@ -12747,9 +12873,16 @@ TD_A0				  CODE	    0448	1154
 TD_B0				  CODE	    046F	1189
 TD_C0				  CODE	    0495	1223
 TD_D0				  CODE	    04CD	1269
-TEST_FAILED			  CODE	    20BE       10221
+TEST_FAILED			  CODE	    2105       10321
 TE_A0				  CODE	    04F0	1335
 TE_B0				  CODE	    0575	1425
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 206
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
 TE_C0				  CODE	    05A2	1462
 TE_D0				  CODE	    05B5	1481
 TE_E0				  CODE	    05D7	1507
@@ -12762,13 +12895,6 @@ TE_MF				  MACRO	        	1515
 TF_A0				  CODE	    070B	1778
 TF_B0				  CODE	    0728	1804
 TF_C0				  CODE	    073E	1824
-
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 204
-
-
-
-SYMBOL				  TYPE     VALUE	LINE
-------------------------------------------------------------
 TF_D0				  CODE	    0789	1878
 TF_E0				  CODE	    07A8	1904
 TF_F0				  CODE	    07E3	1958
@@ -12813,6 +12939,13 @@ TR_B0				  CODE	    1EAC	9691
 TR_C0				  CODE	    1ECA	9721
 TR_D0				  CODE	    1EDF	9743
 TR_E0				  CODE	    1EF6	9769
+
+ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 207
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
 TR_RV0				  CODE	    1E85	9656
 TR_RV1				  CODE	    1EA4	9682
 TR_RV2				  CODE	    1EA6	9683
@@ -12820,18 +12953,11 @@ TR_RV3				  CODE	    1EBD	9709
 TR_RV4				  CODE	    1ED8	9734
 TR_RV5				  CODE	    1EED	9758
 TR_SUB0				  CODE	    1E87	9657
-TR_SUB1				  CODE	    800C       10290
-TR_SUB1_FAIL			  CODE	    801E       10298
-TR_SUB2				  CODE	    8000       10276
-TR_SUB3				  CODE	    8006       10285
+TR_SUB1				  CODE	    800C       10390
+TR_SUB1_FAIL			  CODE	    801E       10398
+TR_SUB2				  CODE	    8000       10376
+TR_SUB3				  CODE	    8006       10385
 TSTAT				  DATA	      88	  43
-
-ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. Heinz                                        PAGE 205
-
-
-
-SYMBOL				  TYPE     VALUE	LINE
-------------------------------------------------------------
 TST_ALU				  MACRO	        	2372
 TST_PSW				  MACRO	        	2288
 TS_A0				  CODE	    1F2D	9831
@@ -12851,5 +12977,8 @@ TT_B_TAB_END			  CODE	    2045       10059
 TU_A0				  CODE	    2094       10139
 TU_A_DONE			  CODE	    208E       10130
 TU_A_TEST			  CODE	    2070       10106
+TV_A0				  CODE	    20AA       10190
+TV_B0				  CODE	    20BC       10211
+TV_C0				  CODE	    20DB       10239
 TXIRQ				  BIT	      98	  76
 TXRDY				  BIT	      9C	  78
