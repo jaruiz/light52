@@ -1821,7 +1821,7 @@ tu_a_done:
         xchd    a,@r0
         cjne    a,#076h,tv_c0
         mov     a,#76h
-        xchd    a,@r0
+        xchd    a,@r1
         cjne    a,#076h,tv_c0
         
         eot     'c',tv_c0

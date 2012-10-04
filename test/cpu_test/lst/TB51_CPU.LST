@@ -11536,7 +11536,7 @@ ASEM-51 V1.3                                        Copyright (c) 2002 by W.W. H
 
 10227:	  20CD	B4 76 0B	        cjne    a,#076h,tv_c0
 10228:	  20D0	74 76		        mov     a,#76h
-10229:	  20D2	D6		        xchd    a,@r0
+10229:	  20D2	D7		        xchd    a,@r1
 10230:	  20D3	B4 76 05	        cjne    a,#076h,tv_c0
 10231:
 10232:				        eot     'c',tv_c0
