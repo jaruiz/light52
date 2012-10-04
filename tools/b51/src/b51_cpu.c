@@ -199,9 +199,9 @@ static uint8_t cpu_xdata_read(cpu51_t *cpu, uint16_t addr){
 }
 
 static void cpu_xdata_write(cpu51_t *cpu, uint16_t addr, uint8_t value){
-    if(cpu->mcu.xdata[addr]!=value){
+    /*if(cpu->mcu.xdata[addr]!=value){*/
         log_xdata(&(cpu->log), addr, value);
-    }
+    /*}*/
     cpu->mcu.xdata[addr] = value;
 }
 
