@@ -1296,8 +1296,8 @@ tk_ma0: dec     a
         ; Access to XRAM -- note that current tests are bare-bone minimal!
         ; a.- <MOV DPTR, #16>
         ; b.- <MOVX @DPTR, A>, <MOVX A, @DPTR>
-        ; c.- <MOVX A, @Ri>
-        ; d.- <MOVX @Ri, A>
+        ; c.- <MOVX @Ri, A>
+        ; d.- <MOVX A, @Ri>
 
         putc    #'P'                ; start of test series
 
@@ -1336,17 +1336,40 @@ tk_ma0: dec     a
 
         eot     'b',tp_b0
 
-        ; c.- <MOVX A, @Ri>
-        mov     a,#79h              ; change A and DPTR so we can catch fails
-        mov     dptr,#0000h
-        mov     r0,#13h             ; read back the same data again through
-        mov     r1,#14h             ; indexed addressing...
-        movx    a,@r0
-        cjne    a,#55h,tp_c0
-        movx    a,@r1
-        cjne    a,#0aah,tp_c0
+        ; c.- <MOVX @Ri, A>
+        mov     a,#79h              ; Let [0013h] = 79h and [0014h] = 97h
+        mov     dptr,#0013h
+        mov     r0,#13h             ;
+        mov     r1,#14h             ; Write using @Ri...
+        movx    @r0,a
+        dec     a
+        movx    a,@DPTR             ; ...verify using DPTR
+        cjne    a,#79h,tp_c0
+        inc     DPTR
+        mov     a,#97h
+        movx    @r1,a
+        movx    a,@DPTR
+        cjne    a,#097h,tp_c0
 
         eot     'c',tp_c0
+
+        ; d.- <MOVX A, @Ri>
+        mov     a,#79h              ; Let [0013h] = 79h and [0014h] = 97h
+        mov     dptr,#0013h
+        mov     r0,#13h
+        mov     r1,#14h             
+        movx    @DPTR,a             ; Write using DPTR...
+        dec a
+        movx    a,@r0               ; ... verify using @Ri
+        cjne    a,#79h,tp_d0
+        mov     a,#97h
+        inc     DPTR
+        movx    @DPTR,a
+        dec a
+        movx    a,@r1
+        cjne    a,#097h,tp_d0
+
+        eot     'd',tp_d0
 
         put_crlf                    ; end of test series
 
