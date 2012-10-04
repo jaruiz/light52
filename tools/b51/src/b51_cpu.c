@@ -959,6 +959,8 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         res = res | ((cpu->a << 4) & 0x0f0);
         cpu_set_a(cpu, res);
         break;
+    case 0xd4:  /* DA A : implemented as NOP */
+        break;
     case 0xe4:  /* CLR A */
         cpu_set_a(cpu, 0);
         break;
@@ -1025,6 +1027,8 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         res = cpu_update_flags(cpu, cpu->a, res, subb);
         cpu_set_a(cpu, res);
         break;
+    case 0xa5:  /* RESERVED A5h opcode : implemented as NOP */
+         break;
     case 0xb5:  /* CJNE A, dir, rel */
         dir = cpu_fetch(cpu);
         rel = cpu_fetch(cpu);
@@ -1154,11 +1158,16 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         break;
     case 0xd6:  /* XCHD A,@Ri */
     case 0xd7:
-        dir = cpu_get_rn(cpu, opcode & 0x01);
-        res = cpu_get_idata(cpu, dir);
-        imm = (res & 0x0f0) | (cpu->a & 0x00f);
-        cpu_set_a(cpu, ((cpu->a & 0x0f0) | (res & 0x00f)));
-        cpu_set_idata(cpu, dir, res);
+        if(0){
+            dir = cpu_get_rn(cpu, opcode & 0x01);
+            res = cpu_get_idata(cpu, dir);
+            imm = (res & 0x0f0) | (cpu->a & 0x00f);
+            cpu_set_a(cpu, ((cpu->a & 0x0f0) | (res & 0x00f)));
+            cpu_set_idata(cpu, dir, res);
+        }
+        else{
+            /* Implemented as NOP */
+        }
         break;
     case 0xe6:  /* MOV A, @Ri */
     case 0xe7:
