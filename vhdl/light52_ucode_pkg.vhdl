@@ -482,6 +482,14 @@ begin
         dt(code+i) := F_XCH_RN & "0000" & A_ORL;    -- XCH A, Rn
     end loop;
     
+    -- BCD instructions --------------------------------------------------------
+    -- FIXME these should be implemented conditionally 
+    
+    dt(16#d4#) := F_NOP & "0000000000";             -- DA A
+    dt(16#d6#) := F_NOP & "0000000000";             -- XCHD A, @R0
+    dt(16#d7#) := F_NOP & "0000000000";             -- XCHD A, @R1
+    
+    
     -- NOPs --------------------------------------------------------------------
     dt(16#00#) := F_NOP & "0000000000";             -- NOP
     dt(16#a5#) := F_NOP & "0000000000";             -- Unused opcode A5h
