@@ -3,17 +3,9 @@
 --------------------------------------------------------------------------------
 -- This is a 'naive' implementation of the MCS51 architecture that trades area 
 -- for speed. 
--- Performance in clocks-per-instruction is roughly equivalent to a 5-clocker
--- MCS51 (e.g. ADD A,Rn: 5 cycles, RR A: 3 cycles, ACALL: 7 cycles).
 -- 
--- At the bottom of the file there are some design notes referenced througout
+-- At the bottom of the file there are some design notes referenced throughout
 -- the code ('@note1' etc.).
---
--- The project includes a core datasheet and a design document with full 
--- implementation details.
---
--- FIXME add optional 2nd DPTR register.
--- FIXME add brief description of architecture.
 --------------------------------------------------------------------------------
 -- GENERICS:
 --
@@ -21,7 +13,7 @@
 -- generics are functional yet).
 --
 -- IMPLEMENT_BCD_INSTRUCTIONS   -- Whether or not to implement BCD instructions.
---  When true, instructions DA and XCHG will work as in the original MCS51.
+--  When true, instructions DA and XCHD will work as in the original MCS51.
 --  When false, those instructions will work as NOP, saving some logic.
 --
 -- SEQUENTIAL_MULTIPLIER        -- Sequential vs. combinational multiplier.
@@ -33,7 +25,7 @@
 --  When true, extra logic will be generated so that the extra space in the 
 --  RAM block used for IRAM/uCode can be used as XRAM.
 --  This prevents RAM waste at some cost in area and clock rate.
---  When false, any extra space in the IRAM will be wasted.
+--  When false, any extra space in the IRAM physical block will be wasted.
 --
 --------------------------------------------------------------------------------
 -- INTERFACE SIGNALS:
@@ -105,7 +97,12 @@
 --      Spartan) will have a lot of wasted space in the IRAM/uCode RAM block.
 --------------------------------------------------------------------------------
 -- FIXMES:
--- .- Everything coming straight from a _reg should be named _reg too.
+-- 
+-- 1.-  States fetch_1 and decode_0 might be overlapped with some other states
+--      for a noticeable gain in performance.
+-- 2.-  Brief description of architecture is missing.
+-- 3.-  Add optional 2nd DPTR register and implicit INC DPTR feature.
+-- 4.-  Everything coming straight from a _reg should be named _reg too.
 --------------------------------------------------------------------------------
 -- REFERENCES:
 -- [1] Tips for vendor-agnostic BRAM inference:
@@ -394,7 +391,9 @@ begin
         ns <= fetch_1;
         
     when fetch_1 =>
+        -- Here's where we sample the pending interrupt flags... 
         if irq_active='1' then
+            -- ...and trigger interrupt response if necessary.
             ns <= irq_1;
         else
             ns <= decode_0;

@@ -494,7 +494,6 @@ with ps select load_t <=
     "11" when mov_dptr_0,
     "11" when mov_dptr_1,
     -- ...or don't load T
-    -- FIXME XRAM source missing
     "00" when others;
 
 with ps select load_v <= 
@@ -512,7 +511,7 @@ begin
             if load_t(0)='1' then
                 T_reg <= unsigned(code_rd); -- #imm data
             else
-                T_reg <= unsigned(iram_sfr_rd); -- [dir] data FIXME synth stub
+                T_reg <= unsigned(iram_sfr_rd); -- [dir] data
             end if;
         end if;
 
