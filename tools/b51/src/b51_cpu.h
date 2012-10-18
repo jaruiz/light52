@@ -64,6 +64,12 @@ typedef struct cpu51_sfr_s {
     uint8_t tmod;
 } cpu51_sfr_t;
 
+
+typedef struct cpu51_options_s {
+    bool bcd;
+} cpu51_options_t;
+
+
 /**
     CPU object. This is the CPU model, which includes the peripherals block
     and the XDATA and XCODE memory blocks as a member object (struct field).
@@ -79,6 +85,8 @@ typedef struct cpu51_s {
     log51_t log;                    /**< Logger data */
 
     uint16_t breakpoint;            /**< Address of breakpoint */
+
+    cpu51_options_t options;        /**< Core implementation options */
 } cpu51_t;
 
 

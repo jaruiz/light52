@@ -26,6 +26,7 @@ static struct {
     char *trace_logfile_name;
     char *console_logfile_name;
     uint32_t num_instructions;
+    bool implement_bcd;
 } args;
 
 
@@ -44,9 +45,12 @@ int main(int argc, char **argv){
 
     cpu_init(&cpu);
 
+    /* Parse command line... */
     if(!parse_command_line(argc, argv)){
         exit(2);
     }
+    /* ...and pass options to CPU model */
+    cpu.options.bcd = args.implement_bcd;
 
     if(!cpu_load_code(&cpu, args.hex_file_name)){
         exit(1);
@@ -89,6 +93,7 @@ static bool parse_command_line(int argc, char **argv){
     args.trace_logfile_name = "sw_log.txt";
     args.hex_file_name = NULL;
     args.num_instructions = 9e8;
+    args.implement_bcd = false;
 
     for(i=1;i<argc;i++){
         if(strcmp(argv[i],"--nologs")==0){
@@ -112,6 +117,10 @@ static bool parse_command_line(int argc, char **argv){
                 printf("Error: expected decimal integer as argument of --ninst\n\n");
                 return false;
             }
+        }
+        else if(strncmp(argv[i],"--bcd", strlen("--bcd"))==0){
+            printf("Simulating BCD instructions.\n");
+            args.implement_bcd = true;
         }
         else{
             printf("unknown argument '%s'\n\n",argv[i]);

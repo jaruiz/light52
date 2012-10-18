@@ -87,9 +87,11 @@ extern uint16_t cpu_load_code(cpu51_t *cpu, const char *hex_filename){
 }
 
 extern void cpu_init(cpu51_t *cpu){
-    /* Nothing to init in the CPU so far */
+    /* Not much to init in the CPU so far */
     cpu->breakpoint = 0xffff; /* FIXME implementation of BP is flimsy */
     cpu->log.executed_instructions = 0;
+    /* Set the core implementation options to their default value */
+    cpu->options.bcd = false;
     /* now init the MCU model -- peripherals */
     mcu_init(&cpu->mcu);
 }
@@ -369,7 +371,25 @@ static uint8_t cpu_update_flags(cpu51_t *cpu, uint8_t s, uint8_t d, cpu_op_t op)
         cpu->sfr.psw = set_bit(cpu->sfr.psw, 2, ov);
         break;
     case da:
-        printf("UNIMPLEMENTED DA\n");
+        if(cpu->options.bcd){
+            x = s & 0x0f;
+            y = s;
+            if((x > 9) || ((cpu->sfr.psw&0x40)!=0)){
+                y += 0x06;
+            }
+            x = (y >> 4) & 0x1f;
+            if((x > 9) || ((cpu->sfr.psw&0x80)!=0)){
+                y += 0x60;
+            }
+            res = y & 0x0ff;
+            /* DA can SET C but can't clear if if it's set */
+            if((y > 0x0ff) || ((cpu->sfr.psw&0x80)!=0)){
+                cpu->sfr.psw |= 0x80;
+            }
+        }
+        else{
+            /* Implement as NOP: do nothing */
+        }
         break;
     case rlc:
         res = (s << 1) | (cpu->sfr.psw >> 7);
@@ -959,7 +979,9 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         res = res | ((cpu->a << 4) & 0x0f0);
         cpu_set_a(cpu, res);
         break;
-    case 0xd4:  /* DA A : implemented as NOP */
+    case 0xd4:  /* DA A */
+        val = cpu_update_flags(cpu, cpu->a, 0, da);
+        cpu_set_a(cpu, val);
         break;
     case 0xe4:  /* CLR A */
         cpu_set_a(cpu, 0);
@@ -1064,6 +1086,11 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         cpu_set_dir(cpu, dir, cpu->a);
         break;
     /*-- ROW 6 & ROW 7 -------------------------------------------------------*/
+    /*  IMPORTANT:
+        All the cases in the x6 & x7 groups are PAIRED. The 'case fallthrough'
+        is intentional.
+        TODO label fallthrough case for link tool.
+    */
     case 0x06:  /* INC @Ri */
     case 0x07:
         dir = cpu_get_rn(cpu, opcode & 0x01);
@@ -1158,7 +1185,7 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         break;
     case 0xd6:  /* XCHD A,@Ri */
     case 0xd7:
-        if(0){
+        if(cpu->options.bcd & false){ /* FIXME temporarily omitted */
             dir = cpu_get_rn(cpu, opcode & 0x01);
             res = cpu_get_idata(cpu, dir);
             imm = (res & 0x0f0) | (cpu->a & 0x00f);
