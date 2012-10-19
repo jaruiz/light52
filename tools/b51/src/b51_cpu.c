@@ -382,8 +382,8 @@ static uint8_t cpu_update_flags(cpu51_t *cpu, uint8_t s, uint8_t d, cpu_op_t op)
                 y += 0x60;
             }
             res = y & 0x0ff;
-            /* DA can SET C but can't clear if if it's set */
-            if((y > 0x0ff) || ((cpu->sfr.psw&0x80)!=0)){
+            /* DA can SET C but can't clear it if it's set */
+            if(y > 0x0ff){
                 cpu->sfr.psw |= 0x80;
             }
         }
