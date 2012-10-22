@@ -7,10 +7,12 @@ Yet another free 8051 FPGA core.
 
 This project is in a very early state: 
 
+* Design and implementation finished.
+* Already tested on real hardware (Dhrystone demo on Cyclone-2 FPGA).
 * No documentation other than this readme file and a draft of the datasheet.
 * Hardly debugged.
 
-The design and most of the implementation is done.
+
 The core has already passed a basic test bench and executed a Dhrystone benchmark
 on actual hardware (DE-1 board from Terasic) -- benchmark results included in 
 the datasheet. Yet, there are still many loose ends and a strong test bench 
@@ -28,5 +30,6 @@ fixing bugs until the test bench is strong enough to consider the core 'tested'.
 
 
 Anyway, until some real documentation is added explaining how to set up and use this
-project, you are advised to just ignore it.
+project, you are not advised to try to use it. But don't hesitate to contact 
+me if you decide to try and need help!
 
