@@ -371,24 +371,19 @@ static uint8_t cpu_update_flags(cpu51_t *cpu, uint8_t s, uint8_t d, cpu_op_t op)
         cpu->sfr.psw = set_bit(cpu->sfr.psw, 2, ov);
         break;
     case da:
-        if(cpu->options.bcd){
-            x = s & 0x0f;
-            y = s;
-            if((x > 9) || ((cpu->sfr.psw&0x40)!=0)){
-                y += 0x06;
-            }
-            x = (y >> 4) & 0x1f;
-            if((x > 9) || ((cpu->sfr.psw&0x80)!=0)){
-                y += 0x60;
-            }
-            res = y & 0x0ff;
-            /* DA can SET C but can't clear it if it's set */
-            if(y > 0x0ff){
-                cpu->sfr.psw |= 0x80;
-            }
+        x = s & 0x0f;
+        y = s;
+        if((x > 9) || ((cpu->sfr.psw&0x40)!=0)){
+            y += 0x06;
         }
-        else{
-            /* Implement as NOP: do nothing */
+        x = (y >> 4) & 0x1f;
+        if((x > 9) || ((cpu->sfr.psw&0x80)!=0)){
+            y += 0x60;
+        }
+        res = y & 0x0ff;
+        /* DA can SET C but can't clear it if it's set */
+        if(y > 0x0ff){
+            cpu->sfr.psw |= 0x80;
         }
         break;
     case rlc:
@@ -980,8 +975,13 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         cpu_set_a(cpu, res);
         break;
     case 0xd4:  /* DA A */
-        val = cpu_update_flags(cpu, cpu->a, 0, da);
-        cpu_set_a(cpu, val);
+        if(cpu->options.bcd){
+            val = cpu_update_flags(cpu, cpu->a, 0, da);
+            cpu_set_a(cpu, val);
+        }
+        else{
+            /* DA unimplemented, execute as NOP */
+        }
         break;
     case 0xe4:  /* CLR A */
         cpu_set_a(cpu, 0);
