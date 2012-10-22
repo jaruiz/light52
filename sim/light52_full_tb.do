@@ -1,13 +1,13 @@
-# Run main test bench: opcode test assembled for 'default' CPU -- the CPU with 
-# BCD instructions NOT implemented.
+# Run main test bench: opcode test assembled for 'full' CPU -- the CPU with 
+# BCD instructions implemented.
 
 # assumed to run from /<project directory>/sim
 vlib work
 
 vcom -reportprogress 300 -work work ../vhdl/light52_pkg.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_ucode_pkg.vhdl
-# Use object code package from 'default' opcode tester.
-vcom -reportprogress 300 -work work ../test/cpu_test/obj_code_pkg.vhdl
+# Use object code package from 'full' opcode tester.
+vcom -reportprogress 300 -work work ../test/cpu_test/full_test_pkg.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_muldiv.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_alu.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_cpu.vhdl

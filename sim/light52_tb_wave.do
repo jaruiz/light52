@@ -15,7 +15,7 @@ add wave -noupdate -group SFR -color {Sky Blue} -format Literal -radix hexadecim
 add wave -noupdate -divider Debug
 add wave -noupdate -color Pink -format Literal /light52_tb/uut/cpu/ps
 add wave -noupdate -divider Internal
-add wave -noupdate -expand -group Datapath
+add wave -noupdate -group Datapath
 add wave -noupdate -group Datapath -color Goldenrod -format Literal -radix hexadecimal /light52_tb/uut/cpu/alu_result
 add wave -noupdate -group Datapath -color Wheat -format Literal -radix hexadecimal /light52_tb/uut/cpu/nobit_alu_result
 add wave -noupdate -group Datapath -color Gold -format Literal /light52_tb/uut/cpu/alu_fn_reg
@@ -66,7 +66,7 @@ add wave -noupdate -group XDATA -color {Sky Blue} -format Logic /light52_tb/uut/
 add wave -noupdate -group XDATA -color Wheat -format Literal -radix hexadecimal /light52_tb/uut/xdata_addr
 add wave -noupdate -group XDATA -format Literal -radix hexadecimal /light52_tb/uut/xdata_rd
 add wave -noupdate -group XDATA -color Thistle -format Literal -radix hexadecimal /light52_tb/uut/xdata_wr
-add wave -noupdate -group {IRAM - SFR}
+add wave -noupdate -expand -group {IRAM - SFR}
 add wave -noupdate -group {IRAM - SFR} -format Logic /light52_tb/uut/cpu/sfr_addressing
 add wave -noupdate -group {IRAM - SFR} -format Logic /light52_tb/uut/cpu/direct_addressing
 add wave -noupdate -group {IRAM - SFR} -format Literal /light52_tb/uut/cpu/alu/load_t
@@ -74,6 +74,7 @@ add wave -noupdate -group {IRAM - SFR} -format Logic /light52_tb/uut/cpu/sfr_vma
 add wave -noupdate -group {IRAM - SFR} -format Literal -radix hexadecimal /light52_tb/uut/cpu/sfr_rd_internal_reg
 add wave -noupdate -group {IRAM - SFR} -format Literal -radix hexadecimal /light52_tb/uut/cpu/sfr_addr_internal
 add wave -noupdate -group {IRAM - SFR} -format Literal -radix hexadecimal /light52_tb/uut/cpu/addr0_reg_input
+add wave -noupdate -group {IRAM - SFR} -format Logic /light52_tb/uut/cpu/use_ri_reg
 add wave -noupdate -group {IRAM - SFR} -format Logic /light52_tb/uut/cpu/load_addr0
 add wave -noupdate -group {IRAM - SFR} -format Literal -radix hexadecimal /light52_tb/uut/cpu/ri_addr
 add wave -noupdate -group {IRAM - SFR} -format Literal -radix hexadecimal /light52_tb/uut/cpu/rn_addr
@@ -89,7 +90,7 @@ add wave -noupdate -group {IRAM - SFR} -color {Cornflower Blue} -format Literal 
 add wave -noupdate -group {IRAM - SFR} -format Literal -radix hexadecimal /light52_tb/uut/cpu/iram_sfr_addr
 add wave -noupdate -group {IRAM - SFR} -format Logic /light52_tb/uut/cpu/iram_sfr_addr(7)
 add wave -noupdate -group {IRAM - SFR} -format Logic /light52_tb/uut/cpu/direct_addressing
-add wave -noupdate -group Jumps
+add wave -noupdate -expand -group Jumps
 add wave -noupdate -group Jumps -color Salmon -format Logic /light52_tb/uut/cpu/jump_condition
 add wave -noupdate -group Jumps -format Logic /light52_tb/uut/cpu/load_addr0
 add wave -noupdate -group Jumps -format Logic /light52_tb/uut/cpu/cjne_condition
@@ -118,7 +119,7 @@ add wave -noupdate -group {Register Bank} -color {Indian Red} -format Literal -l
 add wave -noupdate -group {Register Bank} -color {Indian Red} -format Literal -label R6 -radix hexadecimal /light52_tb/uut/cpu/bram(262)
 add wave -noupdate -group {Register Bank} -color {Indian Red} -format Literal -label R7 -radix hexadecimal /light52_tb/uut/cpu/bram(263)
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 3} {1326306204 ps} 0}
+WaveRestoreCursors {{Cursor 3} {356770000 ps} 0}
 configure wave -namecolwidth 183
 configure wave -valuecolwidth 50
 configure wave -justifyvalue left
@@ -132,4 +133,4 @@ configure wave -gridperiod 1
 configure wave -griddelta 40
 configure wave -timeline 0
 update
-WaveRestoreZoom {1326233653 ps} {1327203467 ps}
+WaveRestoreZoom {356703886 ps} {356836114 ps}
