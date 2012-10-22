@@ -202,8 +202,11 @@ def build_svg_table(info, cycles, part):
                 color = "#e0e0e0"
             
             # Render the cell with all its parameters.
+            
+            
+            # Render the 'optional' opcodes in red.
             if opcode_unimplemented(info[opc][0]):
-                color = "#f08080"
+                color = "#f0b0b0"
             
             cell = base_cell % (x, y, scale, color, info[opc][0], info[opc][1], count, info[opc][2])
                 
