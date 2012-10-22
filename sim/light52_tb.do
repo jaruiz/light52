@@ -20,7 +20,7 @@ vcom -reportprogress 300 -work work ../vhdl/tb/light52_tb_pkg.vhdl
 vcom -reportprogress 300 -work work ../vhdl/tb/light52_tb.vhdl
 
 # Simulate default system: all generics have default values.
-vsim -t ps -gBCD=true work.light52_tb(testbench)
+vsim -t ps -gBCD=false work.light52_tb(testbench)
 
 do ./light52_tb_wave.do
 set PrefMain(font) {Courier 9 roman normal}
