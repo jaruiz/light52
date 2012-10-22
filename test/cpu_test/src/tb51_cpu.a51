@@ -23,7 +23,6 @@
 ;   2.- <#imm> instructions are tested with one imm value only.
 ;   3.- <rel> jumps tested with small values (not near corner values).
 ;   4.- <bit> tested on 1 byte only, on 2 bits only.
-;   5.- BCD instructions (DA, XCHD) not tested at all.
 ;
 ; Note there are too many limitations to list. Use this test bench as a first
 ; approximation only. If your CPU fails this test, it must be dead!
@@ -1783,16 +1782,15 @@ tu_a_done:
         
         
         ;-- Test series V ------------------------------------------------------
-        ; NOP and unimplemented opcodes.
-        ; In order to make an instruction does nothing we should have to check
-        ; everything: IRAM, XRAM and SFRs. We will leave that to the
-        ; zexall-style tester. in this test we rely on the cosimulation with
+        ; NOP and potentially unimplemented opcodes (DA and XCHD).
+        ; In order to make sure an instruction does nothing we would have to
+        ; check everything: IRAM, XRAM and SFRs. We will leave that to the
+        ; zexall-style tester. In this test we rely on the cosimulation with
         ; software simulator B51.
         ;
         ; a.- Opcode 0A5h
-        ; b.- Unimplemented DA
-        ; c.- Unimplemented XCHD @Ri
-        ; FIXME tests b and  c should be optional
+        ; b.- DA
+        ; c.- XCHD A, @Ri
 
         putc    #'V'                ; start of test series
 
@@ -1800,18 +1798,85 @@ tu_a_done:
         ; a.- <0A5>
         db      0a5h                ; Put opcode right there...
         nop                         ; and do no check at all -- rely on B51.
+        ; we'll catch any unintended side effects by comparing the logs.
+        ; Obviously this is no good for any core other then light52...
         
         eot     'a',tv_a0
 
-        ; b.- <DA5>
-        mov     a,01ah              ; This should be adjusted to 020h...
+        ; b.- <DA>
+        ifdef   BCD
+        ; DA implemented in CPU
+        mov     psw,#000h           ; Al>9, AC=0
+        mov     a,#01ah             
+        da      a
+        mov     saved_psw,psw
+        cjne    a,#020h,tv_b0
+        mov     a,saved_psw
+        cjne    a,#001h,tv_b0
+        
+        mov     psw,#040h           ; Al<9, AC=1
+        mov     a,#012h
+        da      a
+        mov     saved_psw,psw
+        cjne    a,#018h,tv_b0
+        mov     a,saved_psw
+        cjne    a,#040h,tv_b0
+
+        mov     psw,#040h           ; Al>9, AC=1 (hardly possible in BCD)
+        mov     a,#01ah
+        da      a
+        mov     saved_psw,psw
+        cjne    a,#020h,tv_b0
+        mov     a,saved_psw
+        cjne    a,#041h,tv_b0
+
+        mov     psw,#0c0h           ; AC=CY=1
+        mov     a,#000h
+        da      a
+        mov     saved_psw,psw
+        cjne    a,#066h,tv_b0
+        mov     a,saved_psw
+        cjne    a,#0c0h,tv_b0
+
+        mov     psw,#040h           ; DA generates carry
+        mov     a,#0fah
+        da      a
+        mov     saved_psw,psw
+        cjne    a,#060h,tv_b0
+        mov     a,saved_psw
+        cjne    a,#0c0h,tv_b0
+
+        else
+        ; DA unimplemented in CPU
+        mov     a,#01ah             ; This would be adjusted by DA to 020h...
         da      a                   ; ...make sure it isn't
-        cjne    a,01ah,tv_b0
+        cjne    a,#01ah,tv_b0
         nop
+        endif
         
         eot     'b',tv_b0
 
         ; c.- XCHD a,@ri
+        ifdef   BCD
+        ; XCHD implemented in CPU, test opcode.
+        mov     r0,#031h
+        mov     r1,#032h
+        mov     a,#042h
+        mov     @r0,a
+        inc     a
+        mov     @r1,a
+        mov     a,#76h
+        xchd    a,@r0
+        cjne    a,#072h,tv_c0
+        mov     a,31h
+        cjne    a,#046h,tv_c0
+        mov     a,#79h
+        xchd    a,@r1
+        cjne    a,#073h,tv_c0
+        mov     a,32h
+        cjne    a,#049h,tv_c0
+        else
+        ; XCHD unimplemented, make sure the nibbles aren't exchanged.
         mov     r0,#031h
         mov     r1,#032h
         mov     a,#042h
@@ -1823,6 +1888,7 @@ tu_a_done:
         mov     a,#76h
         xchd    a,@r1
         cjne    a,#076h,tv_c0
+        endif
         
         eot     'c',tv_c0
 

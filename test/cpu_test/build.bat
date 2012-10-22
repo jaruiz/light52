@@ -10,10 +10,14 @@
 @rem ...and this is where the object code vhdl package will be written to.
 @set VHDL_TB_PATH=.
 
-@rem Assemble the source files...
-@for %%f in (tb51_cpu) do %AS% src\%%f.a51 bin\%%f.hex lst\%%f.lst %AS_OPTS%
+@rem Assemble the test program with default options...
+@echo Assembling with default options...
+@%AS% src\tb51_cpu.a51 bin\tb51_cpu.hex lst\tb51_cpu.lst %AS_OPTS%
+@rem ...and assemble it with all CPU options enabled: BCD opcodes
+@echo Assembling with all options enabled...
+@%AS% src\tb51_cpu.a51 bin\tb51_all.hex lst\tb51_all.lst /DEFINE:BCD %AS_OPTS%
 
-@rem ...and build the object code vhdl package
+@rem ...and build the object code vhdl packages
 @python %BR_PATH%\src\build_rom.py ^
      -f bin/tb51_cpu.hex  ^
      -v %BR_PATH%/templates/obj_code_pkg_template.vhdl ^
@@ -21,4 +25,9 @@
      --xcode 40000 ^
      --name cpu_test
      
-
+@python %BR_PATH%\src\build_rom.py ^
+     -f bin/tb51_all.hex  ^
+     -v %BR_PATH%/templates/obj_code_pkg_template.vhdl ^
+     -o %VHDL_TB_PATH%/full_test_pkg.vhdl ^
+     --xcode 40000 ^
+     --name cpu_test
