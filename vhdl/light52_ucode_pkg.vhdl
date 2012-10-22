@@ -74,6 +74,7 @@ constant F_JMP_ADPTR :          t_class := "111000";
 constant F_PUSH :               t_class := "111100";
 constant F_POP :                t_class := "111101";
 constant F_NOP :                t_class := "100000";
+constant F_XCHD :               t_class := "111110";
 constant F_INVALID :            t_class := "111111";
 
 -- Conditional jump condition selection field for F_JR and F_JRB classes.
@@ -127,6 +128,7 @@ constant AC_A_D_to_D :          t_alu_class := "10111";
 constant AC_RN_to_A :           t_alu_class := "11000";
 constant AC_DIV :               t_alu_class := "11010";
 constant AC_MUL :               t_alu_class := "11011";
+constant AC_DA :                t_alu_class := "11001";
 
 
 -- ALU input operand selection control.
@@ -193,13 +195,13 @@ constant FM_C_OV :   t_flag_mask := "10";   -- C and OV
 constant FM_ALL :    t_flag_mask := "11";   -- C, OV and AC
 
     
-function build_decoding_table return t_ucode_table;
+function build_decoding_table(bcd : boolean) return t_ucode_table;
 
 end package light52_ucode_pkg;
 
 package body light52_ucode_pkg is
 
-function build_decoding_table return t_ucode_table is
+function build_decoding_table(bcd : boolean) return t_ucode_table is
 variable dt : t_ucode_table; 
 variable code : integer;
 begin
@@ -483,11 +485,18 @@ begin
     end loop;
     
     -- BCD instructions --------------------------------------------------------
-    -- FIXME these should be implemented conditionally 
     
-    dt(16#d4#) := F_NOP & "0000000000";             -- DA A
-    dt(16#d6#) := F_NOP & "0000000000";             -- XCHD A, @R0
-    dt(16#d7#) := F_NOP & "0000000000";             -- XCHD A, @R1
+    if bcd then 
+        -- BCD instructions fully implemented
+        dt(16#d4#) := "00" & AC_DA & FM_C & "0" & A_DA;         -- DA A
+        dt(16#d6#) := F_XCHD & "0" & FM_NONE & "0" & A_XCHD;    -- XCHD A, @R0
+        dt(16#d7#) := F_XCHD & "0" & FM_NONE & "0" & A_XCHD;    -- XCHD A, @R1
+    else
+        -- BCD instructions implemented as NOPs
+        dt(16#d4#) := F_NOP & "0000000000";         -- DA A
+        dt(16#d6#) := F_NOP & "0000000000";         -- XCHD A, @R0
+        dt(16#d7#) := F_NOP & "0000000000";         -- XCHD A, @R1
+    end if;
     
     
     -- NOPs --------------------------------------------------------------------

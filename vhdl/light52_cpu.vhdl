@@ -331,7 +331,9 @@ signal bram_we :            std_logic;
 signal bram_wr_data_p0 :    t_byte;
 
 -- Part of the BRAM inference template -- see [1]
-shared variable bram :      t_ucode_bram := ucode_to_bram(build_decoding_table);
+-- The BRAM is initializzed with the decoding table.
+shared variable bram :      t_ucode_bram := 
+                ucode_to_bram(build_decoding_table(IMPLEMENT_BCD_INSTRUCTIONS));
 
 -- IRAM/SFR address; lowest 8 bits of actual BRAM address.
 signal iram_sfr_addr :      t_byte;
@@ -433,6 +435,7 @@ begin
 
                 when AC_DIV => ns <= alu_div_0;
                 when AC_MUL => ns <= alu_mul_0;
+                when AC_DA => ns <= alu_daa_0;
                 when others => ns <= bug_bad_opcode_class;
             end case;
         else
@@ -491,6 +494,8 @@ begin
                 ns <= xch_rx_0;
             when F_XCH_RN =>
                 ns <= xch_rn_0;
+            when F_XCHD =>
+                ns <= alu_xchd_0;
             when F_JMP_ADPTR =>
                 ns <= jmp_adptr_0;
             when F_RET =>
@@ -663,6 +668,31 @@ begin
         else 
             ns <= ps;
         end if;
+        
+    -- BCD instructions ----------------------------------------------
+    when alu_daa_0 =>
+        ns <= alu_daa_1;
+    
+    when alu_daa_1 =>
+        ns <= fetch_1;
+        
+    when alu_xchd_0 =>
+        ns <= alu_xchd_1;
+
+    when alu_xchd_1 =>
+        ns <= alu_xchd_2;        
+        
+    when alu_xchd_2 =>
+        ns <= alu_xchd_3;
+
+    when alu_xchd_3 =>
+        ns <= alu_xchd_4;
+
+    when alu_xchd_4 =>
+        ns <= alu_xchd_5;
+        
+    when alu_xchd_5 =>
+        ns <= fetch_1;
         
     -- ALU instructions (other than MUL/DIV) -------------------------
     when alu_rx_to_ab =>
@@ -959,6 +989,7 @@ with ps select iram_sfr_addr <=
     rx_addr         when alu_ram_to_t_rx_to_ab,
     rx_addr         when cjne_rn_imm_0,
     rx_addr         when cjne_ri_imm_0,
+    rx_addr         when alu_xchd_0,
     rx_addr         when movx_a_ri_0,
     rx_addr         when movx_ri_a_0,
     rx_addr         when xch_rx_0,
@@ -1063,6 +1094,7 @@ with ps select direct_addressing <=
     '1'                         when xch_dir_0,
     '1'                         when cjne_a_dir_0,
     '1'                         when cjne_a_dir_1,
+    '0'                         when alu_xchd_2 | alu_xchd_3,
     -- ... and for ALU instructions we use info recorded while decoding.
     '1'                         when alu_code_to_ab,
     direct_addressing_alu_reg   when xch_1,
@@ -1105,6 +1137,7 @@ with ps select bram_we <=
     not sfr_addressing          when push_2, -- FIXME verify
     not sfr_addressing          when pop_2,  -- FIXME verify
     not sfr_addressing          when xch_2,
+    '1'                         when alu_xchd_4,
     '1'                         when acall_1 | acall_2 | lcall_2 | lcall_3,
     '1'                         when irq_2 | irq_3,
     '0'                         when others;
@@ -1406,6 +1439,7 @@ with ps select load_addr0 <=
     '1' when cjne_ri_imm_1,
     '1' when cjne_ri_imm_4,
     '1' when cjne_rn_imm_2,
+    '1' when alu_xchd_1,
     '1' when djnz_dir_0,
     '1' when djnz_dir_3,
     '1' when djnz_rn_0,
@@ -1436,6 +1470,7 @@ with ps select addr0_reg_input <=
     iram_sfr_rd         when alu_ram_to_ar,
     iram_sfr_rd         when alu_ram_to_ar_2,
     iram_sfr_rd         when cjne_ri_imm_1,
+    iram_sfr_rd         when alu_xchd_1,
     iram_sfr_rd         when movx_a_ri_1,
     iram_sfr_rd         when movx_ri_a_1,
     iram_sfr_rd         when xch_rx_0,
@@ -1544,6 +1579,7 @@ with ps select sfr_vma_internal <=
     sfr_addressing      when bit_op_2,
     sfr_addressing      when xch_1,
     sfr_addressing      when xch_2,
+    sfr_addressing      when alu_xchd_2,
     -- FIXME some other states missing
     '0'                 when others;
 
@@ -1607,11 +1643,15 @@ iram_sfr_rd <= sfr_rd_internal_reg when sfr_addressing_reg='1' else bram_data_p0
 
 -- PSW flag update enable.
 with ps select update_psw_flags <=
-    -- Flags are updated at the same time ACC is loaded...
+    -- Flags are updated at the same time ACC/RAM/SFR is loaded...
     '1' when alu_res_to_a,
     '1' when alu_res_to_ram,
     '1' when alu_res_to_ram_code_to_ab, 
     '1' when alu_res_to_ram_ar_to_ab,
+    '1' when alu_daa_1,
+        -- (XCHD states included for generality only; they never 
+        -- update any flags (FM_NONE)).
+    '1' when alu_xchd_4 | alu_xchd_5,
     -- ...when the CJNE magnitude comparison is made...
     '1' when cjne_a_imm_1,
     '1' when cjne_a_dir_2,
@@ -1622,7 +1662,7 @@ with ps select update_psw_flags <=
     -- ...and when a mul/div is done.
     mul_ready when alu_mul_0,
     div_ready when alu_div_0,
-    -- FIXME a few CJNE and DJNZ missing, other missing too.
+    -- Note some 
     '0' when others;
 
 -- PSW write enable for SFR accesses.    
@@ -1700,8 +1740,8 @@ end process stack_pointer;
 --## 11.- Datapath: ALU and ALU operand multiplexors ###########################
 
 -- ALU input operand mux control for ALU class instructions. Other instructions
--- that use the ALU (CJNE, DJNZ...) will need to control those muxes, that's
--- why there's two separate 'select's.
+-- that use the ALU (CJNE, DJNZ...) will need to control those muxes. That logic
+-- is within the ALU module.
 -- Note that this signal gets registered for speed before being used.
 with uc_alu_class_decode_0 select alu_class_op_sel <=
     AI_A_T  when AC_A_RI_to_A,
@@ -1742,7 +1782,8 @@ with uc_alu_class_decode_0 select alu_class_op_sel <=
         iram_sfr_rd =>          iram_sfr_rd,            
         
         -- Input and output flags
-        cy_in =>                PSW_reg(7), 
+        cy_in =>                PSW_reg(7),
+        ac_in =>                PSW_reg(6),
         cy_out =>               alu_cy,
         ov_out =>               alu_ov,
         ac_out =>               alu_ac,

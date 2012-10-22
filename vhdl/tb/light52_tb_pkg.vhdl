@@ -179,8 +179,9 @@ begin
               hstr(info.sfr_addr)& "] = "& hstr(info.sfr_wr));
     end if;
     
-    -- Log ACC updates
-    if (info.load_acc='1') then
+    -- Log ACC updates.
+    -- Note we exclude the 'intermediate update' of ACC in DA instruction.
+    if (info.load_acc='1' and info.ps/=alu_daa_0) then
         if info.a_reg_prev /= info.acc_input then
             print(l_file, "("& hstr(info.pc)& ") A = "& 
                 hstr(info.acc_input) );

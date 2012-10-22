@@ -38,6 +38,7 @@ use work.light52_tb_pkg.all;
 use work.txt_util.all;
 
 entity light52_tb is
+generic (BCD : boolean);
 end;
 
 
@@ -85,6 +86,7 @@ begin
 
 uut: entity work.light52_mcu
     generic map (
+        IMPLEMENT_BCD_INSTRUCTIONS => BCD,
         CODE_ROM_SIZE =>    work.obj_code_pkg.XCODE_SIZE,
         XDATA_RAM_SIZE =>   work.obj_code_pkg.XDATA_SIZE,
         OBJ_CODE =>         work.obj_code_pkg.object_code

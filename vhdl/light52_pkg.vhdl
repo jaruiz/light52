@@ -225,6 +225,18 @@ type t_cpu_state is (
     pop_1,                      -- T        := RAM[B], SP--, AR,AB := CODE
     pop_2,                      -- RAM[AR]  := T
     
+    -- States for DA A
+    alu_daa_0,                  -- 1st stage of DA operation (low nibble)
+    alu_daa_1,                  -- 2nd stage of DA operation (high nibble)
+    
+   
+    -- States for XCHD A,@Ri
+    alu_xchd_0,                 -- AB,AR    := <Rx>
+    alu_xchd_1,                 -- AR       := RAM[AB]
+    alu_xchd_2,                 -- AB       := AR
+    alu_xchd_3,                 -- T        := RAM[AB]
+    alu_xchd_4,                 -- RAM[AB]  := ALU
+    alu_xchd_5,                 -- A        := ALU'
     
     -- States used to fetch operands and store result of ALU class instructions 
     alu_rx_to_ab,               -- AB,AR    := <Rx>

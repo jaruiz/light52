@@ -149,9 +149,11 @@ begin
     XDATA_RAM_SIZE => work.obj_code_pkg.XDATA_SIZE,
     -- ...as is the object code initialization constant.
     OBJ_CODE => work.obj_code_pkg.object_code,
-    -- UART baud rate isn't programmable in run time
+    -- Leave BCD opcodes disabled.
+    IMPLEMENT_BCD_INSTRUCTIONS => false,
+    -- UART baud rate isn't programmable in run time.
     UART_HARDWIRED => true,
-    -- We're using the 50MHz clock of the DE-1 board
+    -- We're using the 50MHz clock of the DE-1 board.
     CLOCK_RATE => 50e6
   )
   port map (
