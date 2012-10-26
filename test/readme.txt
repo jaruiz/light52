@@ -7,7 +7,8 @@ includes a DOS BAT make script or a makefile, plus a small readme file.
 All the demos target the default MCU, for which support code is included in
 directory 'common'.
 
-
+Please see file /doc/quickstart.txt for instructions on building a demo on
+actual hardware.
 
 Software demos:
 ----------------

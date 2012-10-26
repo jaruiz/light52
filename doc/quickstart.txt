@@ -1,3 +1,20 @@
+
+Until a proper design document is made, this quickstart file will help you
+set up one of the included software demos on a development board.
+
+Note that all the demos included in the project come pre-compiled (that is, the
+repository includes the object code package necessary to build the system), so
+it isn't necessary to install any MCS51 assembler or compiler if all you want to
+do is play a little with the core.
+
+The only development board directly supported in the present state of this
+project is Terasic's DE-1 board for altera Cyclone-2 FPGAs. It would be very
+easy to port the demos to some other board, since the core uses no board
+features other than FPGA internal resources and a serial port.
+
+FPGA configuration files are NOT included, so you will need a synthesis tool. If you have the hardware i assume you have the synth tools too.
+
+
 How to build one of the software demos on a development board
 ==============================================================
 
@@ -22,18 +39,19 @@ assume a clock rate of 50MHz. This is configured in the top vhdl entity.
 
 
 1.- VHDL source files
-----------------------
+------------------------
 
 In order to build the 'Dhrystone' demo for the DE-1 board, the project should
 include the following VHDL files:
 
-    *.- All the vhdl files /vhdl/*.vhdl.
-    *.- File /vhdl/demos/c2sb/c2sb_soc.vhdl
-    *.- Object package file /test/dhrystone/obj_code_pkg.vhdl
+    *.- All the core vhdl files:            /vhdl/*.vhdl.
+    *.- Top entity SoC file for the board:  /vhdl/demos/c2sb/c2sb_soc.vhdl
+    *.- Object code package file:           /test/dhrystone/obj_code_pkg.vhdl
 
-Note that 'C2SB' here stands for 'Cyclone-2 Starter Board'; when other target
-boards become 'supported' by this project, suitable top entities will be added
-to the /vhdl/demos directory.
+    ('C2SB' here stands for 'Cyclone-2 Starter Board')
+
+When other target boards become 'supported' by this project, suitable top
+entities will be added to the /vhdl/demos directory.
 
 Of course you can easily modify this c2sb_soc entity to suit your target
 hardware.
@@ -46,7 +64,7 @@ be necessary if some project uses more than one light52 core, for instance.
 
 
 2.- Pin location constraints
------------------------------
+-------------------------------
 
 The constraints file for the DE-1 board is in file:
 
