@@ -21,15 +21,18 @@ has yet to be developed.
 If you are curious, you can [take a look at the datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf?raw=true).
 
 
-The next step is adding some much-needed 'quick start' document showing how to 
-set up the project for development or use, and then a design document explaining
-the internals of the core.
+The next step is adding some much-needed design document explaining the 
+internals of the core, plus a detailed explanation of the cosimulation feature.
+
+Besides, the software simulator is unfinished: it needs better comments, a more 
+elaborate command line interface and a cycle-accurate simulation of the 
+peripherals.
 
 In the meantime I am incrementally improving the test bench code, catching and 
 fixing bugs until the test bench is strong enough to consider the core 'tested'.
 
-
-Until some real documentation is added explaining how to set up and use this
-project, you are not advised to use it. But don't hesitate to contact 
-me if you decide to try and need help!
+Until the core passes a really exhaustive test bench, you use this core at your
+own risk -- it has worked so far but it may still have bugs.
+If you want to try it anyway, check out file /doc/quickstart.txt and 
+don't hesitate to contact me if you need help!
 
