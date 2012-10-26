@@ -24,7 +24,8 @@ If you are curious, you can [take a look at the datasheet](https://github.com/ja
 The next step is adding some much-needed design document explaining the 
 internals of the core, plus a detailed explanation of the cosimulation feature.
 
-Besides, the software simulator is unfinished: it needs better comments, a more 
+Besides, the MCS51 software simulator (included with this project as a 
+cosimulation tool) is unfinished: it needs better comments, a more 
 elaborate command line interface and a cycle-accurate simulation of the 
 peripherals.
 
