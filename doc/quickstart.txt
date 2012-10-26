@@ -103,7 +103,8 @@ How a software simulator has been used as a verification tool
 
 This project includes a software simulator for the light52 core called b51. B is
 for 'batch', because the simulator is not interactive; it runs from reset to
-the end of the program (identified by a timeout or a single-instruction loop).
+the end of the program (identified by a timeout or a single-instruction loop),
+logging the execution as it goes along, and then quits.
 
 This simulator can be found in directory /tools/b51, together with a CodeBlocks
 project file. The simulator has been developed on Win32/Cygwin but should work
@@ -113,8 +114,8 @@ The simulator is meant to be used as a cosimulation tool: you run the same
 program in b51 and in a Modelsim vhdl test bench.
 Each of the simulations will log its evolution on a text file ('sw_log.txt' for
 b51 and 'hw_sim_log.txt' for Modelsim). If the hardware model matches the
-software model, hhe log files should be identical (or at least, identical up to
-the length of the shortest file).
+software model, the log files should be identical (this is a little trickier
+than it seems, as will be explained in the design document).
 Thus, the software model can be used as a 'golden model' of sorts.
 
 I'm calling this scheme 'cosimulation', even though the simulations don't
