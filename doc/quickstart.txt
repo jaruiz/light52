@@ -1,18 +1,30 @@
 
 Until a proper design document is made, this quickstart file will help you
-set up one of the included software demos on a development board.
+set up one of the included software demos on a development board. Plus, there's
+a brief explanation of the cosimulation verification scheme.
 
-Note that all the demos included in the project come pre-compiled (that is, the
-repository includes the object code package necessary to build the system), so
-it isn't necessary to install any MCS51 assembler or compiler if all you want to
-do is play a little with the core.
+All of this stuff will eventually be properly explained in a design document.
+This file is just a stopgap until that document is written.
+
+Software demos
+===============
+
+All the demos included in the project (in directory /test) come pre-compiled
+(that is, the repository includes the object code package necessary to build the
+system), so it isn't necessary to install any MCS51 assembler or compiler if all
+you want to do is play a little with the core.
+
+The demos are meant to run on a development board, for which a top vhdl entity
+is supplied, plus a constraints file for the pin location assignment.
 
 The only development board directly supported in the present state of this
 project is Terasic's DE-1 board for altera Cyclone-2 FPGAs. It would be very
 easy to port the demos to some other board, since the core uses no board
-features other than FPGA internal resources and a serial port.
+features other than FPGA internal resources, a serial port and a reset button
+(plus a few LEDs that can be safely ignored).
 
-FPGA configuration files are NOT included, so you will need a synthesis tool. If you have the hardware i assume you have the synth tools too.
+FPGA configuration files are NOT included, so you will need a synthesis tool.
+
 
 
 How to build one of the software demos on a development board
@@ -84,4 +96,48 @@ build quick demos around the light52 core. A real project will not need them
 at all.
 
 
+
+
+How a software simulator has been used as a verification tool
+==============================================================
+
+This project includes a software simulator for the light52 core called b51. B is
+for 'batch', because the simulator is not interactive; it runs from reset to
+the end of the program (identified by a timeout or a single-instruction loop).
+
+This simulator can be found in directory /tools/b51, together with a CodeBlocks
+project file. The simulator has been developed on Win32/Cygwin but should work
+on Linux unmodified.
+
+The simulator is meant to be used as a cosimulation tool: you run the same
+program in b51 and in a Modelsim vhdl test bench.
+Each of the simulations will log its evolution on a text file ('sw_log.txt' for
+b51 and 'hw_sim_log.txt' for Modelsim). If the hardware model matches the
+software model, hhe log files should be identical (or at least, identical up to
+the length of the shortest file).
+Thus, the software model can be used as a 'golden model' of sorts.
+
+I'm calling this scheme 'cosimulation', even though the simulations don't
+interact directly (you have to match the log files yourself).
+
+The b51 simulator is still not finished but it already can execute all the
+software demos included with this project. Each demo includes a DOS BAT file
+for launching the simulator. Until better documentation is available, you
+are referred to those BAT files and the source code of b51 for details.
+The log file format will also be described eventually in the design document.
+
+
+Why a software simulator?
+--------------------------
+
+By using a software simulator as a 'golden model' that the hardware must match
+closely, we can use far simpler test benches than would otherwise be necessary.
+Besides, development and debugging become much easier and quicker.
+
+The downside, of course, is that an accurate software model has to be developed
+in addition to the hardware design. In this project, it has been built from
+scratch -- and yet I think I have saved an awful lot of development time.
+
+This scheme (software model + hardware simulation + software-only test bench)
+is nothing new; it has been used to test new computers since at least the 70's.
 
