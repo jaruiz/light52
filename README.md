@@ -5,12 +5,12 @@ Yet another free 8051 FPGA core.
 
 ## Status
 
-This project is in a very early state: 
+This project is in an early state: 
 
 * Design and implementation finished.
-* Already tested on real hardware (Dhrystone demo on Cyclone-2 FPGA).
+* Already tried on real hardware (Dhrystone demo on Cyclone-2 FPGA).
 * No documentation other than this readme file and a draft of the datasheet.
-* Hardly debugged.
+* Has not yet passed a rigorous test bench.
 
 
 The core has already passed a basic test bench and executed a Dhrystone benchmark
