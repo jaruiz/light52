@@ -1,10 +1,6 @@
 --##############################################################################
---
---
--- NOTE: we define the operation error as abs((R - C)/R) and measure it in PPMs
--- (parts per million). This is a very crude measure of error but it's all I 
--- have time to do right now.
--- Note that we measure the PPMs in integer units; we need more resolution.
+-- light52_muldiv_tb.vhdl -- Development rig for the multiplier/divider module. 
+-- Not a proper test bench, only a visual aid for development.
 --##############################################################################
 
 library IEEE;

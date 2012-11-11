@@ -1,7 +1,22 @@
 --------------------------------------------------------------------------------
--- light52_tb.vhdl --
+-- light52_tb.vhdl -- 
 --------------------------------------------------------------------------------
--- Copyright (C) 2011 Jose A. Ruiz
+-- This test bench simulates the execution of some program (whose object code
+-- is in package obj_code_pkg, in the form of a memory init constant) and logs
+-- the execution to a text file called 'hw_sim_log.txt' (light52_tb_pkg.vhdl).
+--
+-- This test bench does no actual tests on the core. Instead, the simulation log
+-- is meant to be matched against the simulation log produced by running the 
+-- same program on the software simulator B51 (also included with this project).
+-- 
+-- This will catch errors in the implementation of the CPU if the simulated
+-- program has anough coverage -- the opcode tester is meant to cover all CPU
+-- opcodes in many (not all) of their corner cases.
+-- This scheme will not help in catching errors in the peripheral modules, 
+-- mainly because the current version of B51 does not simulate them.
+--
+--------------------------------------------------------------------------------
+-- Copyright (C) 2012 Jose A. Ruiz
 --                                                              
 -- This source file may be used and distributed without         
 -- restriction provided that this copyright statement is not    
