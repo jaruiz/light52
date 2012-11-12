@@ -1,8 +1,84 @@
 --------------------------------------------------------------------------------
 -- light52_mcu.vhdl -- MCU/SoC built around light52 CPU.
 --------------------------------------------------------------------------------
--- FIXME add SFR table and peripheral list.
--- FIXME explain generics and interface signals.
+-- The MCU is a minimalistic SoC built around the light52 core mostly for
+-- demonstration purposes. It has more or less the same features as a plain old
+-- i8051: an UART, a timer and a bunch of i/o.
+-- While it can be used as it stands, it is meant to be modified to suit each 
+-- particular application of the core. Thus, no effort has been made to provide 
+-- a variety of general purpose peripherals. You are supposed to supply them 
+-- yourself.
+-- 
+--
+-- A complete explanation of all the peripherals and their SFRs can be found in
+-- the core datasheet.
+--
+--------------------------------------------------------------------------------
+-- INTERFACE SIGNALS
+--
+-- clk :                Clock, active rising edge.
+-- reset :              Synchronous reset, hold for at least 1 cycle.
+--
+-- rxd :                UART RxD input.
+-- txd :                UART TxD output.
+--
+-- external_irq :       External interrupt request inputs. 
+--                      Level active: Will trigger interrupt #0 as long as any 
+--                      of them is high (if enabled).
+--
+-- p0_out :             Output GP port 0.
+-- p1_out :             Output GP port 1.
+-- p2_in :              Input GP port 2.
+-- p3_out :             Input GP port 3.
+--
+--------------------------------------------------------------------------------
+-- GENERICS:
+--
+-- CODE_ROM_SIZE 
+--  Size in bytes of XCODE ROM block to be initialized with application object 
+--  code. Must be 512 <= CODE_ROM_SIZE < 64K.
+--
+-- XDATA_RAM_SIZE               
+-- Size of XDATA RAM. Can be zero. 
+--
+-- OBJ_CODE
+--  Object code constant hardwired onto XCODE ROM block. This value is meant to 
+--  come from a constant defined in an 'object code package', built from the 
+--  project application object code. See the datasheet.
+--
+-- IMPLEMENT_BCD_INSTRUCTIONS
+--  Whether or not to implement BCD instructions. 
+--  When true, instructions DA and XCHD will work as in the original MCS51.
+--  When false, those instructions will work as NOP, saving some logic.
+--
+-- SEQUENTIAL_MULTIPLIER
+--  Sequential vs. combinational multiplier.
+--  When true, a sequential implementation will be used for the multiplier, 
+--  which will usually save a lot of logic or a dedicated multiplier.
+--  When false, a combinational registered multiplier will be used.
+--  (NOT IMPLEMENTED -- setting it to true will raise an assertion failure).
+--
+-- USE_BRAM_FOR_XRAM            
+--  Use extra space in IRAM/uCode RAM as XRAM.
+--  When true, extra logic will be generated so that the extra space in the 
+--  RAM block used for IRAM/uCode can be used as XRAM.
+--  This prevents RAM waste at some cost in area and clock rate.
+--  When false, any extra space in the IRAM physical block will be wasted.
+--
+-- UART_HARDWIRED               
+--  UART baud rate is hardwired to its default value, writes to the SBPL, SBPH 
+--  SFR registers have no effect.
+--
+-- UART_BAUD_RATE               
+--  Default UART baud rate. Must be <= (CLOCK_RATE/16).
+--
+-- CLOCK_RATE                   
+--  Main clock frequency in Hz. Used in the computation of the periods of the 
+--  UART and the timer.
+--
+-- TIMER0_COUNT_RATE 
+--  Count rate of Timer0. Used to compute the value of the Timer0 prescaler.
+--
 --------------------------------------------------------------------------------
 -- Copyright (C) 2012 Jose A. Ruiz
 --                                                              
@@ -50,7 +126,9 @@ entity light52_mcu is
         -- Peripheral configuration (see peripheral modules).
         UART_HARDWIRED :        boolean := false;
         UART_BAUD_RATE :        natural := 19200;
-        CLOCK_RATE :            natural := 50e6
+        CLOCK_RATE :            natural := 50e6;
+        -- Timer0 count period = 20 us by default (20e-6 = 1/50e3)
+        TIMER0_COUNT_RATE :     natural := 50e3
     );
     port(
         clk             : in std_logic;
@@ -150,6 +228,7 @@ signal ext_irq :            std_logic;
 
 signal irq_source :         std_logic_vector(4 downto 0);
 
+
 begin
 
 ---- CPU entity instantiation --------------------------------------------------
@@ -207,8 +286,8 @@ begin
 ---- XCODE memory block --------------------------------------------------------
 
     -- Make sure the XCODE size is within bounds.
-    assert CODE_ROM_SIZE <= 65536
-    report "Invalid value for CODE_ROM_SIZE (>64KB)."
+    assert 512 <= CODE_ROM_SIZE and CODE_ROM_SIZE <= 65536
+    report "Invalid value for CODE_ROM_SIZE (<512 or >64KB)."
     severity failure;
 
 
@@ -301,7 +380,7 @@ begin
     -- This is a basic 16-bit timer set up as a 20-microsecond-period counter
     timer: entity work.light52_timer
     generic map (
-        PRESCALER_VALUE => CLOCK_RATE / 50e3
+        PRESCALER_VALUE => CLOCK_RATE / TIMER0_COUNT_RATE
     )
     port map (
         irq_o   => timer_irq,
