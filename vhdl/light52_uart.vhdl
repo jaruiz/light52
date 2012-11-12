@@ -192,8 +192,8 @@ use ieee.numeric_std.all;
 entity light52_uart is
   generic (
     HARDWIRED     : boolean := true;  -- Baud rate hardwired to constant value 
-    BAUD_RATE     : integer := 19200; -- Default (or hardwired) baud rate 
-    CLOCK_FREQ    : integer := 50E6); -- Clock rate
+    BAUD_RATE     : natural := 19200; -- Default (or hardwired) baud rate 
+    CLOCK_FREQ    : natural := 50E6); -- Clock rate
     port ( 
         rxd_i     : in std_logic;
         txd_o     : out std_logic;
@@ -217,10 +217,6 @@ architecture hardwired of light52_uart is
 
 -- Bit period expressed in master clock cycles
 constant DEFAULT_BIT_PERIOD : integer := (CLOCK_FREQ / BAUD_RATE);
-
--- Bit sampling period is 1/16 of the baud rate.
-constant DEFAULT_SAMPLING_PERIOD : integer := DEFAULT_BIT_PERIOD / 16;
-
 
 
 --##############################################################################
@@ -279,6 +275,14 @@ signal tx_irq :           std_logic;
 
 
 begin
+
+-- Do a minimal sanity check on the value of the generics.
+-- This will only catch some of the many ways the configuration can go wrong,
+-- the rest will get caught while debugging...
+assert (BAUD_RATE*16) < CLOCK_FREQ
+report "UART default baud rate is too high."
+severity failure;
+
 
 -- Rename the most commonly used inputs to get rid of the i/o suffix
 clk <= clk_i;
