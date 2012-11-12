@@ -37,7 +37,7 @@ package obj_code_pkg is
 -- Size of XCODE memory in bytes.
 constant XCODE_SIZE : natural := 2048;
 -- Size of XDATA memory in bytes.
-constant XDATA_SIZE : natural := 512;
+constant XDATA_SIZE : natural := 0;
 
 -- Object code initialization constant.
 constant object_code : t_obj_code(0 to 149) := (
