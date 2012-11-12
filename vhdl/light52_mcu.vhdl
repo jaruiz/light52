@@ -151,231 +151,234 @@ signal irq_source :         std_logic_vector(4 downto 0);
 
 begin
 
-cpu: entity work.light52_cpu 
-generic map (
-    USE_BRAM_FOR_XRAM => USE_BRAM_FOR_XRAM,
-    IMPLEMENT_BCD_INSTRUCTIONS => IMPLEMENT_BCD_INSTRUCTIONS,
-    SEQUENTIAL_MULTIPLIER => SEQUENTIAL_MULTIPLIER
-)
-port map (
-    clk         => clk,
-    reset       => reset,
+---- CPU entity instantiation --------------------------------------------------
+
+    cpu: entity work.light52_cpu 
+    generic map (
+        USE_BRAM_FOR_XRAM => USE_BRAM_FOR_XRAM,
+        IMPLEMENT_BCD_INSTRUCTIONS => IMPLEMENT_BCD_INSTRUCTIONS,
+        SEQUENTIAL_MULTIPLIER => SEQUENTIAL_MULTIPLIER
+    )
+    port map (
+        clk         => clk,
+        reset       => reset,
+        
+        code_addr   => code_addr,
+        code_rd     => code_rd,
+
+        irq_source  => irq_source,
+        
+        xdata_addr  => xdata_addr,
+        xdata_rd    => xdata_rd,
+        xdata_wr    => xdata_wr,
+        xdata_vma   => xdata_vma,
+        xdata_we    => xdata_we,
+
+        
+        sfr_addr    => sfr_addr,
+        sfr_rd      => sfr_rd,
+        sfr_wr      => sfr_wr,
+        sfr_vma     => sfr_vma,
+        sfr_we      => sfr_we
+    );
+
+    -- FIXME uart irq is unconnected!
+    irq_source <= "000" & timer_irq & ext_irq;
+
+---- SFR input mux -------------------------------------------------------------
+
+    -- You have to modify simplified addressing if you add new peripherals.
+    -- WARNING:
+    -- If we use constant slices for decoding instead of bit vector literals,
+    -- Xilinx ISE 9.2i will complain that 'sfr_rd is not assigned' and will 
+    -- optimize away the SFR input mux.
+    -- The only way I've found to fix this is to use literals, though it 
+    -- defeats the purpose of using constants in the first place...
+    with sfr_addr(7 downto 3) select sfr_rd <=
+        uart_sfr_rd     when "10011",       -- SFR_ADDR_SCON(7 downto 3)
+        timer_sfr_rd    when "10001",       -- SFR_ADDR_TCON(7 downto 3)
+        p0_reg          when "10000",       -- SFR_ADDR_P0(7 downto 3)
+        p1_reg          when "10010",       -- SFR_ADDR_P1(7 downto 3)
+        p2_reg          when "10100",       -- SFR_ADDR_P2(7 downto 3)
+        p3_reg          when others;
+        
     
-    code_addr   => code_addr,
-    code_rd     => code_rd,
+---- XCODE memory block --------------------------------------------------------
 
-    irq_source  => irq_source,
-    
-    xdata_addr  => xdata_addr,
-    xdata_rd    => xdata_rd,
-    xdata_wr    => xdata_wr,
-    xdata_vma   => xdata_vma,
-    xdata_we    => xdata_we,
+    code_addr_slice <= code_addr(code_addr_slice'high downto 0);
 
-    
-    sfr_addr    => sfr_addr,
-    sfr_rd      => sfr_rd,
-    sfr_wr      => sfr_wr,
-    sfr_vma     => sfr_vma,
-    sfr_we      => sfr_we
-);
-
--- FIXME uart irq missing
-irq_source <= "000" & timer_irq & ext_irq;
-
---------------------------------------------------------------------------------
-
-code_addr_slice <= code_addr(code_addr_slice'high downto 0);
-
-code_ram_block:
-process(clk)
-begin
-    if clk'event and clk='1' then
-        code_rd <= code_bram(to_integer(unsigned(code_addr_slice)));
-    end if;
-end process code_ram_block;
-
---------------------------------------------------------------------------------
-
-data_addr_slice <= xdata_addr(data_addr_slice'high downto 0);
-
-xdata_ram_block:
-process(clk)
-begin
-    if clk'event and clk='1' then
-        if xdata_we='1' then
-            xdata_ram(to_integer(unsigned(data_addr_slice))) <= xdata_wr;
+    code_ram_block:
+    process(clk)
+    begin
+        if clk'event and clk='1' then
+            code_rd <= code_bram(to_integer(unsigned(code_addr_slice)));
         end if;
-        xdata_rd <= xdata_ram(to_integer(unsigned(data_addr_slice)));
-    end if;
-end process xdata_ram_block;
+    end process code_ram_block;
 
---------------------------------------------------------------------------------
+---- XDATA memory block --------------------------------------------------------
 
--- SFR input multiplexor -- modify simplified addressing if you add peripherals.
--- WARNING:
--- If we use constant slices for decoding instead of bit vector literals,
--- Xilinx ISE 9.2i will complain that 'sfr_rd is not assigned' and will 
--- optimize away the SFR input mux.
--- The only way I've found to fix this is to use literals, though it 
--- defeats the purpose of using constants in the first place...
-with sfr_addr(7 downto 3) select sfr_rd <=
-    uart_sfr_rd     when "10011",       -- SFR_ADDR_SCON(7 downto 3)
-    timer_sfr_rd    when "10001",       -- SFR_ADDR_TCON(7 downto 3)
-    p0_reg          when "10000",       -- SFR_ADDR_P0(7 downto 3)
-    p1_reg          when "10010",       -- SFR_ADDR_P1(7 downto 3)
-    p2_reg          when "10100",       -- SFR_ADDR_P2(7 downto 3)
-    p3_reg          when others;
+    data_addr_slice <= xdata_addr(data_addr_slice'high downto 0);
+
+    xdata_ram_block:
+    process(clk)
+    begin
+        if clk'event and clk='1' then
+            if xdata_we='1' then
+                xdata_ram(to_integer(unsigned(data_addr_slice))) <= xdata_wr;
+            end if;
+            xdata_rd <= xdata_ram(to_integer(unsigned(data_addr_slice)));
+        end if;
+    end process xdata_ram_block;
 
 
 ---- UART ----------------------------------------------------------------------
 
-uart : entity work.light52_uart
-generic map (
-    HARDWIRED => UART_HARDWIRED,
-    CLOCK_FREQ => CLOCK_RATE,
-    BAUD_RATE => UART_BAUD_RATE
-)
-port map (
-    rxd_i   => rxd,
-    txd_o   => txd,
-    
-    irq_o   => uart_irq,
-    
-    data_i  => sfr_wr,
-    data_o  => uart_sfr_rd,
-    
-    addr_i  => sfr_addr(1 downto 0),
-    wr_i    => sfr_we,
-    rd_i    => uart_re,
-    ce_i    => uart_ce,
-    
-    clk_i   => clk,
-    reset_i => reset
-);
+    uart : entity work.light52_uart
+    generic map (
+        HARDWIRED => UART_HARDWIRED,
+        CLOCK_FREQ => CLOCK_RATE,
+        BAUD_RATE => UART_BAUD_RATE
+    )
+    port map (
+        rxd_i   => rxd,
+        txd_o   => txd,
+        
+        irq_o   => uart_irq,
+        
+        data_i  => sfr_wr,
+        data_o  => uart_sfr_rd,
+        
+        addr_i  => sfr_addr(1 downto 0),
+        wr_i    => sfr_we,
+        rd_i    => uart_re,
+        ce_i    => uart_ce,
+        
+        clk_i   => clk,
+        reset_i => reset
+    );
 
--- Make sure the simplifications we'll do in the address decoding are valid.
-assert SFR_ADDR_SCON=X"98" and SFR_ADDR_SBUF=X"99" and 
-       SFR_ADDR_SBPL=X"9a" and SFR_ADDR_SBPH=X"9b"
-report "MCU SFR address decoding assumes standard UART register addresses "&
-       "but addresses configured in light52_mcu are not standard."
-severity failure;
+    -- Make sure the simplifications we'll do in the address decoding are valid.
+    assert SFR_ADDR_SCON=X"98" and SFR_ADDR_SBUF=X"99" and 
+           SFR_ADDR_SBPL=X"9a" and SFR_ADDR_SBPH=X"9b"
+    report "MCU SFR address decoding assumes standard UART register addresses "&
+           "but addresses configured in light52_mcu are not standard."
+    severity failure;
 
-uart_ce <= '1' when sfr_addr(7 downto 3)=SFR_ADDR_SCON(7 downto 3) else '0';
-uart_re <= sfr_vma and not sfr_we;
+    uart_ce <= '1' when sfr_addr(7 downto 3)=SFR_ADDR_SCON(7 downto 3) else '0';
+    uart_re <= sfr_vma and not sfr_we;
 
 
 ---- Timer ---------------------------------------------------------------------
 
--- This is a basic 16-bit timer set up as a 20-microsecond-period counter
-timer: entity work.light52_timer
-generic map (
-    PRESCALER_VALUE => CLOCK_RATE / 50e3
-)
-port map (
-    irq_o   => timer_irq,
-    
-    data_i  => sfr_wr,
-    data_o  => timer_sfr_rd,
-    
-    addr_i  => sfr_addr(2 downto 0),
-    wr_i    => timer_we,
-    ce_i    => timer_ce,
-    
-    clk_i   => clk,
-    reset_i => reset
-);
+    -- This is a basic 16-bit timer set up as a 20-microsecond-period counter
+    timer: entity work.light52_timer
+    generic map (
+        PRESCALER_VALUE => CLOCK_RATE / 50e3
+    )
+    port map (
+        irq_o   => timer_irq,
+        
+        data_i  => sfr_wr,
+        data_o  => timer_sfr_rd,
+        
+        addr_i  => sfr_addr(2 downto 0),
+        wr_i    => timer_we,
+        ce_i    => timer_ce,
+        
+        clk_i   => clk,
+        reset_i => reset
+    );
 
-timer_ce <= '1' when sfr_addr(7 downto 3)=SFR_ADDR_TCON(7 downto 3) and
-            sfr_vma='1' 
-            else '0';
-timer_we <= sfr_we;
+    timer_ce <= '1' when sfr_addr(7 downto 3)=SFR_ADDR_TCON(7 downto 3) and
+                sfr_vma='1' 
+                else '0';
+    timer_we <= sfr_we;
 
--- Make sure the simplifications we do in the address decoding are valid.
-assert SFR_ADDR_TCON=X"88" and SFR_ADDR_TL=X"8c"
-report "MCU SFR simplified address decoding makes assumptions that conflict "&
-       "with the SFR addresses configured in light52_mcu."
-severity failure;
+    -- Make sure the simplifications we do in the address decoding are valid.
+    assert SFR_ADDR_TCON=X"88" and SFR_ADDR_TL=X"8c"
+    report "MCU SFR simplified address decoding makes assumptions that conflict "&
+           "with the SFR addresses configured in light52_mcu."
+    severity failure;
 
 
 ---- Input/Output ports --------------------------------------------------------
 -- FIXME this should be encapsulated in a separate module
 
--- Make sure the simplifications we'll do in the address decoding are valid.
-assert SFR_ADDR_P0=X"80" and SFR_ADDR_P1=X"90" and 
-       SFR_ADDR_P2=X"a0" and SFR_ADDR_P3=X"b0"
-report "MCU SFR address decoding assumes I/O port addresses are standard "&
-       "but addresses configured in light52_pkg are not."
-severity failure;
+    -- Make sure the simplifications we'll do in the address decoding are valid.
+    assert SFR_ADDR_P0=X"80" and SFR_ADDR_P1=X"90" and 
+           SFR_ADDR_P2=X"a0" and SFR_ADDR_P3=X"b0"
+    report "MCU SFR address decoding assumes I/O port addresses are standard "&
+           "but addresses configured in light52_pkg are not."
+    severity failure;
 
-io_ce <= '1' when sfr_addr(7 downto 6)=SFR_ADDR_P0(7 downto 6) and 
-                  sfr_addr(3 downto 0)="0000" and
-                  sfr_vma='1'
-                  else '0';
+    io_ce <= '1' when sfr_addr(7 downto 6)=SFR_ADDR_P0(7 downto 6) and 
+                      sfr_addr(3 downto 0)="0000" and
+                      sfr_vma='1'
+                      else '0';
 
-output_ports:
-process(clk)
-begin
-    if clk'event and clk='1' then
-        if reset='1' then 
-            p0_reg <= P0_RESET_VALUE;
-            p1_reg <= P1_RESET_VALUE;
-        else
-            if io_ce='1' and sfr_we='1' then
-                if sfr_addr(5 downto 4)=SFR_ADDR_P0(5 downto 4) then
-                    p0_reg <= sfr_wr;
-                end if;
-                if sfr_addr(5 downto 4)=SFR_ADDR_P1(5 downto 4) then
-                    p1_reg <= sfr_wr;
+    output_ports:
+    process(clk)
+    begin
+        if clk'event and clk='1' then
+            if reset='1' then 
+                p0_reg <= P0_RESET_VALUE;
+                p1_reg <= P1_RESET_VALUE;
+            else
+                if io_ce='1' and sfr_we='1' then
+                    if sfr_addr(5 downto 4)=SFR_ADDR_P0(5 downto 4) then
+                        p0_reg <= sfr_wr;
+                    end if;
+                    if sfr_addr(5 downto 4)=SFR_ADDR_P1(5 downto 4) then
+                        p1_reg <= sfr_wr;
+                    end if;
                 end if;
             end if;
         end if;
-    end if;
-end process output_ports;
+    end process output_ports;
 
--- Note that for output ports the CPU will ALWAYS read the output register and
--- not the actual pin status -- like read-modify-write instructions in the
--- original MCS51.
-p0_out <= p0_reg;
-p1_out <= p1_reg;
+    -- Note that for output ports the CPU will ALWAYS read the output register and
+    -- not the actual pin status -- like read-modify-write instructions in the
+    -- original MCS51.
+    p0_out <= p0_reg;
+    p1_out <= p1_reg;
 
--- NOTE: input ports are registered but NOT protected against metastability.
--- Add a second layer of registers if your application needs the protection.
-input_ports:
-process(clk)
-begin
-    if clk'event and clk='1' then
-        p2_reg <= p2_in;
-        p3_reg <= p3_in;
-    end if;
-end process input_ports;
+    -- NOTE: input ports are registered but NOT protected against metastability.
+    -- Add a second layer of registers if your application needs the protection.
+    input_ports:
+    process(clk)
+    begin
+        if clk'event and clk='1' then
+            p2_reg <= p2_in;
+            p3_reg <= p3_in;
+        end if;
+    end process input_ports;
 
 
 ---- External interrupt block --------------------------------------------------
 -- FIXME this should be encapsulated in a separate module
 
-ext_irq_ce <= '1' when sfr_addr(7 downto 6)=SFR_ADDR_EXTINT(7 downto 6) and 
-                  sfr_addr(3 downto 0)="0000" and
-                  sfr_vma='1'
-                  else '0';
+    ext_irq_ce <= '1' when sfr_addr(7 downto 6)=SFR_ADDR_EXTINT(7 downto 6) and 
+                      sfr_addr(3 downto 0)="0000" and
+                      sfr_vma='1'
+                      else '0';
 
-external_interrupt_register:
-process(clk)
-begin
-    if clk'event and clk='1' then
-        if reset='1' then
-            external_irq_reg <= (others => '0');
-        else
-            if ext_irq_ce='1' and sfr_we='1' then
-                -- All bits in this register are w1c
-                external_irq_reg <= external_irq_reg and (not sfr_wr);
+    external_interrupt_register:
+    process(clk)
+    begin
+        if clk'event and clk='1' then
+            if reset='1' then
+                external_irq_reg <= (others => '0');
             else
-                external_irq_reg <= external_irq or external_irq_reg;
+                if ext_irq_ce='1' and sfr_we='1' then
+                    -- All bits in this register are w1c
+                    external_irq_reg <= external_irq_reg and (not sfr_wr);
+                else
+                    external_irq_reg <= external_irq or external_irq_reg;
+                end if;
             end if;
         end if;
-    end if;
-end process external_interrupt_register;
+    end process external_interrupt_register;
 
-ext_irq <= '1' when external_irq_reg/=X"00" else '0';
+    ext_irq <= '1' when external_irq_reg/=X"00" else '0';
 
 end architecture rtl;
