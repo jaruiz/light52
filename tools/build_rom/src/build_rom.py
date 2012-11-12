@@ -203,7 +203,7 @@ def main(argv):
               'target':     'obj_code_pkg.vhdl',
               'hex':        '',
               'xcode_size': 2048,
-              'xdata_size': 512,
+              'xdata_size': 0,
               'template':   "./templates/obj_code_pkg_template.vhdl"
               }
                 
