@@ -38,15 +38,16 @@ use work.obj_code_pkg.all;
 
 entity light52_mcu is
     generic (
-        -- External memory configuration
-        CODE_ROM_SIZE :         integer := 2*1024;
-        XDATA_RAM_SIZE :        integer := 512; -- FIXME default should be zero
+        -- External memory configuration -- These default values will be 
+        -- overriden in the actual project instantiation.
+        CODE_ROM_SIZE :         natural := 2*1024;
+        XDATA_RAM_SIZE :        natural := 0;
         OBJ_CODE :              t_obj_code := default_object_code;
-        -- CPU configuration (see CPU module)
+        -- CPU configuration (see CPU module).
         USE_BRAM_FOR_XRAM :     boolean := false;
         IMPLEMENT_BCD_INSTRUCTIONS : boolean := false;
         SEQUENTIAL_MULTIPLIER : boolean := false;
-        -- Peripheral configuration (see peripheral modules)
+        -- Peripheral configuration (see peripheral modules).
         UART_HARDWIRED :        boolean := false;
         UART_BAUD_RATE :        integer := 19200;
         CLOCK_RATE :            integer := 50e6
@@ -217,6 +218,16 @@ begin
 
 ---- XDATA memory block --------------------------------------------------------
 
+    -- Make sure the XDATA size is within bounds.
+    assert XDATA_RAM_SIZE <= 65536
+    report "Invalid value for XDATA_RAM_SIZE (>64KB)."
+    severity failure;
+
+    -- If the XDATA memory is implemented, infer a synchronous RAM block.
+    -- This block will be mirrored all over the 64K space, as usual.
+    xdata_implemented:
+    if XDATA_RAM_SIZE > 0 generate
+
     data_addr_slice <= xdata_addr(data_addr_slice'high downto 0);
 
     xdata_ram_block:
@@ -230,6 +241,17 @@ begin
         end if;
     end process xdata_ram_block;
 
+    end generate xdata_implemented;
+    
+    -- If the XDATA memory is not implemented, ground the data input.
+    xdata_unimplemented:
+    if XDATA_RAM_SIZE = 0 generate
+    
+        xdata_rd <= (others => '0');
+    
+    end generate xdata_unimplemented;
+  
+    
 
 ---- UART ----------------------------------------------------------------------
 
