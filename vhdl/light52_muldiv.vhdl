@@ -13,9 +13,42 @@
 -- in this module, you need to modify this file adding whatever synthesis 
 -- pragmas your tool of choice needs.
 --
+-- Note that unlike the division state machine, the combinational product logic
+-- is always operating: when SEQUENTIAL_MULTIPLIER=true, prod_out equals 
+-- data_a * data_b with a latency of 1 clock cycle, and mul_ready is hardwired
+-- to '1'.
+--
 -- FIXME explain division algorithm.
 --------------------------------------------------------------------------------
--- FIXME explain generics and interface signals.
+-- GENERICS:
+-- 
+-- SEQUENTIAL_MULTIPLIER        -- Sequential vs. combinational multiplier.
+--  When true, a sequential implementation will be used for the multiplier, 
+--  which will usually save a lot of logic or a dedicated multiplier.
+--  When false, a combinational registered multiplier will be used.
+--
+--------------------------------------------------------------------------------
+-- INTERFACE SIGNALS:
+--
+-- clk :            Clock, active rising edge.
+-- reset :          Synchronous reset. Clears only the control registers not
+--                  visible to the programmer -- not the output registers.
+-- 
+-- data_a :         Numerator input, should be connected to the ACC register.
+-- data_b :         Denominator input, should be connected to the B register.
+-- start :          Assert for 1 cycle to start the division state machine
+--                  (and the product if SEQUENTIAL_MULTIPLIER=true);
+-- 
+-- prod_out :       Product output, valid only when mul_ready='1'.
+-- quot_out :       Quotient output, valid only when div_ready='1'.
+-- rem_out :        Remainder output, valid only when div_ready='1'.
+-- div_ov_out :     Division overflow flag, valid only when div_ready='1'.
+-- mul_ov_out :     Product overflow flag, valid only when mul_ready='1'.
+-- 
+-- mul_ready :      Asserted permanently if SEQUENTIAL_MULTIPLIER=false.
+-- div_ready :      Deasserted the cycle after start is asserted.
+--                  Asserted when the division has completed.
+--
 --------------------------------------------------------------------------------
 -- Copyright (C) 2012 Jose A. Ruiz
 --                                                              
@@ -111,12 +144,15 @@ end process control_counter;
 
 -- Internal signal ready is asserted after 8 cycles.
 -- The sequential multiplier will use this signal too, IF it takes 8 cycles.
---ready <= '1' when bit_ctr >= (8-DIV_OVERLAP-1) else '0';
 
 ready <= '1' when bit_ctr >= 8 else '0';
 
 
 ---- Divider logic -------------------------------------------------------------
+
+-- What we do is a simple base-2 'shift-and-subtract' algorithm that takes
+-- 8 cycles to complete. We can get away with this because we deal with unsigned
+-- numbers only.
 
 divider_registers:
 process(clk)
@@ -125,7 +161,8 @@ begin
         -- denominator shift register
         if load_regs='1' then
             b_shift_reg <= "0" & data_b & "0000000";
-            -- division overflow can be determined upon loading B reg data
+            -- Division overflow can be determined upon loading B reg data.
+            -- OV will be raised only on div-by-zero.
             if data_b=X"00" then
                 div_ov_out <= '1';
             else
@@ -156,7 +193,7 @@ end process divider_registers;
 denominator <= b_shift_reg(7 downto 0);
 
 -- The 16-bit comparison between b_shift_reg (denominator) and the zero-extended 
--- rem_reg (numerator) can be simplified: 
+-- rem_reg (numerator) can be simplified by splitting it in 2: 
 -- If the shifted denominator high byte is not zero, it is >=256...
 den_ge_256 <= '1' when b_shift_reg(15 downto 8) /= X"00" else '0';
 -- ...otherwise we need to compare the low bytes.

@@ -49,8 +49,8 @@ entity light52_mcu is
         SEQUENTIAL_MULTIPLIER : boolean := false;
         -- Peripheral configuration (see peripheral modules).
         UART_HARDWIRED :        boolean := false;
-        UART_BAUD_RATE :        integer := 19200;
-        CLOCK_RATE :            integer := 50e6
+        UART_BAUD_RATE :        natural := 19200;
+        CLOCK_RATE :            natural := 50e6
     );
     port(
         clk             : in std_logic;
@@ -205,6 +205,12 @@ begin
         
     
 ---- XCODE memory block --------------------------------------------------------
+
+    -- Make sure the XCODE size is within bounds.
+    assert CODE_ROM_SIZE <= 65536
+    report "Invalid value for CODE_ROM_SIZE (>64KB)."
+    severity failure;
+
 
     code_addr_slice <= code_addr(code_addr_slice'high downto 0);
 

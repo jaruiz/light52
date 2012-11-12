@@ -9,8 +9,6 @@
 --------------------------------------------------------------------------------
 -- GENERICS:
 --
--- (Note that, as explained in the limitations section below, none of these 
--- generics are functional yet).
 --
 -- IMPLEMENT_BCD_INSTRUCTIONS   -- Whether or not to implement BCD instructions.
 --  When true, instructions DA and XCHD will work as in the original MCS51.
@@ -20,6 +18,7 @@
 --  When true, a sequential implementation will be used for the multiplier, 
 --  which will usually save a lot of logic or a dedicated multiplier.
 --  When false, a combinational registered multiplier will be used.
+--  (NOT IMPLEMENTED -- setting it to true will raise an assertion failure).
 --
 -- USE_BRAM_FOR_XRAM            -- Use extra space in IRAM/uCode RAM as XRAM.
 --  When true, extra logic will be generated so that the extra space in the 
@@ -80,17 +79,13 @@
 --      Until the core supports wait states it only supports Harvard memory
 --      or a dual-port XCODE/XDATA memory.
 --
--- 2.-  No support yet for BCD instructions.
---      Setting IMPLEMENT_BCD_INSTRUCTIONS to true will result in a synthesis
---      or simulation failure.
--- 
--- 3.-  No support yet for sequential multiplier, only combinational.
+-- 2.-  No support yet for sequential multiplier, only combinational.
 --      Setting SEQUENTIAL_MULTIPLIER to true will result in a synthesis
 --      or simulation failure. 
 --      The core will use a dedicated multiplier block if the architecture & 
 --      synthesis options allow for it (e.d. DSP48).
 -- 
--- 4.-  Wasted space in RAM block used for IRAM.
+-- 3.-  Wasted space in RAM block used for IRAM.
 --      Setting USE_BRAM_FOR_XRAM to true will result in a synthesis
 --      or simulation failure.
 --      Architectures with BRAM blocks larger than 512 bytes (e.g. Xilinx 

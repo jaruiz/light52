@@ -1,7 +1,41 @@
 --------------------------------------------------------------------------------
 -- light52_alu.vhdl -- ALU and its input operand multiplexors.
 --------------------------------------------------------------------------------
--- FIXME explain generics and interface signals
+-- This module contains the ALU, its input operand registers (called T and V)
+-- and the input multiplexors for those registers.
+-- It contains the ACC and B SFRs, whose operation is tightly coupled to the 
+-- ALU functionality.
+--
+-- Note that the ALU has a strong dependence on the CPU state machine: the 
+-- state is used to control the input register multiplexors, to sequence the 
+-- operation of the DA function and to control when (and with what) the ACC
+-- is loaded.
+--
+--------------------------------------------------------------------------------
+-- GENERICS:
+--
+-- IMPLEMENT_BCD_INSTRUCTIONS   -- Whether or not to implement BCD instructions.
+--  When true, instructions DA and XCHD will work as in the original MCS51.
+--  When false, those instructions will work as NOP, saving some logic.
+--
+-- SEQUENTIAL_MULTIPLIER        -- Sequential vs. combinational multiplier.
+--  When true, a sequential implementation will be used for the multiplier, 
+--  which will usually save a lot of logic or a dedicated multiplier.
+--  When false, a combinational registered multiplier will be used.
+--  (NOT IMPLEMENTED -- setting it to true will raise an assertion failure).
+--
+--------------------------------------------------------------------------------
+-- SIGNAL INTERFACE:
+--
+-- A description of the many signals will be of little use because most of them
+-- are self-explaining, I hope. Instead, I will only describe those signals 
+-- whose purpose may be somewhat more obscure:
+--
+-- nobit_result :       ALU result that excludes the 'bit operations' .
+--                      Used only to load DPTR; it's faster because we bypass
+--                      the 'bit' mux (DPH & DPL aren't bit addressable).
+--
+-- FIXME the ALU needs to be diagrammed and coeumtnted in a design doc.
 --------------------------------------------------------------------------------
 -- Copyright (C) 2012 Jose A. Ruiz
 --
