@@ -108,7 +108,7 @@ logging the execution as it goes along, and then quits.
 
 This simulator can be found in directory /tools/b51, together with a CodeBlocks
 project file. The simulator has been developed on Win32/Cygwin but should work
-on Linux unmodified.
+on Linux unmodified (only a Win32 binary is provided).
 
 The simulator is meant to be used as a cosimulation tool: you run the same
 program in b51 and in a Modelsim vhdl test bench.
