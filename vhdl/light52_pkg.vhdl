@@ -343,12 +343,12 @@ variable br : t_bram(integer range 0 to size-1);
 variable obj_size : integer;
 begin
     
-    -- If the object code table is longer than the array size, truncate code
-    if oC'length > size then
-        obj_size := size;
-    else
-        obj_size := oC'length;
-    end if;
+    -- If the object code table is longer than the array size, kill synthesis.
+    assert oC'length <= size
+    report "Object code does not fit in XCODE ROM."
+    severity failure;
+
+    obj_size := oC'length;
 
     -- Copy object code to start of BRAM...
     for i in 0 to obj_size-1 loop
