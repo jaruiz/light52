@@ -216,6 +216,34 @@ def build_svg_table(info, cycles, part):
     svg = svg + '</svg>'
     
     return svg
+
+
+def write_cycle_table(cycle_info, c_table_file):
+    """
+    Writes the cycle count info in the format of a C literal table.
+    Meant to be copied and pasted into the B51 simulator.
+    """
+    
+    txt = "typedef struct {\n"
+    txt = txt + "    int min;\n"
+    txt = txt + "    int max;\n"
+    txt = txt + "} cycle_count_t;\n"
+    txt = txt + "\n\n"
+    txt = txt + "cycle_count_t cycle_count[256] = {\n    "
+    for i in range(len(cycle_info)):
+        item = cycle_info[i]
+        if item[2] == 0:
+            txt = txt + "{ 0, 0}, "
+        else:
+            txt = txt + "{%2u,%2u}, " % (item[0], item[1])
+        if (i % 8) == 7:
+            txt = txt + "\n    "
+    txt = txt + "};\n\n"
+    
+    
+    fout = open(c_table_file, "w")
+    fout.write(txt)
+    fout.close()
     
 
 def main(argv):
@@ -226,6 +254,9 @@ def main(argv):
     
     # ...the target svg file names...
     svg_base_filename = "./table"
+    # ...the target text file name where a C-format table with the cycle counts
+    # will be written to...
+    c_table_file = "./cycle_table.c"
     # ...and the source CSV cycle count log file. Note this path is the default
     # working path for the Modelsim simulations, change if necessary.
     cycle_log_filename = "../../sim/cycle_count_log.csv"
@@ -234,6 +265,10 @@ def main(argv):
     cycle_info = read_cycle_info(cycle_log_filename)
     # ...and read opcode table data (instruction mnemonics and byte counts).
     opcode_info = read_opcode_info("opcode_info.txt")
+    
+    # First of all, write the C-format cycle table, to be copied and pasted
+    # into the B51 simulator.
+    write_cycle_table(cycle_info, c_table_file)
     
     # We can render the opcode table 'whole', resulting in a wide table, or
     # we can render the left and right halves separately, which gives a format
