@@ -53,7 +53,7 @@ use work.light52_tb_pkg.all;
 use work.txt_util.all;
 
 entity light52_tb is
-generic (BCD : boolean);
+generic (BCD : boolean := true);
 end;
 
 
