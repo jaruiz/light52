@@ -13,7 +13,8 @@
     Different cores will have a different set of peripherals, though. That must
     be modelled with a function pointer table against different b51_mcu
     implementations -- meaning one different source file per different core.
-    TODO MCU polymorphism to be done.
+
+    TODO CPU & MCU polymorphism to be done.
 */
 
 #ifndef S51_H_INCLUDED
@@ -81,6 +82,9 @@ typedef struct cpu51_s {
 
     cpu51_sfr_t sfr;                /**< CPU core (non-peripheral) SFRs */
     mcu51_t mcu;                    /**< MCU peripherals model */
+    uint32_t cycles;                /**< Clock cycles since last reset */
+    bool max_cycle_count;           /**< Last instr. used the max # of cycles */
+    bool implemented_as_nop;        /**< Last instr. was decoded as NOP */
 
     log51_t log;                    /**< Logger data */
 
@@ -110,7 +114,7 @@ extern void cpu_reset(cpu51_t *cpu);
 
 /**
     Run a number of CPU instructions.
-    Executil will stop after running num_inst instructions, or if a
+    Execution will stop after running num_inst instructions, or if a
     single-instruction infinite loop is detected, or if a breakpoint is hit.
 
     @arg cpu CPU model.

@@ -20,6 +20,50 @@ typedef enum cpu_op_e {
     cjne
 } cpu_op_t;
 
+/** Cycle count information for an opcode. */
+typedef struct {
+    int min;    /**< Minimum number of cycles. */
+    int max;    /**< Maximum number of cycles. */
+} cycle_count_t;
+
+/** Cycle count table for light52 core. */
+cycle_count_t cycle_count[256] = {
+    { 2, 2}, { 5, 5}, { 6, 6}, { 3, 3}, { 3, 3}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 7, 8}, { 7, 7}, { 8, 8}, { 3, 3}, { 3, 3}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 6, 7}, { 5, 5}, { 7, 7}, { 3, 3}, { 4, 4}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 6, 7}, { 7, 7}, { 7, 7}, { 3, 3}, { 4, 4}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 3, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 4, 4}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 3, 5}, { 7, 7}, { 5, 5}, { 5, 5}, { 4, 4}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 3, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 4, 4}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 3, 5}, { 7, 7}, { 5, 5}, { 4, 4}, { 4, 4}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 4, 4}, { 4, 4}, { 4, 4}, { 4, 4}, { 4, 4}, { 4, 4}, { 4, 4}, { 4, 4},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 4, 4}, {10,10}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 5, 5}, { 7, 7}, { 5, 5}, { 4, 4}, { 4, 4}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 3, 3}, { 3, 3}, { 2, 2}, { 6, 6}, { 6, 6},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 5, 5}, { 7, 7}, { 5, 5}, { 3, 3}, { 5, 6}, { 6, 7}, { 8, 9}, { 8, 9},
+    { 6, 7}, { 6, 7}, { 6, 7}, { 6, 7}, { 6, 7}, { 6, 7}, { 6, 7}, { 6, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 3, 3}, { 3, 3}, { 6, 6}, { 7, 7}, { 7, 7},
+    { 6, 6}, { 6, 6}, { 6, 6}, { 6, 6}, { 6, 6}, { 6, 6}, { 6, 6}, { 6, 6},
+    { 5, 5}, { 7, 7}, { 5, 5}, { 3, 3}, { 2, 2}, { 7, 8}, { 2, 2}, { 2, 2},
+    { 7, 8}, { 7, 8}, { 7, 8}, { 7, 8}, { 7, 8}, { 7, 8}, { 7, 8}, { 7, 8},
+    { 3, 3}, { 5, 5}, { 6, 6}, { 6, 6}, { 3, 3}, { 5, 5}, { 7, 7}, { 7, 7},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    { 3, 3}, { 7, 7}, { 5, 5}, { 5, 5}, { 3, 3}, { 4, 4}, { 5, 5}, { 5, 5},
+    { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5}, { 5, 5},
+    };
+
+
+
 
 /*-- Local function prototypes -----------------------------------------------*/
 
@@ -103,6 +147,7 @@ extern void cpu_reset(cpu51_t *cpu){
     cpu->sfr.sp = 0x07;
     cpu->sfr.psw = 0x00;
     cpu->pc = 0x0000;
+    cpu->cycles = 0;
     /* FIXME reset interrupt level */
     /* Now reset the MCU model -- peripherals */
     mcu_reset(&cpu->mcu);
@@ -117,6 +162,7 @@ extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst){
     uint8_t opcode;
     uint32_t i;
     bool ok;
+    uint32_t cycles;
 
     for(i=0;i<num_inst;i++){
         log_baseline(&(cpu->log), cpu->pc, cpu->sfr.sp, cpu->a, cpu->sfr.psw);
@@ -127,6 +173,8 @@ extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst){
         }
 
         opcode = cpu_fetch(cpu);
+        cpu->max_cycle_count = false;
+        cpu->implemented_as_nop = false;
 
         if((opcode & 0x08)!=0){
             /* bottom half of decoding table */
@@ -137,7 +185,23 @@ extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst){
             ok = cpu_exec_upper_half(cpu, opcode);
         }
 
-        mcu_update(&cpu->mcu, 0);
+        /* Update cycle counter... */
+        if(cpu->implemented_as_nop){
+            /* Instruction is not implemented as per command line parameters;
+               it was executed as NOP so its cycle count is that of NOP.*/
+            cycles = cycle_count[0].min;
+        }
+        else{
+            if(cpu->max_cycle_count){
+                cycles = cycle_count[opcode].max;
+            }
+            else{
+                cycles = cycle_count[opcode].min;
+            }
+        }
+        cpu->cycles += cycles;
+
+        mcu_update(&cpu->mcu, cycles);
         log_status(&(cpu->log), cpu->sfr.sp, cpu->a, cpu->sfr.psw);
 
         cpu->log.executed_instructions++;
@@ -629,16 +693,19 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
             cpu_set_dir(cpu, dir, res);
             if(val){
                 cpu_rel_jump(cpu, rel);
+                cpu->max_cycle_count = true;
             }
             break;
         case 0x20:  /* JB bit, rel */
             if(res & (1 << (bit & 0x07))){
                 cpu_rel_jump(cpu, rel);
+                cpu->max_cycle_count = true;
             }
             break;
         case 0x30:  /* JC bit, rel */
             if((res & (1 << (bit & 0x07))) ==0){
                 cpu_rel_jump(cpu, rel);
+                cpu->max_cycle_count = true;
             }
             break;
         }
@@ -647,24 +714,28 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         rel = cpu_fetch(cpu);
         if(cpu->sfr.psw & 0x80){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0x50:  /* JNC rel */
         rel = cpu_fetch(cpu);
         if(!(cpu->sfr.psw & 0x80)){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0x60:  /* JZ rel */
         rel = cpu_fetch(cpu);
         if(cpu->a == 0){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0x70:  /* JNZ rel */
         rel = cpu_fetch(cpu);
         if(cpu->a != 0){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0x80:  /* SJMP rel */
@@ -967,6 +1038,7 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         cpu_update_flags(cpu, cpu->a, imm, cjne);
         if(imm != cpu->a){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0xc4:  /* SWAP A */
@@ -981,6 +1053,7 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         }
         else{
             /* DA unimplemented, execute as NOP */
+            cpu->implemented_as_nop = true;
         }
         break;
     case 0xe4:  /* CLR A */
@@ -1050,7 +1123,8 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         cpu_set_a(cpu, res);
         break;
     case 0xa5:  /* RESERVED A5h opcode : implemented as NOP */
-         break;
+        cpu->implemented_as_nop = true;
+        break;
     case 0xb5:  /* CJNE A, dir, rel */
         dir = cpu_fetch(cpu);
         rel = cpu_fetch(cpu);
@@ -1058,6 +1132,7 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         cpu_update_flags(cpu, cpu->a, res, cjne);
         if(res != cpu->a){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0xc5:  /* XCH A,dir */
@@ -1074,6 +1149,7 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         cpu_set_dir(cpu, dir, res);
         if(res != 0){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0xe5:  /* MOV a, dir */
@@ -1089,7 +1165,7 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
     /*  IMPORTANT:
         All the cases in the x6 & x7 groups are PAIRED. The 'case fallthrough'
         is intentional.
-        TODO label fallthrough case for link tool.
+        TODO label fallthrough case for lint tool.
     */
     case 0x06:  /* INC @Ri */
     case 0x07:
@@ -1174,6 +1250,7 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         cpu_update_flags(cpu, res, imm, cjne);
         if(imm != res){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0xc6:  /* XCH A,@Ri */
@@ -1194,6 +1271,7 @@ static bool cpu_exec_upper_half(cpu51_t *cpu, uint8_t opcode){
         }
         else{
             /* Implemented as NOP */
+            cpu->implemented_as_nop = true;
         }
         break;
     case 0xe6:  /* MOV A, @Ri */
@@ -1276,6 +1354,7 @@ static bool cpu_exec_rn(cpu51_t *cpu, uint8_t opcode){
         cpu_update_flags(cpu, rn, imm, cjne);
         if(imm != rn){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0x0c:  /* XCH A, Rn */
@@ -1289,6 +1368,7 @@ static bool cpu_exec_rn(cpu51_t *cpu, uint8_t opcode){
         cpu_set_rn(cpu, n, res);
         if(res != 0){
             cpu_rel_jump(cpu, rel);
+            cpu->max_cycle_count = true;
         }
         break;
     case 0x0e:  /* MOV A, Rn */

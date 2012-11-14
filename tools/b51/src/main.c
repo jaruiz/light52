@@ -63,8 +63,8 @@ int main(int argc, char **argv){
     cpu_reset(&cpu);
     retval = cpu_exec(&cpu, args.num_instructions);
 
-    printf("\n\nExecution finished after %d instructions.\n",
-           cpu.log.executed_instructions);
+    printf("\n\nExecution finished after %u instructions and %u cycles.\n",
+           cpu.log.executed_instructions, cpu.cycles);
 
     switch(retval){
     case 1 :
