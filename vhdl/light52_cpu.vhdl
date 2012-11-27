@@ -886,6 +886,9 @@ begin
 
 
     -- Derailed state machine should end here -----------------------
+    -- NOTE: This applies to undecoded or unimplemented instructions,
+    -- not to a state machine derailed by EM event, etc. 
+    
     when others =>
         ns <= bug_bad_opcode_class;
     end case;
@@ -969,7 +972,7 @@ severity failure;
 -- This is the row of the opcode table that will be replicated for the 2nd half
 -- of the table. We always replicate row 7 (opcode X7h) except for 'DNJZ Rn'
 -- (opcodes d8h..dfh) where we replicate row 5 -- opcode d7h is not a DJNZ and
--- breaks the pattern.
+-- breaks the pattern (see @note1).
 ucode_pattern <= "101" when code_rd(7 downto 4)="1101" else "111";
 
 with code_rd(3) select ucode_index <=
@@ -1858,11 +1861,19 @@ end architecture microcoded;
 -- NOTES:
 --
 -- @note1: Decoding of '2nd half' opcodes.
--- 
+--      The top half of the opcode table is decoded using the BRAM initialized 
+--      as a decoding table. 
+--      The bottom half of the table (Rn opcodes, rows 8 to 15) is very 
+--      symmetric: you only need to decode the columns, and the opcode of each 
+--      column is the same as that of row 7 (with a couple exceptions). 
+--      This means we can replace the entire bottom half of the decoding table 
+--      with some logic, combined with row 7 (or 5). Logic marked with @note1 
+--      has this purpose.
+--
 -- @note2: Unnecessary reset values for data registers.
 --      Reset values are strictly unnecessary for data registers such as ACC (as
 --      opposed to control registers). They have been given a reset value only 
---      so that the simulations logs are identical to those of S51 software 
+--      so that the simulations logs are identical to those of B51 software 
 --      simulator.
 --
 -- @note3: Adder/subtractor.
