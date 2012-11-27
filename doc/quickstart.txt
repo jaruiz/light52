@@ -14,87 +14,30 @@ All the demos included in the project (in directory /test) come pre-compiled
 system), so it isn't necessary to install any MCS51 assembler or compiler if all
 you want to do is play a little with the core.
 
-The demos are meant to run on a development board, for which a top vhdl entity
-is supplied, plus a constraints file for the pin location assignment.
+The project includes ready-made support files for the following development 
+boards:
 
-The only development board directly supported in the present state of this
-project is Terasic's DE-1 board for altera Cyclone-2 FPGAs. It would be very
-easy to port the demos to some other board, since the core uses no board
-features other than FPGA internal resources, a serial port and a reset button
-(plus a few LEDs that can be safely ignored).
+* Terasic's DE-1 (Cyclone-2):           directory /boards/terasic_de1
+* Avnet's Spartan-3A Evaluation Kit:    directory /boards/avnet_s3aeval    
+
+For each board, the following is supplied:
+
+1.- A suitable project file is included for Quartus-2 or ISE Webpack. 
+2.- A 'top entity' VHDL module with a light52 MCU instance connected to 
+    the on-board devices (most of which are unused).
+3.- A constraints file, including the pin locations. This info is already in 
+    the project file but is supplied separately for convenience.
+
+
+The project files in all cases use the object code package from the Dhrystone
+demo. It is trivially easy to set up the project for some other demo: replace
+the object code package (file obj_code_pkg.vhdl).
+
+The demos only use a serial port connector (when available) and some LEDs and
+7-segment displays (when available). It would be very easy to port the demos 
+to some other development board.
 
 FPGA configuration files are NOT included, so you will need a synthesis tool.
-
-
-
-How to build one of the software demos on a development board
-==============================================================
-
-In order to build a demo using one of the supported development boards, you need
-to follow the indications given in sections 1 and 2 below. Basically, you need
-to know what source files to include and where is the pin location data.
-
-Directory /vhdl/demos includes a subdirectory for each of the development boards
-this project has been tested on. for each board, a 'top' entity is provided,
-together with a pin location file and a basic test bench for the top entity.
-
-The test bench is meant to be used with Modelsim script /sim/light52_c2sb_tb.do
-(suitably modified and renamed for the different target boards). It is provided
-as a convenience 'as is', in case you need to debug some basic fault on a demo.
-
-The object code package, the tool that builds it and the cosimulation feature
-of this project need to be explained separately, this file can't enter in any
-more detail.
-
-All the demos use the basic configuration of the UART, which is 19200/8/N/1, and
-assume a clock rate of 50MHz. This is configured in the top vhdl entity.
-
-
-1.- VHDL source files
-------------------------
-
-In order to build the 'Dhrystone' demo for the DE-1 board, the project should
-include the following VHDL files:
-
-    *.- All the core vhdl files:            /vhdl/*.vhdl.
-    *.- Top entity SoC file for the board:  /vhdl/demos/c2sb/c2sb_soc.vhdl
-    *.- Object code package file:           /test/dhrystone/obj_code_pkg.vhdl
-
-    ('C2SB' here stands for 'Cyclone-2 Starter Board')
-
-When other target boards become 'supported' by this project, suitable top
-entities will be added to the /vhdl/demos directory.
-
-Of course you can easily modify this c2sb_soc entity to suit your target
-hardware.
-
-When building some demo other than Dhrystone, the only difference is that you
-need to use the proper object code package file. The name of the object code
-package, and the name of the object code constant, are hardwired on the vhdl
-top entity but they can be easily changed by editing the demo makefile. This may
-be necessary if some project uses more than one light52 core, for instance.
-
-
-2.- Pin location constraints
--------------------------------
-
-The constraints file for the DE-1 board is in file:
-
-    *.- /vhdl/demos/c2sb/c2sb_pins.csv
-
-When using Quartus-2, this csv file can be directly imported into the project
-constraints.
-
-Note that no constraints other than pin locations are used in the present
-version of the project!
-
-When a new board target is added to the project, the pin location file will be
-included too; its format will depend on the target chip toochain, of course.
-
-These top entities and constraint files are only included as a convenience to
-build quick demos around the light52 core. A real project will not need them
-at all.
-
 
 
 
