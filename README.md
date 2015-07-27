@@ -29,7 +29,7 @@ If I ever have any quality spare time again, I'd like to make this project actua
 * A stronger test bench. This is by far the most important.
 * An usage tutorial, single-stepping the creation of a simple project around the core.
 * Some basic design documentation, necessary for maintenance.
-* A detailed explanation of th ecosimulation feature which is the core of the test scheme.
+* A detailed explanation of the cosimulation feature used by the test scheme.
 * Better comments in the ISS source code.
 * A decent command line interface for the ISS.
 * Some support for cycle-accurate simulation of peripherals.
