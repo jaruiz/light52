@@ -3,7 +3,7 @@ vlib work
 
 vcom -reportprogress 300 -work work ../vhdl/light52_pkg.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_ucode_pkg.vhdl
-vcom -reportprogress 300 -work work ../test/hello_asm/obj_code_pkg.vhdl
+vcom -reportprogress 300 -work work ../test/hello_c/obj_code_pkg.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_muldiv.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_alu.vhdl
 vcom -reportprogress 300 -work work ../vhdl/light52_cpu.vhdl

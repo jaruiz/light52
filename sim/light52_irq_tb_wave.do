@@ -17,11 +17,22 @@ add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/cpu/addr0_
 add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/cpu/addr1_reg
 add wave -noupdate -format Literal -radix hexadecimal /light52_tb/uut/cpu/jump_target
 add wave -noupdate -divider Debug
+add wave -noupdate -format Literal -radix unsigned /light52_tb/uut/timer/compare_reg
+add wave -noupdate -format Literal -radix unsigned /light52_tb/uut/timer/counter_reg
+add wave -noupdate -format Literal -radix unsigned /light52_tb/uut/timer/prescaler_ctr_reg
+add wave -noupdate -format Logic /light52_tb/uut/timer/counter_match
+add wave -noupdate -format Logic /light52_tb/uut/timer_irq
+add wave -noupdate -format Logic /light52_tb/uut/cpu/irq_active
+add wave -noupdate -format Logic /light52_tb/uut/cpu/irq_restore_level
+add wave -noupdate -format Logic /light52_tb/uut/cpu/irq_active_hip
+add wave -noupdate -format Logic /light52_tb/uut/cpu/irq_serving_hip
+add wave -noupdate -format Logic /light52_tb/uut/cpu/irq_serving_lop
+add wave -noupdate -format Literal /light52_tb/uut/cpu/irq_level_inputs
 add wave -noupdate -group {External Interrupts}
 add wave -noupdate -group {External Interrupts} -format Literal /light52_tb/uut/external_irq
 add wave -noupdate -group {External Interrupts} -format Logic /light52_tb/uut/ext_irq
 add wave -noupdate -group {External Interrupts} -format Literal /light52_tb/uut/external_irq_reg
-add wave -noupdate -expand -group Timer
+add wave -noupdate -group Timer
 add wave -noupdate -group Timer -format Literal -radix hexadecimal /light52_tb/uut/timer/data_o
 add wave -noupdate -group Timer -format Literal -radix hexadecimal /light52_tb/uut/timer/compare_reg
 add wave -noupdate -group Timer -format Literal -radix hexadecimal /light52_tb/uut/timer/counter_reg
@@ -29,9 +40,6 @@ add wave -noupdate -group Timer -format Logic /light52_tb/uut/timer/counter_matc
 add wave -noupdate -group Timer -format Literal /light52_tb/uut/timer/status_reg
 add wave -noupdate -group Timer -format Logic /light52_tb/uut/timer/irq_o
 add wave -noupdate -group Timer -format Literal /light52_tb/uut/timer/addr_i
-add wave -noupdate -format Literal /light52_tb/uut/cpu/irq_level_inputs
-add wave -noupdate -format Literal /light52_tb/uut/cpu/irq_level_current
-add wave -noupdate -format Logic /light52_tb/uut/cpu/irq_active
 add wave -noupdate -format Logic /light52_tb/uut/timer/ce_i
 add wave -noupdate -format Logic /light52_tb/uut/timer/wr_i
 add wave -noupdate -format Literal /light52_tb/uut/timer/addr_i
@@ -157,4 +165,4 @@ configure wave -gridperiod 1
 configure wave -griddelta 40
 configure wave -timeline 0
 update
-WaveRestoreZoom {59249016 ps} {59610985 ps}
+WaveRestoreZoom {0 ps} {130189500 ps}
