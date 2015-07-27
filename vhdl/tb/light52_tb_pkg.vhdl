@@ -61,6 +61,8 @@ type t_log_info is record
     next_pc :               t_address;
     pc_z :                  t_addr_array;
     ps :                    t_cpu_state;
+    jump_condition :        std_logic;
+    rel_jump_target :       t_address;
     
     bram_we :               std_logic;
     bram_wr_addr :          t_bram_addr;
@@ -69,6 +71,8 @@ type t_log_info is record
     sfr_we :                std_logic;
     sfr_wr :                t_byte;
     sfr_addr :              t_byte;
+    delayed_acc_log :       boolean;
+    delayed_acc_value :     t_byte;
     
     -- Observed cycle count for all executed opcodes.
     cycles :                t_cycle_count;
@@ -134,7 +138,10 @@ procedure log_cpu_status(
 variable bram_wr_addr : unsigned(7 downto 0);
 variable opc : natural;
 variable num_cycles : natural;
+variable jump_logged : boolean := false;
 begin
+    
+    jump_logged := false;
 
     -- Update the opcode observed cycle counters.
     -- For every opcode, we count the cycles from its decode_0 state to the 
@@ -178,13 +185,38 @@ begin
         print(l_file, "("& hstr(info.pc)& ") SFR["& 
               hstr(info.sfr_addr)& "] = "& hstr(info.sfr_wr));
     end if;
-    
+     
+    -- Log jumps 
+    -- FIXME remove internal state dependency
+    --if info.ps = jrb_bit_3 and info.jump_condition='1' then
+        -- Catch attempts to jump to addresses out of the ROM bounds -- assume
+        -- mirroring is not expected to be useful in this case.
+        -- Note it remains possible to just run into uninitialized ROM areas
+        -- or out of ROM bounds, we're not checking any of that.
+        --assert info.next_pc < info.rom_size
+        --report "Jump to unmapped code address "& hstr(info.next_pc)& 
+        --       "h at "& hstr(info.pc)& "h. Simulation stopped."
+        --severity failure;
+        
+    --    print(l_file, "("& hstr(info.pc)& ") PC = "& 
+    --        hstr(info.rel_jump_target) );
+    --end if;
+     
     -- Log ACC updates.
-    -- Note we exclude the 'intermediate update' of ACC in DA instruction.
+    -- Note we exclude the 'intermediate update' of ACC in DA instruction, and
+    -- we have to deal with another tricky special case: 
+    -- the JBC instruction needs the ACC change log delayed so that it appears 
+    -- after the PC change log -- a nasty hack meant to avoid a nastier hack
+    -- in the SW simulator logging code.
     if (info.load_acc='1' and info.ps/=alu_daa_0) then
         if info.a_reg_prev /= info.acc_input then
-            print(l_file, "("& hstr(info.pc)& ") A = "& 
-                hstr(info.acc_input) );
+            if info.ps = jrb_bit_2 then -- this state is only used in JBC
+                info.delayed_acc_log <= true;
+                info.delayed_acc_value <= info.acc_input;
+            else
+                print(l_file, "("& hstr(info.pc)& ") A = "& 
+                    hstr(info.acc_input) );
+            end if;
          end if;
         info.a_reg_prev <= info.acc_input;
     end if;
@@ -266,8 +298,19 @@ begin
         
         print(l_file, "("& hstr(info.pc)& ") PC = "& 
             hstr(info.next_pc) );
+        jump_logged := true;
     end if;
 
+    -- If this instruction needs the ACC change log delayed, display it now 
+    -- but only if the PC change has been already logged.
+    -- This only happens in instructions that jump AND can modify ACC: JBC.
+    -- The PSW change, if any, is delayed too, see below.
+    if info.delayed_acc_log and jump_logged then
+        print(l_file, "("& hstr(info.pc)& ") A = "& 
+            hstr(info.delayed_acc_value) );
+        info.delayed_acc_log <= false;
+    end if;
+    
     -- Log PSW implicit updates: first, whenever the PSW is updated, save the PC
     -- for later reference...
     if (info.update_psw_flags(0)='1' or info.load_acc='1') then
@@ -277,7 +320,8 @@ begin
     -- PC value we saved before.
     -- The PSW changes late in the instruction cycle and we need this trick to
     -- keep the logs ordered.
-    if (info.psw) /= (info.psw_prev) then
+    -- Note that if the ACC log is delayed, the PSW log is delayed too!
+    if (info.psw) /= (info.psw_prev) and not info.delayed_acc_log then
         print(l_file, "("& hstr(info.psw_update_addr)& ") PSW = "& hstr(info.psw) );
         info.psw_prev <= info.psw;
     end if;
@@ -336,6 +380,8 @@ begin
     init_signal_spy(mcu& "/cpu/"&"update_psw_flags",iname&".update_psw_flags(0)", 0);
     init_signal_spy(mcu& "/cpu/"&"code_addr",    iname&".code_addr", 0);
     init_signal_spy(mcu& "/cpu/"&"ps",           iname&".ps", 0);
+    init_signal_spy(mcu& "/cpu/"&"jump_condition", iname&".jump_condition", 0);
+    init_signal_spy(mcu& "/cpu/"&"rel_jump_target", iname&".rel_jump_target", 0);
     init_signal_spy(mcu& "/cpu/"&"bram_we",      iname&".bram_we", 0);
     init_signal_spy(mcu& "/cpu/"&"bram_addr_p0", iname&".bram_wr_addr", 0);
     init_signal_spy(mcu& "/cpu/"&"bram_wr_data_p0",  iname&".bram_wr_data_p0", 0);
@@ -370,6 +416,7 @@ begin
     info.cycles <= (others => (999,0,0));
     info.cycle_count <= 0;
     info.last_opcode <= "UUUUUUUU";
+    info.delayed_acc_log <= false;
     
     -- ...and we're ready to start monitoring the system
     while done='0' loop
