@@ -18,7 +18,7 @@ SBUF        DATA        099H
 P2          DATA        0A0H
 IE          DATA        0A8H
 P3          DATA        0B0H
-;IP        DATA        0B8H
+IP          DATA        0B8H
 EXTINT0     DATA        0C0H
 PSW         DATA        0D0H
 ACC         DATA        0E0H

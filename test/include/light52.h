@@ -9,8 +9,6 @@
 #ifndef LIGHT52_H_INCLUDED
 #define LIGHT52_H_INCLUDED
 
-/* FIXME this file is mostly a stub; to be fleshed up later */
-
 /* Interrupt Enable register */
 __sfr __at  0xa8 IE;      /**< Interrupt enable register */
 __sbit __at 0xaf EA;      /**< Global Interrupt Enable flag */

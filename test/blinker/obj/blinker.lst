@@ -1,0 +1,451 @@
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 1
+
+
+
+
+
+       MCS-51 Family Macro Assembler   A S E M - 5 1   V 1.3
+       =====================================================
+
+
+
+	Source File:	src\irq_test.a51
+	Object File:	bin\irq_test.hex
+	List File:	lst\irq_test.lst
+
+
+
+ Line  I  Addr  Code            Source
+
+    1:				; irq_test.a51 -- First interrupt srvice test.
+    2:				;
+    3:				; This program is meant to run on a light53 MCU with the 16-bit timer. It can be
+    4:				; run on simulation or in actual hardware.
+    5:				; Its purpose is to demonstrate the working of the interrupt service logic. No
+    6:				; actual tests are performed (other than the co-simulation tests), only checks.
+    7:				;
+    8:				;-------------------------------------------------------------------------------
+    9:
+   10:				        ; Include the definitions for the light52 derivative
+   11:				        $nomod51
+   12:				        $include (light52.mcu)
+   13: 1			;   Light52 processor definition file (for ASEM-51 assembler)
+   14: 1			;   =========================================================
+   15: 1
+   16: 1	N	 80	P0          DATA        080H
+   17: 1	N	 81	SP          DATA        081H
+   18: 1	N	 82	DPL         DATA        082H
+   19: 1	N	 83	DPH         DATA        083H
+   20: 1			;PCON      DATA        087H
+   21: 1	N	 88	TSTAT       DATA        088H
+   22: 1			;TMOD      DATA        089H
+   23: 1	N	 8C	TL          DATA        08CH
+   24: 1	N	 8D	TH          DATA        08DH
+   25: 1	N	 8E	TCL         DATA        08EH
+   26: 1	N	 8F	TCH         DATA        08FH
+   27: 1	N	 90	P1          DATA        090H
+   28: 1	N	 98	SCON        DATA        098H
+   29: 1	N	 99	SBUF        DATA        099H
+   30: 1	N	 A0	P2          DATA        0A0H
+   31: 1	N	 A8	IE          DATA        0A8H
+   32: 1	N	 B0	P3          DATA        0B0H
+   33: 1			;IP        DATA        0B8H
+   34: 1	N	 C0	EXTINT0     DATA        0C0H
+   35: 1	N	 D0	PSW         DATA        0D0H
+   36: 1	N	 E0	ACC         DATA        0E0H
+   37: 1	N	 F0	B           DATA        0F0H
+   38: 1
+   39: 1			; TSTAT flags
+   40: 1	N	 88	T0IRQ       BIT         088H
+   41: 1	N	 8C	T0ARL       BIT         08CH
+   42: 1	N	 8D	T0CEN       BIT         08DH
+   43: 1
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 2
+
+
+
+ Line  I  Addr  Code            Source
+
+   44: 1			; IE flags
+   45: 1	N	 A8	EX0         BIT         0A8H
+   46: 1	N	 A9	ET0         BIT         0A9H
+   47: 1			;EX1         BIT        0AAH
+   48: 1			;ET1         BIT        0ABH
+   49: 1	N	 AC	ES          BIT         0ACH
+   50: 1			;ET2         BIT        0ADH
+   51: 1	N	 AF	EA          BIT         0AFH
+   52: 1
+   53: 1			; SCON flags
+   54: 1	N	 98	TXIRQ       BIT         098H
+   55: 1	N	 99	RXIRQ       BIT         099H
+   56: 1	N	 9C	TXRDY       BIT         09CH
+   57: 1	N	 9D	RXRDY       BIT         09DH
+   58: 1
+   59: 1			; PSW flags
+   60: 1	N	 D0	P           BIT        0D0H
+   61: 1	N	 D2	OV          BIT        0D2H
+   62: 1	N	 D3	RS0         BIT        0D3H
+   63: 1	N	 D4	RS1         BIT        0D4H
+   64: 1	N	 D5	F0          BIT        0D5H
+   65: 1	N	 D6	AC          BIT        0D6H
+   66: 1	N	 D7	CY          BIT        0D7H
+   67: 1
+   68: 1			; Interrupt vectors
+   69: 1	N      0000	RESET       CODE       000H
+   70: 1	N      0003	EXTI0       CODE       003H
+   71: 1	N      000B	TIMER0      CODE       00BH
+   72: 1	N      0013	EXTI1       CODE       013H
+   73: 1	N      001B	TIMER1      CODE       01BH
+   74: 1	N      0023	SINT        CODE       023H
+   75: 1	N      002B	TIMER2      CODE       02BH
+   76:
+   77:		N      0060	ext_irq_ctr     set     060h        ; Incremented by external irq routine
+   78:
+   79:
+   80:				        ;-- Macros -------------------------------------------------------------
+   81:
+   82:				        ; putc: send character in A to console (UART)
+   83:				putc    macro   character
+   84:				        local   putc_loop
+   85:				        mov     SBUF,character
+   86:				putc_loop:
+   87:				        ;mov     a,SCON
+   88:				        ;anl     a,#10h
+   89:				        ;jz      putc_loop
+   90:				        endm
+   91:
+   92:				        ; put_crlf: send CR+LF to console
+   93:				put_crlf macro
+   94:				        putc    #13
+   95:				        putc    #10
+   96:				        endm
+   97:
+   98:
+   99:				        ;-- Reset & interrupt vectors ------------------------------------------
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 3
+
+
+
+ Line  I  Addr  Code            Source
+
+  100:
+  101:		N      0000	        org     00h
+  102:	  0000	02 00 30	        ljmp    start               ;
+  103:		N      0003	        org     03h
+  104:	  0003	02 00 D4	        ljmp    irq_ext
+  105:		N      000B	        org     0bh
+  106:	  000B	02 00 E2	        ljmp    irq_timer
+  107:		N      0013	        org     13h
+  108:	  0013	02 00 E2	        ljmp    irq_wrong
+  109:		N      001B	        org     1bh
+  110:	  001B	02 00 E2	        ljmp    irq_wrong
+  111:		N      0023	        org     23h
+  112:	  0023	02 00 E2	        ljmp    irq_wrong
+  113:
+  114:
+  115:				        ;-- Main test program --------------------------------------------------
+  116:		N      0030	        org     30h
+  117:	  0030			start:
+  118:
+  119:				        ; Disable all interrupts.
+  120:	  0030	75 A8 00	        mov     IE,#00
+  121:
+  122:
+  123:				        ;---- External interrupt test --------------------------------------
+  124:
+  125:				        ; Trigger external IRQ with IRQs disabled, it should be ignored.
+  126:	  0033	75 90 01	        mov     P1,#01h
+  127:	  0036	00		        nop
+  128:	  0037	00		        nop
+  129:	  0038	00		        nop
+  130:	  0039	E5 60		        mov     a,ext_irq_ctr
+  131:	  003B	B4 00 7F	        cjne    a,#00,fail_unexpected
+  132:	  003E	D2 C0		        setb    EXTINT0.0           ; Clear external IRQ flag
+  133:
+  134:				        ; Trigger timer IRQ with external IRQ enabled but global IE disabled
+  135:	  0040	75 A8 01	        mov     IE,#01h
+  136:	  0043	75 90 01	        mov     P1,#01h
+  137:	  0046	00		        nop
+  138:	  0047	00		        nop
+  139:	  0048	00		        nop
+  140:	  0049	E5 60		        mov     a,ext_irq_ctr
+  141:	  004B	B4 00 6F	        cjne    a,#00,fail_unexpected
+  142:	  004E	D2 C0		        setb    EXTINT0.0          ; Clear timer IRQ flag
+  143:
+  144:				        ; Trigger external IRQ with external and global IRQ enabled
+  145:	  0050	75 90 00	        mov     P1,#00h
+  146:	  0053	75 A8 81	        mov     IE,#81h
+  147:	  0056	75 60 00	        mov     ext_irq_ctr,#00
+  148:	  0059	75 90 01	        mov     P1,#01h
+  149:	  005C	00		        nop
+  150:	  005D	00		        nop
+  151:	  005E	00		        nop
+  152:	  005F	E5 60		        mov     a,ext_irq_ctr
+  153:	  0061	B4 01 4E	        cjne    a,#01,fail_expected
+  154:	  0064	D2 C0		        setb    EXTINT0.0          ; Clear timer IRQ flag
+  155:
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 4
+
+
+
+ Line  I  Addr  Code            Source
+
+  156:
+  157:				        ; End of irq test, print message and continue
+  158:	  0066	90 01 08	        mov     DPTR,#text2
+  159:	  0069	12 00 C8	        call    puts
+  160:
+  161:				        ;---- Timer test ---------------------------------------------------
+  162:				        ; Assume the prescaler is set for a 20ms count period
+  163:
+  164:	  006C	75 A8 00	        mov     IE,#000h
+  165:
+  166:	  006F	75 88 00	        mov     TSTAT,#00
+  167:	  0072	75 8D 00	        mov     TH,#00
+  168:	  0075	75 8C 00	        mov     TL,#00
+  169:	  0078	75 8F C3	        mov     TCH,#0c3h           ; Compare register = 50000 = 1 second
+  170:	  007B	75 8E 50	        mov     TCL,#050h
+  171:	  007E	75 88 30	        mov     TSTAT,#030h         ; Start counting
+  172:
+  173:				        ; Ok, now wait for a little less than 20us and make sure TH:TL has not
+  174:				        ; changed yet.
+  175:	  0081	78 5F		        mov     r0,#95              ; We need to wait for 950 clock cycles...
+  176:	  0083			loop0:                              ; ...and this is a 10-clock loop
+  177:	  0083	00		        nop
+  178:	  0084	D8 FD		        djnz    r0,loop0
+  179:	  0086	E5 8D		        mov     a,TH
+  180:	  0088	B4 00 1C	        cjne    a,#000h,fail_timer_error
+  181:	  008B	E5 8C		        mov     a,TL
+  182:	  008D	B4 00 17	        cjne    a,#000h,fail_timer_error
+  183:
+  184:				        ; Now wait for another 100 clock cycles and make sure TH:TL has already
+  185:				        ; changed.
+  186:	  0090	78 0A		        mov     r0,#10              ; We need to wait for 100 clock cycles...
+  187:	  0092			loop1:                              ; ...and this is a 10-clock loop
+  188:	  0092	00		        nop
+  189:	  0093	D8 FD		        djnz    r0,loop1
+  190:	  0095	E5 8D		        mov     a,TH
+  191:	  0097	B4 00 0D	        cjne    a,#000h,fail_timer_error
+  192:	  009A	E5 8C		        mov     a,TL
+  193:	  009C	B4 01 08	        cjne    a,#001h,fail_timer_error
+  194:
+  195:				        ; End of timer test, print message and continue
+  196:	  009F	90 01 43	        mov     DPTR,#text5
+  197:	  00A2	12 00 C8	        call    puts
+  198:
+  199:				        ;-- End of test program, enter single-instruction endless loop
+  200:	  00A5	01 A5		quit:   ajmp    $
+  201:
+  202:
+  203:	  00A7			fail_timer_error:
+  204:	  00A7	90 01 35	        mov     DPTR,#text4
+  205:	  00AA	12 00 C8	        call    puts
+  206:	  00AD	75 A8 00	        mov     IE,#00h
+  207:	  00B0	01 B0		        ajmp    $
+  208:
+  209:
+  210:				        ; Did not get expected IRQ: print failure message and block.
+  211:	  00B2			fail_expected:
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 5
+
+
+
+ Line  I  Addr  Code            Source
+
+  212:	  00B2	90 01 27	        mov     DPTR,#text3
+  213:	  00B5	12 00 C8	        call    puts
+  214:	  00B8	75 A8 00	        mov     IE,#00h
+  215:	  00BB	01 BB		        ajmp    $
+  216:
+  217:				        ; Got unexpected IRQ: print failure message and block.
+  218:	  00BD			fail_unexpected:
+  219:	  00BD	90 00 F6	        mov     DPTR,#text1
+  220:	  00C0	12 00 C8	        call    puts
+  221:	  00C3	75 A8 00	        mov     IE,#00h
+  222:	  00C6	01 C6		        ajmp    $
+  223:
+  224:				;-- puts: output to UART a zero-terminated string at DPTR ----------------------
+  225:	  00C8			puts:
+  226:	  00C8	78 00		        mov     r0,#00h
+  227:	  00CA			puts_loop:
+  228:	  00CA	E8		        mov     a,r0
+  229:	  00CB	08		        inc     r0
+  230:	  00CC	93		        movc    a,@a+DPTR
+  231:	  00CD	60 04		        jz      puts_done
+  232:
+  233:				        putc    a
+  234+ 1  00CF	F5 99		        mov     SBUF,a
+  235+ 1  00D1			??0000:
+  236+ 1			        ;mov     a,SCON
+  237+ 1			        ;anl     a,#10h
+  238+ 1			        ;jz      putc_loop
+  239:	  00D1	80 F7		        sjmp    puts_loop
+  240:	  00D3			puts_done:
+  241:	  00D3	22		        ret
+  242:
+  243:				;-- irq_timer: interrupt routine for timer -------------------------------------
+  244:				; Note we don't bother to preserve any registers
+  245:	  00D4			irq_ext:
+  246:	  00D4	75 90 00	        mov     P1,#00h             ; Remove the external interrupt request
+  247:	  00D7	75 C0 FF	        mov     EXTINT0,#0ffh       ; Clear all external IRQ flags
+  248:	  00DA	05 60		        inc     ext_irq_ctr         ; Increment irq counter
+  249:	  00DC	90 00 E4	        mov     DPTR,#text0         ; Print IRQ message...
+  250:	  00DF	11 C8		        call    puts
+  251:	  00E1	32		        reti                        ; ...and quit
+  252:
+  253:	  00E2			irq_timer:
+  254:	  00E2			irq_wrong:
+  255:	  00E2	01 E2		        ajmp    irq_wrong
+  256:
+  257:
+  258:
+  259:
+  260:	  00E4	3C 45 78 74	text0:  db      '<External irq>',13,10,00h,00h
+	  00E8	65 72 6E 61
+	  00EC	6C 20 69 72
+	  00F0	71 3E 0D 0A
+	  00F4	00 00
+  261:	  00F6	55 6E 65 78	text1:  db      'Unexpected IRQ',13,10,00h,00h
+	  00FA	70 65 63 74
+	  00FE	65 64 20 49
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 6
+
+
+
+ Line  I  Addr  Code            Source
+
+	  0102	52 51 0D 0A
+	  0106	00 00
+  262:	  0108	49 52 51 20	text2:  db      'IRQ test finished, no errors',13,10,0
+	  010C	74 65 73 74
+	  0110	20 66 69 6E
+	  0114	69 73 68 65
+	  0118	64 2C 20 6E
+	  011C	6F 20 65 72
+	  0120	72 6F 72 73
+	  0124	0D 0A 00
+  263:	  0127	4D 69 73 73	text3:  db      'Missing IRQ',13,10,0
+	  012B	69 6E 67 20
+	  012F	49 52 51 0D
+	  0133	0A 00
+  264:	  0135	54 69 6D 65	text4:  db      'Timer error',13,10,0
+	  0139	72 20 65 72
+	  013D	72 6F 72 0D
+	  0141	0A 00
+  265:	  0143	54 69 6D 65	text5:  db      'Timer test finished, no errors',13,10,0
+	  0147	72 20 74 65
+	  014B	73 74 20 66
+	  014F	69 6E 69 73
+	  0153	68 65 64 2C
+	  0157	20 6E 6F 20
+	  015B	65 72 72 6F
+	  015F	72 73 0D 0A
+	  0163	00
+  266:
+  267:				        end
+
+
+
+
+
+                     register banks used:  ---
+
+                     no errors
+
+
+
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 7
+
+
+
+
+
+	       L I S T   O F   S Y M B O L S
+	       =============================
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+??0000				  CODE	    00D1	 235
+??ASEM_51			  NUMBER    8051
+??VERSION			  NUMBER    0130
+AC				  BIT	      D6	  65
+ACC				  DATA	      E0	  36
+B				  DATA	      F0	  37
+CY				  BIT	      D7	  66
+DPH				  DATA	      83	  19
+DPL				  DATA	      82	  18
+EA				  BIT	      AF	  51
+ES				  BIT	      AC	  49
+ET0				  BIT	      A9	  46
+EX0				  BIT	      A8	  45
+EXTI0				  CODE	    0003	  70
+EXTI1				  CODE	    0013	  72
+EXTINT0				  DATA	      C0	  34
+EXT_IRQ_CTR			  NUMBER    0060	  77
+F0				  BIT	      D5	  64
+FAIL_EXPECTED			  CODE	    00B2	 211
+FAIL_TIMER_ERROR		  CODE	    00A7	 203
+FAIL_UNEXPECTED			  CODE	    00BD	 218
+IE				  DATA	      A8	  31
+IRQ_EXT				  CODE	    00D4	 245
+IRQ_TIMER			  CODE	    00E2	 253
+IRQ_WRONG			  CODE	    00E2	 254
+LOOP0				  CODE	    0083	 176
+LOOP1				  CODE	    0092	 187
+OV				  BIT	      D2	  61
+P				  BIT	      D0	  60
+P0				  DATA	      80	  16
+P1				  DATA	      90	  27
+P2				  DATA	      A0	  30
+P3				  DATA	      B0	  32
+PSW				  DATA	      D0	  35
+PUTC				  MACRO	        	  83
+PUTS				  CODE	    00C8	 225
+PUTS_DONE			  CODE	    00D3	 240
+PUTS_LOOP			  CODE	    00CA	 227
+PUT_CRLF			  MACRO	        	  93
+QUIT				  CODE	    00A5	 200
+RESET				  CODE	    0000	  69
+RS0				  BIT	      D3	  62
+RS1				  BIT	      D4	  63
+RXIRQ				  BIT	      99	  55
+RXRDY				  BIT	      9D	  57
+SBUF				  DATA	      99	  29
+SCON				  DATA	      98	  28
+SINT				  CODE	    0023	  74
+SP				  DATA	      81	  17
+START				  CODE	    0030	 117
+
+ASEM-51 V1.3                                         Copyright (c) 2002 by W.W. Heinz                                         PAGE 8
+
+
+
+SYMBOL				  TYPE     VALUE	LINE
+------------------------------------------------------------
+T0ARL				  BIT	      8C	  41
+T0CEN				  BIT	      8D	  42
+T0IRQ				  BIT	      88	  40
+TCH				  DATA	      8F	  26
+TCL				  DATA	      8E	  25
+TEXT0				  CODE	    00E4	 260
+TEXT1				  CODE	    00F6	 261
+TEXT2				  CODE	    0108	 262
+TEXT3				  CODE	    0127	 263
+TEXT4				  CODE	    0135	 264
+TEXT5				  CODE	    0143	 265
+TH				  DATA	      8D	  24
+TIMER0				  CODE	    000B	  71
+TIMER1				  CODE	    001B	  73
+TIMER2				  CODE	    002B	  75
+TL				  DATA	      8C	  23
+TSTAT				  DATA	      88	  21
+TXIRQ				  BIT	      98	  54
+TXRDY				  BIT	      9C	  56

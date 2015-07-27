@@ -13,7 +13,9 @@ In order to make this demo, you need the free assembler ASEM51.
 DOS BAT script 'build.bat' will assemble the demo and build a suitable object
 code VHDL package that can then be used in synthesis or simulation.
 
-You can run this demo on the software simulator B51 by running script 'run.bat'.
+You can run this demo on the software simulator B51 by running script 'run.bat';
+it will fail because B51 does not simulate the wiring on EXTINT required by this
+program, as mentioned above.
 You can run this demo in Modelsim using script /sim/light52_irq_tb.do.
 
 Once you have run the demo in Modelsim and B51, you can then compare the

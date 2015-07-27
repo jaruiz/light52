@@ -13,17 +13,18 @@ COMDIR = ../common
 # The parameters we set here will end in the object code VHDL package and will 
 # be passed to the MCU core as generics.
 
-PROJ_NAME = "Hello World"
+PROJ_NAME = "Blinker"
 # XROM size in bytes.
-XCODE_SIZE = 2048
-# XRAM size in bytes -- should be zero but the HW does not support that yet.
-XDATA_SIZE = 512
+XCODE_SIZE = 4096
+# XRAM size in bytes.
+XDATA_SIZE = 0
 
 
 # Source files 
-SRC :=  $(SRCDIR)/hello.c
+SRC :=  $(SRCDIR)/blinker.c \
+        $(COMDIR)/soc.c
 # Final executable HEX file
-BIN :=  hello.ihx
+BIN :=  blinker.ihx
 
 # Toolchain flags 
 LFLAGS = -o $(OBJDIR)/ --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE) 

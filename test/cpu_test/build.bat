@@ -23,6 +23,7 @@
      -v %BR_PATH%/templates/obj_code_pkg_template.vhdl ^
      -o %VHDL_TB_PATH%/obj_code_pkg.vhdl ^
      --xcode 40000 ^
+     --xdata 1024 ^
      --name cpu_test
      
 @python %BR_PATH%\src\build_rom.py ^
@@ -30,4 +31,5 @@
      -v %BR_PATH%/templates/obj_code_pkg_template.vhdl ^
      -o %VHDL_TB_PATH%/full_test_pkg.vhdl ^
      --xcode 40000 ^
+     --xdata 1024 ^
      --name cpu_test

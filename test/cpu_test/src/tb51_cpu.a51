@@ -97,7 +97,6 @@ start:
         ; Clear failure flag
         mov     fail,#000h
 
-
         ;-- Test series A ------------------------------------------------------
         ; Test the basic opcodes needed in later tests:
         ; a.- Serial port initialization is OK
@@ -160,6 +159,7 @@ ta_d1:  djnz    dir0,ta_d2
         ; e.- <MOV @Ri, #imm>
         ; f.- <CJNE @Ri, #imm, rel>
         ; g.- <CJNE A, dir, rel>
+        ; h.- <CJNE A, dir, rel> with SFR direct address
 
         putc    #'B'                ; start of test series
 
@@ -275,7 +275,7 @@ tb_f4:  jc      tb_f2
 
         eot     'f',tb_f2
 
-        mov     dir0,#0c0h
+        mov     dir0,#0c0h          ; CJNE A,dir,rel targetting an IRAM location
         mov     031h,#0c1h
         mov     032h,#0c2h
         clr     c
@@ -292,6 +292,25 @@ tb_g1:  jnc     tb_g0
 tb_g2:  jc      tb_g0
         
         eot     'g',tb_g0
+        
+        mov     dir0,#0c0h          ; CJNE A,dir,rel targetting an SFR location
+        mov     B,#0c1h
+        mov     032h,#0c2h
+        clr     c
+        mov     a,#0c1h
+        mov     r0,#42h
+        cjne    a,B,tb_h0
+        jc      tb_h0
+        cjne    a,032h,tb_h1
+        putc    #'?'
+        mov     fail,#001h
+tb_h1:  jnc     tb_h0
+        cjne    a,dir0,tb_h2
+        putc    #'$'
+        mov     fail,#001h
+tb_h2:  jc      tb_h0
+
+        eot     'h',tb_h0
         
         put_crlf                    ; end of test series
 
@@ -512,6 +531,38 @@ tc_n3:
 
         eot     'n',tc_n0
 
+        ; (better read the following code in execution order)
+        mov     ACC,#08h              ; We'll be testing bits ACC.3 and ACC.2
+        sjmp    tc_o1               ; jump forward so we can test jump backwards
+tc_o2:  mov     c,ACC.3               ; make sure the target bit is clear
+        jc      tc_o0
+        jbc     ACC.2,tc_o0           ; JBC jumps not when target bit clear
+        sjmp    tc_o3
+tc_o1:  jbc     ACC.3,tc_o2           ; JBC jumps when target bit set
+        sjmp    tc_o0
+tc_o3:
+
+        eot     'o',tc_o0
+
+        mov     02eh,#00h           ; We'll be testing bits ACC.3 and ACC.2
+        setb    ACC.3
+        mov     c,ACC.3
+        jnc     tc_p0
+        setb    ACC.2
+        mov     c,ACC.2
+        jnc     tc_p0
+
+        eot     'p',tc_p0
+
+        mov     ACC,#80h           ; We'll be testing bit ACC.7
+        jb      ACC.7,tc_q1
+        sjmp    tc_q0
+tc_q1:  clr     ACC.7
+        jb      ACC.7,tc_q0
+        cpl     ACC.7
+        jnb     ACC.7,tc_q0
+
+        eot     'q',tc_q0
 
 
         put_crlf                    ; end of test series
@@ -672,7 +723,7 @@ te_ma   macro   target, error_loc
 
         eot     'd',te_d0
 
-        mov     039h,#080h
+        mov     039h,#080h          ; Test <INC dir> with IRAM address...
         inc     039h
         mov     a,039h
         cjne    a,#081h,te_e0
@@ -682,6 +733,18 @@ te_ma   macro   target, error_loc
         jc      te_e0
         mov     a,039h
         cjne    a,#000h,te_e0
+
+        mov     B,#080h             ; ...and <INC dir> with SFR address
+        inc     B
+        mov     a,B
+        cjne    a,#081h,te_e0
+        mov     B,#0ffh
+        clr     c
+        inc     B
+        jc      te_e0
+        mov     a,B
+        cjne    a,#000h,te_e0
+
 
         eot     'e',te_e0
 
@@ -720,7 +783,7 @@ te_mf   macro   target, error_loc
 
         eot     'h',te_h0
 
-        mov     039h,#001h
+        mov     039h,#001h          ; Test <DEC dir> with IRAM address...
         dec     039h
         mov     a,039h
         cjne    a,#00h,te_i0
@@ -729,6 +792,17 @@ te_mf   macro   target, error_loc
         dec     039h
         jc      te_i0
         mov     a,039h
+        cjne    a,#0ffh,te_i0
+
+        mov     B,#001h             ; ...and <DEC dir> with SFR address
+        dec     B
+        mov     a,B
+        cjne    a,#00h,te_i0
+        mov     B,#000h
+        clr     c
+        dec     B
+        jc      te_i0
+        mov     a,B
         cjne    a,#0ffh,te_i0
 
         eot     'i',te_i0
@@ -773,10 +847,21 @@ tf_ma   macro   rn, n, error_loc
 
         eot     'b',tf_b0
 
-        mov     031h,#091h
+        mov     031h,#091h          ; IRAM to IRAM...
         mov     039h,031h
         mov     a,039h
         cjne    a,#091h,tf_c0
+
+        mov     031h,#091h          ; ...IRAM to SFR...
+        mov     B,031h
+        mov     a,B
+        cjne    a,#091h,tf_c0
+
+        mov     B,#091h          ; ...and SFR to IRAM
+        mov     031h,B
+        mov     a,031h
+        cjne    a,#091h,tf_c0
+
 
         eot     'c',tf_c0
 
@@ -898,11 +983,18 @@ tf_mf   macro   rn, n, error_loc
         eot     'b',tg_b0
 
         ; c.- <XCH A,dir>
-        mov     a,#34h
+        mov     a,#34h              ; IRAM address...
         mov     13h,#57h
         xch     a,13h
         cjne    a,#57h,tg_c0
         mov     a,13h
+        cjne    a,#34h,tg_c0
+
+        mov     a,#34h              ; ...and SFR address
+        mov     B,#57h
+        xch     a,B
+        cjne    a,#57h,tg_c0
+        mov     a,B
         cjne    a,#34h,tg_c0
 
         eot     'c',tg_c0
@@ -1108,6 +1200,7 @@ tst_alu macro   op,a0,a1,r,am,flags
         if      (am and 2) ne 0
         ; ...and <op> dir, #arg1
         top_mb  op,dir0,tall_2,<flags>
+        top_mb  op,B,tall_2,<flags>
         eot     'f',tall_2
         endif
         
@@ -1170,7 +1263,8 @@ tk_ma0: dec     a
         cjne    a,#001,error_loc    ; Verify number of iterations is ok
         endm
         
-        tk_ma   dir0,tk_a0          ; <DJNZ dir,rel>
+        tk_ma   dir0,tk_a0          ; <DJNZ dir,rel> with IRAM operand
+        tk_ma   B,tk_a0             ; <DJNZ dir,rel> with SFR operand
 
         eot     'a',tk_a0
 
