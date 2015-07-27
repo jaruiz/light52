@@ -504,7 +504,8 @@ load_acc_out <= load_acc;
 with ps select acc_input <=
     unsigned(xdata_rd)      when movx_a_dptr_0 | movx_a_ri_3,
     unsigned(code_rd)       when movc_1,
-    alu_result              when others;
+    result_internal         when others;
+
 
 ACC_register:
 process(clk)

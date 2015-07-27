@@ -262,8 +262,8 @@ begin
         sfr_we      => sfr_we
     );
 
-    -- FIXME uart irq is unconnected!
-    irq_source <= "000" & timer_irq & ext_irq;
+    -- Connect peripheral IRQ inputs to the CPU.
+    irq_source <= uart_irq & "00" & timer_irq & ext_irq;
 
 ---- SFR input mux -------------------------------------------------------------
 

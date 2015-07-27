@@ -136,8 +136,11 @@ use work.light52_ucode_pkg.all;
 
 entity light52_cpu is
     generic (
+        -- Do not map unused BRAM onto XRAM space.
         USE_BRAM_FOR_XRAM : boolean := false;
+        -- Implement DA and XCHD instructions by default.
         IMPLEMENT_BCD_INSTRUCTIONS : boolean := false;
+        -- Use a combinational (dedicated) multiplier by default. 
         SEQUENTIAL_MULTIPLIER : boolean := false
     );
     port(
@@ -228,17 +231,27 @@ signal ps, ns :             t_cpu_state;
 
 ---- Interrupt handling --------------------------------------------------------
 
--- IRQ inputs ANDed to IE mask bits
+-- IRQ inputs ANDed to IE mask bits.
 signal irq_masked_inputs :  std_logic_vector(4 downto 0);
+-- IRQ inputs ANDed to IE mask bits ANDed to IP mask bits.
+signal irq_masked_inputs_hp :  std_logic_vector(4 downto 0);
 -- Level of highest-level active IRQ input. 0 is highest, 4 lowest, 7 is none.
 signal irq_level_inputs :   unsigned(2 downto 0);
--- Level of IRQ being serviced. 7 if none. Set by IRQ, reset to 7 by RETI.
-signal irq_level_current :  unsigned(2 downto 0);
 -- Low 6 bits of IRQ service address.
 signal irq_vector :         unsigned(5 downto 0);
 signal irq_active :         std_logic;  -- IRQ pending service
 signal load_ie :            std_logic;  -- IE register load enable
-signal irq_restore_level :  std_logic;  -- Restore irq_level_current to 7 (RETI)
+signal load_ip :            std_logic;  -- IP register load enable
+-- Restore irq priority level (as per RETI execution).
+signal irq_restore_level :  std_logic;
+-- High wwhen the active IRQ is allowed by the priority rules.
+signal irq_active_allowed : std_logic;
+-- High when serving a LOw Priority interrupt.
+signal irq_serving_lop :    std_logic;
+-- High when serving a HIgh Priority interrupt.
+signal irq_serving_hip :    std_logic;
+-- High when the active interrupt line is a HIgh Priority interrupt.
+signal irq_active_hip :     std_logic;
 
 ---- CPU programmer's model registers ------------------------------------------
 
@@ -252,6 +265,8 @@ signal PSW :                t_byte;         -- PSW, full (P is combinational)
 signal SP_reg :             t_byte;         -- SP
 signal SP_next :            t_byte;         -- Next value for SP
 signal IE_reg :             t_byte;         -- IE
+signal IP_reg :             t_byte;         -- IP
+
 
 signal alu_p :              std_logic;      -- P flag (from ALU)
 signal DPTR_reg :           t_address;      -- DPTR
@@ -897,6 +912,27 @@ end process cpu_state_machine_transitions;
 
 --## 2.- Interrupt handling ####################################################
 
+
+-- IP SFR is implemented as a regular SFR as per the MC51 architecture.
+load_ip <= '1' when sfr_addr_internal=SFR_ADDR_IP and sfr_we_internal='1'
+           else '0'; 
+
+IP_register:
+process(clk)
+begin
+    if clk'event and clk='1' then
+        if reset='1' then
+            IP_reg <= (others => '0');
+        else
+            if load_ip='1' then
+                IP_reg <= alu_result;
+            end if;
+        end if;
+    end if;
+end process IP_register;
+
+
+-- IE SFR is implemented as a regular SFR as per the MC51 architecture.
 load_ie <= '1' when sfr_addr_internal=SFR_ADDR_IE and sfr_we_internal='1'
            else '0'; 
 
@@ -920,44 +956,76 @@ irq_restore_level <= '1' when ps=ret_0 and alu_fn_reg(0)='1' else '0';
 
 -- Mask the irq inputs with IE register bits...
 irq_masked_inputs <= irq_source and std_logic_vector(IE_reg(4 downto 0));
+-- ...separate the highpriority interrupt inputs by masking with IP register...
+irq_masked_inputs_hp <= irq_masked_inputs and std_logic_vector(IP_reg(4 downto 0));
 -- ...and encode the highest priority active input
 irq_level_inputs <= 
+    "000" when irq_masked_inputs_hp(0)='1' else
+    "001" when irq_masked_inputs_hp(1)='1' else
+    "010" when irq_masked_inputs_hp(2)='1' else
+    "011" when irq_masked_inputs_hp(3)='1' else
+    "100" when irq_masked_inputs_hp(4)='1' else
     "000" when irq_masked_inputs(0)='1' else
     "001" when irq_masked_inputs(1)='1' else
     "010" when irq_masked_inputs(2)='1' else
     "011" when irq_masked_inputs(3)='1' else
     "100" when irq_masked_inputs(4)='1' else
     "111";
+    
+irq_active_hip <= '1' when irq_masked_inputs_hp/="00000" else '0';
+    
+-- An active, enabled interrupt will be serviced only if...
+irq_active_allowed <= '1' when
+                    -- ...other high-priority interrupt is NOT being serviced...
+                    irq_serving_hip='0' and
+                    -- ...and either the incoming interrupt is high-priority...
+                    (irq_active_hip='1' or
+                    -- -- ...or no interrupt is being serviced at all;
+                    (irq_active_hip='0' and irq_serving_lop='0'))
+                    -- otherwise the interrupt is not allowed to proceed.
+                    else '0';
 
 -- We have a pending irq if interrupts are enabled...    
 irq_active <= '1' when IE_reg(7)='1' and 
-                       -- ...and the active irq has higher priority than any 
-                       -- ongoing irq routine.
-                       (irq_level_inputs < irq_level_current) 
-              else '0';    
+                    -- ...and some interrupt source is active...
+                    irq_level_inputs/="111" and
+                    -- ...and the active interrupt is allowed by the priority 
+                    -- rules...
+                    irq_active_allowed='1'
+                    -- ...otherwise the interrupt is ignored.
+                    else '0';    
 
 irq_registered_priority_encoder:
 process(clk)
 begin
     if clk'event and clk='1' then
-        if reset='1' or irq_restore_level='1' then
-            -- After reset, irq level is 7, which means all irqs are accepted.
-            -- Note that valid levels are 0 to 4 and the lower the number,
-            -- the higher the priority.
-            -- The level is restored to 7 by the RETI instruction too.
-            irq_level_current <= "111";
-        else
+        if reset='1' then
+            -- After reset, no interrupt of either priority level is being
+            -- serviced.
+            irq_serving_hip <= '0';
+            irq_serving_lop <= '0';
+        elsif irq_restore_level='1' then
+            -- RETI executed: if high-priority level was active...
+            if irq_serving_hip='1' then
+                -- ...disable it, reverting to the previous priority level...
+                irq_serving_hip <= '0';
+            else
+                -- otherwise disable the low priority level.
+                irq_serving_lop <= '0';
+            end if;
+        else            
             -- Evaluate and register the interrupt priority in the same state 
             -- the irq is to be acknowledged.
             if ps=fetch_1 and irq_active='1' then
-                irq_level_current <= irq_level_inputs;
+                irq_serving_hip <= irq_active_hip;
+                irq_serving_lop <= irq_serving_lop or (not irq_active_hip);
+                -- This irq vector is going to be used in state irq_2.
+                irq_vector <= irq_level_inputs & "011";
             end if;
         end if;
     end if;
 end process irq_registered_priority_encoder;
 
--- This irq vector is going to be used in state irq_2.
-irq_vector <= irq_level_current & "011";
 
     
 --## 3.- Combined register bank & decoding table ###############################
@@ -1083,6 +1151,7 @@ with ps select direct_addressing <=
     '1'                         when jrb_bit_0 | jrb_bit_1 | jrb_bit_2,
     '1'                         when bit_op_0 | bit_op_1 | bit_op_2,
     -- FIXME these below have been verified and corrected
+    '1'                         when djnz_dir_0,
     '1'                         when djnz_dir_1,
     '1'                         when djnz_dir_2,
     '1'                         when push_0,
@@ -1616,6 +1685,7 @@ with sfr_addr_internal select sfr_rd_internal <=
     DPTR_reg(15 downto 8)   when SFR_ADDR_DPH,
     DPTR_reg( 7 downto 0)   when SFR_ADDR_DPL,
     IE_reg                  when SFR_ADDR_IE,
+    IP_reg                  when SFR_ADDR_IP,
     unsigned(sfr_rd)  when others; 
 
 -- Registering the SFR read mux gives the SFR block the same timing behavior as

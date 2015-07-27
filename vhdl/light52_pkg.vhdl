@@ -37,7 +37,7 @@ package light52_pkg is
 
 subtype t_byte is unsigned(7 downto 0);
 
--- These include only the CPU SFRs (B,ACC,PSW,DPH,DPL,SP,IE)
+-- These include only the CPU SFRs (B,ACC,PSW,DPH,DPL,SP,IE,IP)
 constant SFR_ADDR_ACC       : t_byte := X"E0";
 constant SFR_ADDR_PSW       : t_byte := X"D0";
 constant SFR_ADDR_B         : t_byte := X"F0";
@@ -45,6 +45,7 @@ constant SFR_ADDR_SP        : t_byte := X"81";
 constant SFR_ADDR_DPH       : t_byte := X"83";
 constant SFR_ADDR_DPL       : t_byte := X"82";
 constant SFR_ADDR_IE        : t_byte := X"A8";
+constant SFR_ADDR_IP        : t_byte := X"B8";
 
 
 ---- Configuration constants ---------------------------------------------------
