@@ -2,6 +2,7 @@
 """
 build_rom.py: Create VHDL package with ROM initialization constant from 
 Intel-HEX object code file.
+Please use with --help to get some brief usage instructions.
 """
 __author__ = "Jose A. Ruiz"
 __license__ = "LGPL"
@@ -25,33 +26,36 @@ def usage():
     print "Builds VHDL ROM constant from template and Intel HEX object file.\n"
     print "ALL of the following arguments should be given, in any order:"
     print "{f|file} <filename>        Object code file name"
-    print "{c|constant} <name>        Name of target VHDL constant"
-    print "{p|package} <name>         Name of target VHDL package"
-    print "{n|name} <name>            Name of project (used only in comment)"
-    print "{o|output} <filename>      Target VHDL file name"
     print ""
     print "Additionally, any of these arguments can be given:"
+    print "{h|help}                   Show help string and exit"
+    print "{c|constant} <name>        Name of target VHDL object code constant"
+    print "{p|package} <name>         Name of target VHDL package"
+    print "{n|name} <name>            Name of project (used only in comments)"
+    print "{o|output} <filename>      Target VHDL file name"
+    print "{xcode} <number>           Size of XCODE memory in bytes"
+    print "         (defaults to 2048)"
+    print "{xdata} <number>           Size of XDATA memory in bytes"
+    print "         (defaults to 0)"
     print "{v|vhdl} <filename>        VHDL template"
     print "         (defaults to templates/obj_code_kg_template.vhdl)"
     print "{i|indent} <number>        Indentation in VHDL tables (decimal)"
     print "         (defaults to 4)"
 
 
+    
 def help():
     """Print help message a bit longer than usage message."""
     print "\nPurpose:\n"
-    print "Reads the code and data binary files and 'slices' them in byte"
-    print "columns."
-    print "The data columns are converted to VHDL strings and then inserted"
-    print "into the vhdl template, in place of tags @code0@ .. @code3@ and "
-    print "@data0@ .. @data3@. Column 0 is LSB and column3 is MSB.\n"
-    print "Tags like @data31@ and @data20@ etc. can be used to initialize"
-    print "memories in 16-bit buses, also split in byte columns.\n"
+    print "Builds initialization package for Light52 MCU core."
+    print "The object code bytes are converted to VHDL strings and then inserted"
+    print "into the vhdl template, in place of tag @code_bytes@.\n"
     print "Template tags are replaced as follows:"
     print "@obj_pkg_name@        : Name of package in target vhdl file."
-    print "@const_name@          : Name of constant (VHDL table)."
+    print "@const_name@          : Name of object code constant (VHDL table)."
     print "@obj_size@            : Total size of code table in bytes."
-    print "@project@             : Project name."
+    print "@obj_bytes@           : Array of object code bytes."
+    print "@project_name@        : Project name."
     print "@xcode_size@          : Size of XCODE memory."
     print "@xdata_size@          : Size of XDATA memory."
 
@@ -233,7 +237,7 @@ def main(argv):
         elif opt in ("--xdata"):
             params['xdata_size'] = int(arg)
 
-    # Ok, now 
+    # Ok, now read and parse the input Intel HEX object code file.
     if params['hex']:
         (xcode, total_bytes, bottom, top) = read_ihex_file(params['hex']);
     else:
@@ -242,7 +246,7 @@ def main(argv):
         return 1
     
     
-    # Make sure the object code fits the implemented XCODE space.
+    # Make sure the object code fits into the implemented XCODE space.
     # If it doesn't, print a warning and let the user deal with it.
     # Assuming that XCODE starts at address zero -- that's how the core works.
     if params['xcode_size'] < top:
