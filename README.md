@@ -22,6 +22,12 @@ has yet to be developed.
 
 All the core features are described in detail [in the datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf?raw=true).
 
+### Refactor in Progress
+
+At the time of writing this (early May 2017) I'm beginning a refactor of the project that will make it less Windows-centric and will remove the dependency from Modelsim, among other changes. 
+
+When the refactor is complete, quick start instructions will be added to this readme file.
+
 ### Next Steps
 
 If I ever have any quality spare time again, I'd like to make this project actually useable in real life projects.  This will involve at least the following:
