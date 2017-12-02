@@ -1,4 +1,4 @@
-###b51 -- ISS for Light52 (MCS51 clone).
+## b51 -- ISS for Light52 (MCS51 clone).
 
 ### Building b51
 
@@ -6,15 +6,7 @@ Use make:
 
 	make all 
 
-This will build executable ./bin/b51
-
-Alternatively, if you are on Windows and have CodeBlocks installed you can use 
-the CodeBlocks project file included:
-
-	cb_win32/b51/b51.cbp
-
-I haven't used the CodeBlocks project file in a good while, much less in Windows,
-so I'm not even sure it will work. I guess it will be removed eventually.
+This will build executable `./bin/b51` assuming you have the gcc toolchain.
 
 
 ### Using b51
