@@ -1,0 +1,6 @@
+*.o
+*.lst
+*.hex
+*.ghw
+*.csv
+tools/b51/bin

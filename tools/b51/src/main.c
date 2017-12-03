@@ -95,7 +95,12 @@ static bool parse_command_line(int argc, char **argv){
     args.num_instructions = 9e8;
     args.implement_bcd = false;
 
-    for(i=1;i<argc;i++){
+    /* Parse all args but last, which should be the file name. */
+    for(i=1;i<argc-1;i++){
+        if (strncmp(argv[i],"--help", strlen("--help"))==0){
+            usage();
+            return true;
+        }
         if(strcmp(argv[i],"--nologs")==0){
             /* disable logging */
             args.console_logfile_name = NULL;
@@ -128,12 +133,14 @@ static bool parse_command_line(int argc, char **argv){
             return false;
         }
     }
-
-    if(args.hex_file_name==NULL){
+    /* Last argument should be a file name. Catch glaring errors here...*/
+    if (argv[i][0] == '-') {
         printf("Error: Missing mandatory '--hex=' argument.\n");
         usage();
         return false;
     }
+    /* ...and let the file open function fail if the argument is wrong. */
+    args.hex_file_name = argv[i];
 
     return true;
 }
@@ -141,12 +148,16 @@ static bool parse_command_line(int argc, char **argv){
 
 static void usage(void){
     printf("B51: Batch-mode simulator for MCS51 architecture.\n\n");
-    printf("Usage: b51 [options]\n\n");
+    printf("Usage: b51 [options] <executable Intel HEX file name>\n\n");
     printf("Options:\n\n");
-    printf("  --hex=<filename>       -"
-           " (mandatory) Name of Intel HEX object code file.\n");
+    printf("  --help                 -"
+           " Display this help text and exit.\n");
     printf("  --nint=<dec. number>   -"
-           " No. of instructions to run. Defaults to a gazillion.\n");
+           " No. of instructions to run.\n"
+           "                           Defaults to a gazillion.\n");
+    printf("  --bcd=<0|1>            -"
+           " Disable/enable implementation of BCD instructions.\n"
+           "                           Defaults to 0.\n");
     printf("  --nologs               -"
            " Disable console and execution logging.\n");
     printf("\n");
