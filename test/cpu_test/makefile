@@ -54,7 +54,7 @@ endif
 .PHONY: hexfile
 hexfile: find_asem51
 	@echo $(ASEM51_PRESENT)
-	$(AS) src/$(SRCFILE).a51 bin/$(SRCFILE).hex lst/$(SRCFILE).lst $(AFLAGS)
+	$(AS) src/$(SRCFILE).a51 bin/software.hex lst/$(SRCFILE).lst $(AFLAGS)
 
 # Root target, invoked by sim makefile.
 .PHONY: all
@@ -69,7 +69,7 @@ all: package
 package: hexfile
 	@echo Building object code VHDL package...
 	@python $(BRPATH)/src/build_rom.py \
-		-f bin/$(SRCFILE).hex  \
+		-f bin/software.hex  \
 		-v $(BRPATH)/templates/obj_code_pkg_template.vhdl \
 		--xcode $(XCODE_SIZE) --xdata $(XDATA_SIZE) -n $(TEST) \
 		-o $(VHDL_TB_PATH)/obj_code_pkg.vhdl

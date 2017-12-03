@@ -18,7 +18,7 @@
 #	Build 8051 test program by invoking its makefile with target 'all'.
 #	Will produce test object code in the test directory including a vhdl 
 #	package with the code ROM initialization data. 
-# sim: sw
+# rtl: sw
 #	Run test program on GHDL.
 #	No support for other simulators but you should be able to fix that in a 
 #	jiffie.
@@ -26,7 +26,7 @@
 #	Run test program on b51 ISS.
 #	Uses b51 ISS supplies with this project and assumes the executable has been
 #	built -- do that yourself beforehand.
-# all: sim iss
+# all: rtl iss
 #	Runs test program on both RTL simulator and ISS and compares the resulting 
 #	execution log -- essentially using the ISS as a golden model.
 #
@@ -54,7 +54,7 @@
 # 
 #-------------------------------------------------------------------------------
 
-.DEFAULT: sim
+.DEFAULT: rtl
 
 #---- Project config. ----------------------------------------------------------
 
@@ -62,6 +62,9 @@ PROJECTDIR	 	:= ../..
 SWDIR 			:= $(PROJECTDIR)/test
 RTLDIR 			:= $(PROJECTDIR)/vhdl
 TBDIR  			:= $(RTLDIR)/tb
+
+CC_HIGLIGHT 	= "\033[1;34m"
+CC_NORMAL 		= "\033[0m"
 
 #---- Simulator configuration. -------------------------------------------------
 
@@ -71,6 +74,8 @@ GHDLFLAGS 		:=
 GHDLSIMFLAGS 	:= --ieee-asserts=disable
 # GtkWave.
 WAVE 			:= gtkwave
+# B51
+B51 			:= $(PROJECTDIR)/tools/b51/bin/b51
 
 
 #---- Defaults. ----------------------------------------------------------------
@@ -107,7 +112,7 @@ SRCTB 			:= $(TBDIR)/light52_tb.vhdl
 TBUNIT			:= light52_tb
 
 
-#---- Rules. -------------------------------------------------------------------
+#---- Rules -- Test SW build ---------------------------------------------------
 
 # Make sure the test SW directory at least exists.
 .PHONY: check_test
@@ -121,16 +126,30 @@ endif
 sw: check_test
 	make -C $(SWDIR)/$(TEST) package BCD=$(BCD)
 
-# Just invoke the simulator.
-sim: sw ghdl 
 
+
+#-- Rules -- ISS simulaton on b51 ----------------------------------------------
+
+# Run test code on ISS.
+.PHONY: iss
+iss: $(TEST_OBJ)
+	@echo -e $(CC_HIGLIGHT)"Running '"$(TEST)"' on b51..."$(CC_NORMAL)
+	$(B51) --bcd=1 $(SWDIR)/$(TEST)/bin/software.hex
+
+
+#-- Rules -- RTL simulation on ghdl --------------------------------------------
+
+# Just invoke the simulator.
+.PHONY: rtl
+rtl: sw ghdl 
 
 # Run SW on VHDL TB on GHDL. 
 .PHONY: ghdl
 ghdl: ghdl_rtl 
+	@echo -e $(CC_HIGLIGHT)"Running '"$(TEST)"' on ghdl..."$(CC_NORMAL)
 	$(GHDLC) -a $(GHDLFLAGS) $(PKGTB) $(SRCTB)
 	$(GHDLC) -m $(GHDLFLAGS) $(TBUNIT)
-	./$(TBUNIT) $(GHDLSIMFLAGS) --wave=$(TBUNIT).ghw
+	-./$(TBUNIT) $(GHDLSIMFLAGS) --wave=$(TBUNIT).ghw
 
 # Compile the whole set of sources, packages first.
 # Note we insert the SW object code package after the main package sources.
@@ -147,6 +166,23 @@ ghdl_syntax:
 .PHONY: ghdl_view
 ghdl_view : ghdl
 	$(WAVE) $(TBUNIT).ghw
+
+
+
+#-- Rules -- RTL against ISS ---------------------------------------------------
+
+.PHONY: all
+all: iss rtl
+	@cmp -s sw_log.txt hw_sim_log.txt; \
+	RETVAL=$$?; \
+	if [ $$RETVAL -eq 0 ]; then \
+		echo -e "\n\033[1;32mEXECUTION LOGS MATCH\033[0m\n"; \
+	else \
+		echo -e "\n\033[1;31mEXECUTION LOGS DO NOT MATCH\033[0m\n"; \
+	fi
+
+
+#-------------------------------------------------------------------------------
 
 .PHONY: clean
 clean: check_test
