@@ -6,39 +6,44 @@
 
 #-- Toolchain executables ------------------------------------------------------
 
-# FIXME only tested in Win32/Cygwin host. This may not work in a vanilla Win32.
-
+# TODO won't work with assembly tests and will need changes in Win32.
 AS = 
-CC = SDCC
-LD = SDCC
-RM = rm
+CC = sdcc
+LD = sdcc
+RM = rm -rf
 CP = cp
+BRPATH = ../../tools/build_rom
 
-#-- Give default values to the compiler, linker and assembler flags ------------
+#-- Common configuration for all tests -----------------------------------------
 
-ifndef LFLAGS
-LFLAGS = -o $(OBJDIR)/
-endif
-ifndef CFLAGS 
-CFLAGS = -o $(OBJDIR)/
-endif
-ifndef AFLAGS
+# Directories              
+BINDIR = bin
+OBJDIR = obj
+SRCDIR = src
+VHDL_TB_PATH = .
+COMDIR = ../common
+
+# Toolchain flags 
+LFLAGS = -o $(OBJDIR)/ --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE) 
+CFLAGS = -o $(OBJDIR)/ -D__LIGHT52__=1
 AFLAGS = -c
-endif
 
 
-#-- A bit of 'make magic' to simplify the rules --------------------------------
+#-- Sources and objects, same for all tests  -----------------------------------
 
-# Add all the source directories to the VPATH... 
+# Add all the source directories to the VPATH.
 VPATH := $(dir $(SRC))
-# ...and build the OBJS list from the list of sources
-OBJS := $(patsubst %.c, $(OBJDIR)/%.rel, $(notdir $(SRC)))
 
+# If no list of sources is specified, just compile all c files in src.
+SRC ?=  $(wildcard $(SRCDIR)/*.c)
+OBJS ?= $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.rel, $(SRC))
+# Default name of hex file.
+BIN ?= software.hex
 
 #-- Targets & rules ------------------------------------------------------------
 
 # Compile C sources into relocatable object files
-$(OBJDIR)/%.rel : %.c
+$(OBJDIR)/%.rel : src/%.c
 	@echo Compiling $< ...
 	$(CC) $(CFLAGS) -c $<
 
@@ -49,13 +54,15 @@ $(BINDIR)/$(BIN): $(OBJS)
 	$(CP) $(OBJDIR)/*.ihx $(BINDIR)/$(BIN)
 
 # Root target
-all: $(BINDIR)/$(BIN) package
+.PHONY: sw
+sw: $(BINDIR)/$(BIN) package
 	@echo Done
 
 
 #-- Targets that build the synthesizable vhdl ----------------------------------
 
 #-- Create VHDL package with object code and synthesis parameters
+.PHONY: package
 package: $(BINDIR)/$(BIN)
 	@echo Building object code VHDL package...
 	@python $(BRPATH)/src/build_rom.py \
@@ -67,6 +74,5 @@ package: $(BINDIR)/$(BIN)
 #-- And now the usual housekeeping stuff ---------------------------------------
 
 .PHONY: clean
-
 clean:
-	-$(RM) $(OBJDIR)/*.* $(BINDIR)/*.* $(VHDL_TB_PATH)/obj_code_pkg.vhdl
+	-$(RM) $(OBJDIR)/* $(BINDIR)/* $(VHDL_TB_PATH)/obj_code_pkg.vhdl

@@ -132,7 +132,7 @@ sw: check_test
 
 # Run test code on ISS.
 .PHONY: iss
-iss: $(TEST_OBJ)
+iss: sw
 	@echo -e $(CC_HIGLIGHT)"Running '"$(TEST)"' on b51..."$(CC_NORMAL)
 	$(B51) --bcd=1 $(SWDIR)/$(TEST)/bin/software.hex
 

@@ -4,3 +4,4 @@
 *.ghw
 *.csv
 tools/b51/bin
+test/*/obj
