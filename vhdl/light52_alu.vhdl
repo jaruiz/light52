@@ -71,7 +71,9 @@ use work.light52_ucode_pkg.all;
 entity light52_alu is
     generic (
         SEQUENTIAL_MULTIPLIER : boolean := false;
-        IMPLEMENT_BCD_INSTRUCTIONS : boolean := false
+        IMPLEMENT_BCD_INSTRUCTIONS : boolean := false;
+        -- Enable simulation-only logic meant for use by the test bench.
+        SIMULATION :            boolean := false
     );
     port(
         clk             : in std_logic;
@@ -684,6 +686,15 @@ if not IMPLEMENT_BCD_INSTRUCTIONS generate
 da_cy <= '0';
 end  generate;
 
-    
+---- Simulation-only stuff (extraction of internal signals to TB) --------------
+
+Internal_signal_extraction:
+if SIMULATION generate
+    -- 'Connect' all the internal signals we want to watch to members of 
+    -- the info record. 
+    -- This does not require VHDL 2008 support or proprietary tricks.
+    log_acc_input <=           unsigned(acc_input);
+    log_load_acc <=              load_acc;
+end generate Internal_signal_extraction; 
 
 end architecture plain;

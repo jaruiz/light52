@@ -141,7 +141,9 @@ entity light52_cpu is
         -- Implement DA and XCHD instructions by default.
         IMPLEMENT_BCD_INSTRUCTIONS : boolean := false;
         -- Use a combinational (dedicated) multiplier by default. 
-        SEQUENTIAL_MULTIPLIER : boolean := false
+        SEQUENTIAL_MULTIPLIER : boolean := false;
+        -- Enable simulation-only logic meant for use by the test bench.
+        SIMULATION :            boolean := false
     );
     port(
         clk             : in std_logic;
@@ -1828,7 +1830,8 @@ with uc_alu_class_decode_0 select alu_class_op_sel <=
     alu : entity work.light52_alu
     generic map (
         IMPLEMENT_BCD_INSTRUCTIONS => IMPLEMENT_BCD_INSTRUCTIONS,
-        SEQUENTIAL_MULTIPLIER => SEQUENTIAL_MULTIPLIER
+        SEQUENTIAL_MULTIPLIER => SEQUENTIAL_MULTIPLIER,
+        SIMULATION => true
     )
     port map (
         clk =>                  clk,
@@ -1923,6 +1926,31 @@ with ps select xdata_we <=
     '1' when movx_dptr_a_0,
     '1' when movx_ri_a_2,
     '0' when others;
+
+
+--## S.- Simulation-only stuff (extraction of internal signals to TB) ##########
+
+Internal_signal_extraction:
+if SIMULATION generate
+    -- 'Connect' all the internal signals we want to watch to members of 
+    -- the info record.
+    -- This does not require VHDL 2008 support or proprietary tricks.
+    log_update_sp <=           update_sp;
+    log_sp <=                  SP_reg;
+    log_psw <=                 psw;
+    log_update_psw_flags(0) <= update_psw_flags;
+    log_ps <=                  ps;
+    log_jump_condition <=      jump_condition;
+    log_rel_jump_target <=     rel_jump_target;
+    log_bram_we <=             bram_we;
+    log_bram_wr_addr <=        bram_addr_p0;
+    log_bram_wr_data_p0 <=     bram_wr_data_p0;
+    log_next_pc <=             next_pc;
+    log_inc_dptr <=            inc_dptr;
+    log_dptr <=                DPTR_reg;
+    log_code_rd <=             code_rd;
+end generate Internal_signal_extraction; 
+
 
 
 end architecture microcoded;

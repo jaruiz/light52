@@ -272,8 +272,8 @@ type t_cpu_state is (
 constant DIV_OVERLAP        : integer := 1;
 -- MUL_OVERLAP: same as above, for sequential multiplier.
 constant MUL_OVERLAP        : integer := 1;    
-        
-    
+
+
 ---- Utility functions ---------------------------------------------------------
 
 -- Computes ceil(log2(A)), e.g. address width of memory block.
@@ -294,6 +294,46 @@ function ucode_to_bram(uC : t_ucode_table) return t_ucode_bram;
 -- CAN BE USED IN SYNTHESIZABLE CODE to compute a BRAM initialization constant 
 -- from a constant argument.
 function objcode_to_bram(oC : t_obj_code; size : integer) return t_bram;
+
+
+---- Data & data types meant to give the TB access to internal CPU signals -----
+
+type t_addr_array is array(0 to 1) of t_address;
+constant BRAM_ADDR_LEN : integer := log2(BRAM_SIZE);
+subtype t_bram_addr is unsigned(BRAM_ADDR_LEN-1 downto 0);
+
+
+signal log_acc_input :             t_byte;
+signal log_load_acc :              std_logic;
+signal log_update_sp :             std_logic;
+signal log_sp :                    t_byte;
+
+signal log_update_psw_flags :      std_logic_vector(1 downto 0);
+signal log_psw :                   t_byte;
+
+signal log_inc_dptr :              std_logic;
+signal log_dptr :                  t_address;
+
+signal log_xdata_we :              std_logic;
+signal log_xdata_vma :             std_logic;
+signal log_xdata_addr :            t_address;
+signal log_xdata_wr :              t_byte;
+
+signal log_code_addr :             t_address;
+signal log_next_pc :               t_address;
+signal log_ps :                    t_cpu_state;
+signal log_jump_condition :        std_logic;
+signal log_rel_jump_target :       t_address;
+
+signal log_bram_we :               std_logic;
+signal log_bram_wr_addr :          t_bram_addr;
+signal log_bram_wr_data_p0 :       t_byte;
+
+signal log_sfr_we :                std_logic;
+signal log_sfr_wr :                t_byte;
+signal log_sfr_addr :              t_byte;
+
+signal log_code_rd :               std_logic_vector(7 downto 0);
 
 end package light52_pkg;
 

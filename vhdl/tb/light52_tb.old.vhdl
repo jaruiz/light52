@@ -43,7 +43,8 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 use std.textio.all;
 
 use work.light52_pkg.all;
@@ -100,7 +101,6 @@ begin
 
 uut: entity work.light52_mcu
     generic map (
-        SIMULATION =>       true,
         IMPLEMENT_BCD_INSTRUCTIONS => BCD,
         CODE_ROM_SIZE =>    work.obj_code_pkg.XCODE_SIZE,
         XDATA_RAM_SIZE =>   work.obj_code_pkg.XDATA_SIZE,
@@ -122,7 +122,7 @@ uut: entity work.light52_mcu
     );
     
     -- UART is looped back in the test bench.
-    rxd <= '0'; --txd;
+    rxd <= txd;
     
     -- I/O ports are looped back and otherwise unused.
     p2_in <= p0_out;

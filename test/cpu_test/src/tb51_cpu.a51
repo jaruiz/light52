@@ -30,7 +30,7 @@
     
         ; Include the definitions for the light52 derivative
         $nomod51
-        $include (light52.mcu)
+        $include (LIGHT52.MCU)
     
         ;-- Parameters common to all tests -------------------------------------
         

@@ -127,8 +127,11 @@ entity light52_mcu is
         UART_HARDWIRED :        boolean := false;
         UART_BAUD_RATE :        natural := 19200;
         CLOCK_RATE :            natural := 50e6;
-        -- Timer0 count period = 20 us by default (20e-6 = 1/50e3)
-        TIMER0_COUNT_RATE :     natural := 50e3
+        -- Timer0 count period = 20 us by default (20e-6 = 1/50e3).
+        -- FIXME review this parameter value.
+        TIMER0_COUNT_RATE :     natural := 50e3;
+        -- Enable simulation-only logic meant for use by the test bench.
+        SIMULATION :            boolean := false
     );
     port(
         clk             : in std_logic;
@@ -237,7 +240,8 @@ begin
     generic map (
         USE_BRAM_FOR_XRAM => USE_BRAM_FOR_XRAM,
         IMPLEMENT_BCD_INSTRUCTIONS => IMPLEMENT_BCD_INSTRUCTIONS,
-        SEQUENTIAL_MULTIPLIER => SEQUENTIAL_MULTIPLIER
+        SEQUENTIAL_MULTIPLIER => SEQUENTIAL_MULTIPLIER,
+        SIMULATION => SIMULATION
     )
     port map (
         clk         => clk,
@@ -487,5 +491,22 @@ begin
     end process external_interrupt_register;
 
     ext_irq <= '1' when external_irq_reg/=X"00" else '0';
+
+---- Simulation-only stuff (extraction of internal signals to TB) --------------
+
+Internal_signal_extraction:
+if SIMULATION generate
+    -- 'Connect' all the internal signals we want to watch to members of 
+    -- the info record. 
+    -- This does not require VHDL 2008 support or proprietary tricks.
+    log_code_addr <=           unsigned(code_addr);
+    log_sfr_we <=              sfr_we;
+    log_sfr_wr <=              unsigned(sfr_wr);
+    log_sfr_addr <=            unsigned(sfr_addr);
+    log_xdata_we <=            xdata_we;
+    log_xdata_vma <=           xdata_vma;
+    log_xdata_addr <=          unsigned(xdata_addr);
+    log_xdata_wr <=            unsigned(xdata_wr);
+end generate Internal_signal_extraction; 
 
 end architecture rtl;
