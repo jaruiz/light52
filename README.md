@@ -27,6 +27,9 @@ All the core features are described in detail [in the datasheet](https://github.
 At the time of writing this (early May 2017) I'm beginning a refactor of the project that will make it less Windows-centric and will remove the dependency from Modelsim, among other changes. 
 
 When the refactor is complete, quick start instructions will be added to this readme file.
+In the meantime you can probably expect lots of breakage; as of right now, only two of the test programs (`cpu_test` and `hello_c`) actually work and there's no synthesis script for any target. The RTL should work just fine, though.
+
+For the time being, if you plan to use this core at all you should use the Opencores version (see below).
 
 ### Next Steps
 
@@ -52,8 +55,9 @@ own risk -- it has worked so far but it may still have bugs.
 If you want to try it anyway, check out file /doc/quickstart.txt and 
 don't hesitate to contact me if you need help!
 
+
 ## Project replicated in OpenCores
 
-This project is replicated in [Opencores](http://opencores.org/project,light52). The contents of both projects should be identical but, as of this writing, only the Opencores version has been pulled and tested on a board. Which means this version might be incomplete or somehow broken. I have checked but I haven't tested, so if you see anything weird you may consider trying the other version and sending me a message...
+This project started life in [Opencores](http://opencores.org/project,light52) before being moved here in 2016 or so. 
 
-
+The Opencores version will remain frozen there for as long as Opencores itself is up.
