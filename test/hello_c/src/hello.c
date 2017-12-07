@@ -17,6 +17,8 @@ void main(void){
     printf("Light52 project -- " __DATE__ "\n\n\r");
     printf("Hello World!\n\r");
 
+    /* Quit simulation by writing EOT to UART. */
+    printf("\004");
     while(1);
 }
 

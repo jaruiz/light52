@@ -290,6 +290,8 @@ int main( void )
     dps = ((uint32_t)Number_Of_Runs)*1000/(uint32_t)(msecs_end);
     printf("Dhrystones per second: %d\n\n", (int16_t)(dps));    
     printf("Test finished.\n\n");
+    /* Quit simulation by writing EOT to UART. */
+    printf("\004");
     return 0;
 #else
   
