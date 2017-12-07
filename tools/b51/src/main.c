@@ -67,11 +67,14 @@ int main(int argc, char **argv){
            cpu.log.executed_instructions, cpu.cycles);
 
     switch(retval){
-    case 1 :
+    case EXIT_UNKNOWN :
         printf("Execution interrupted, cause unknown.\n");
         break;
-    case 2 :
+    case EXIT_BREAKPOINT :
         printf("Execution hit a breakpoint.\n");
+        break;
+    case EXIT_COSIMULATION :
+        printf("SW wrote EOT (0x04) to SBUF.\n");
         break;
     default :
         printf("Execution loop returned invalid code %d\n", retval);

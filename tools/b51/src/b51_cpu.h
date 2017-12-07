@@ -93,6 +93,13 @@ typedef struct cpu51_s {
     cpu51_options_t options;        /**< Core implementation options */
 } cpu51_t;
 
+typedef enum cpu51_exit_e {
+    EXIT_OK = 0,                    /**< Did as many instructions as told to. */
+    EXIT_UNKNOWN = 1,               /**< Lazy error code, see sources. */
+    EXIT_BREAKPOINT = 2,            /**< Hit a breakpoint. */
+    EXIT_COSIMULATION = 3,          /**< SW wrote 0x4 to SBUF. */
+} cpu51_exit_t;
+
 
 /*-- Public functions --------------------------------------------------------*/
 
@@ -119,11 +126,9 @@ extern void cpu_reset(cpu51_t *cpu);
 
     @arg cpu CPU model.
     @arg num_inst Number of instructions to be run.
-    @return 0 if execution timed out,
-            1 if it was interrupted,
-            2 for breakpoints.
+    @return exit code according to what caused the simulation to stop.
 */
-extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst);
+extern cpu51_exit_t cpu_exec(cpu51_t *cpu, uint32_t num_inst);
 
 /**
     Load object code onto XCODE memory.

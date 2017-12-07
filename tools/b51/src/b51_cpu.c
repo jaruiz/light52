@@ -158,7 +158,7 @@ extern bool cpu_add_breakpoint(cpu51_t *cpu, uint16_t address){
     return true;
 }
 
-extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst){
+extern cpu51_exit_t cpu_exec(cpu51_t *cpu, uint32_t num_inst){
     uint8_t opcode;
     uint32_t i;
     bool ok;
@@ -169,7 +169,7 @@ extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst){
 
         if(cpu->pc == cpu->breakpoint){
             printf("BREAKPOINT hit at %04Xh\n", cpu->breakpoint);
-            return 2;
+            return EXIT_BREAKPOINT;
         }
 
         opcode = cpu_fetch(cpu);
@@ -207,11 +207,10 @@ extern uint32_t cpu_exec(cpu51_t *cpu, uint32_t num_inst){
         cpu->log.executed_instructions++;
 
         /* Break execution on any kind of trouble */
-        /* FIXME handle execution faults */
-        if(!ok) {
-            return 1;
-            break;
-        }
+        /* FIXME handle all execution faults */
+        if(!ok) { return EXIT_UNKNOWN; }
+        /* If cosimulation termination signal was detected, quit. */
+        if (cpu->mcu.cosimulation==1) { return EXIT_COSIMULATION; }
     }
 
     return 0;

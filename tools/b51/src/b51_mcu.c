@@ -18,6 +18,7 @@ extern void mcu_reset(mcu51_t *mcu){
     for(i=0;i<NUM_IRQS;i++){
         mcu->irq_countdown[i] = 0;
     }
+    mcu->cosimulation = 0;
 }
 
 extern void mcu_update(mcu51_t *mcu, uint32_t states){
@@ -72,8 +73,11 @@ extern uint16_t mcu_set_sfr(mcu51_t *mcu, uint8_t dir, uint8_t value){
     case 0x99:  /* SBUF */
         mcu->sfr.sbuf = value;
         log_con_output((char)value);
+        /* If EOT is written to the UART, raise a termination flag. */
+        /* TODO cosimulation interface hastily made up! */
+        if (value == 0x04) {mcu->cosimulation = 1;};
         /* Simulate a TI interrupt after 4 instruction cycles, arbitrarily */
-        /* FIXME UAR simulation is in bare bones */
+        /* FIXME UART simulation is in bare bones */
         //mcu->irq_countdown[4] = 4;
         break;
     case 0x98:  /* SCON */

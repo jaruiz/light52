@@ -44,6 +44,7 @@ typedef struct mcu51_s {
 
     mcu51_sfr_t sfr;                    /**< MCU (peripheral) SFRs */
     uint32_t irq_countdown[NUM_IRQS];   /**< Dummy IRQ simulators */
+    uint32_t cosimulation;              /**< ISS-to-SW communication data. */
 } mcu51_t;
 
 /*-- Public functions --------------------------------------------------------*/
