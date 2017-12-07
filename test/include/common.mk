@@ -24,9 +24,9 @@ VHDL_TB_PATH = .
 COMDIR = ../common
 
 # Toolchain flags 
-LFLAGS = -o $(OBJDIR)/ --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE) 
-CFLAGS = -o $(OBJDIR)/ -D__LIGHT52__=1
-AFLAGS = -c
+LFLAGS += -o $(OBJDIR)/ --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE) 
+CFLAGS += -o $(OBJDIR)/ -D__LIGHT52__=1
+AFLAGS += -c
 
 
 #-- Sources and objects, same for all tests  -----------------------------------
@@ -35,17 +35,26 @@ AFLAGS = -c
 VPATH := $(dir $(SRC))
 
 # If no list of sources is specified, just compile all c files in src.
-SRC ?=  $(wildcard $(SRCDIR)/*.c)
-OBJS ?= $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.rel, $(SRC))
+TEST_SRC ?= $(wildcard $(SRCDIR)/*.c)
+COMM_SRC ?= $(wildcard $(COMDIR)/*.c)
+TEST_OBJS ?= $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.rel, $(TEST_SRC))
+COMM_OBJS ?= $(patsubst $(COMDIR)/%.c, $(OBJDIR)/%.rel, $(COMM_SRC))
+OBJS = $(TEST_OBJS) $(COMM_OBJS)
 # Default name of hex file.
 BIN ?= software.hex
 
 #-- Targets & rules ------------------------------------------------------------
 
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
 # Compile C sources into relocatable object files
-$(OBJDIR)/%.rel : src/%.c
-	@echo Compiling $< ...
+$(OBJDIR)/%.rel : $(SRCDIR)/%.c $(OBJDIR)
 	$(CC) $(CFLAGS) -c $<
+
+$(OBJDIR)/%.rel : $(COMDIR)/%.c
+	$(CC) $(CFLAGS) -c $<
+
 
 # Build executable file and move it to the bin directory
 $(BINDIR)/$(BIN): $(OBJS)

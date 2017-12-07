@@ -11,5 +11,8 @@ XCODE_SIZE = 2048
 # XRAM size in bytes -- should be zero but the HW does not support that yet.
 XDATA_SIZE = 512
 
+# Don't link in the common code.
+COMM_OBJS =
+
 # Include the main makefile body with all the rules.
 include ../include/common.mk

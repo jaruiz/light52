@@ -21,16 +21,16 @@ XDATA_SIZE = 2048
 
 
 # Source files 
-SRC :=  $(SRCDIR)/dhry21a.c $(SRCDIR)/dhry21b.c \
-        $(SRCDIR)/estubs.c $(SRCDIR)/timers_b.c \
-        $(COMDIR)/soc.c
+TEST_SRC :=  $(SRCDIR)/dhry21a.c $(SRCDIR)/dhry21b.c \
+        $(SRCDIR)/estubs.c $(SRCDIR)/timers_b.c
+
 # Final executable HEX file
-BIN :=  dhry.ihx
+BIN :=  software.hex
 
 # Toolchain flags
 # Note we ignore many of the warnings triggered by dhrystone
-LFLAGS = -o $(OBJDIR)/ --model-large --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE)
-CFLAGS = -o $(OBJDIR)/ -D__LIGHT52__=1 -DNOSTRUCTASSIGN=1 --model-large \
+LFLAGS = --model-large
+CFLAGS = -DNOSTRUCTASSIGN=1 --model-large \
          --disable-warning 85 --disable-warning 84 --disable-warning 93
 
 

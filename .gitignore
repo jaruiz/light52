@@ -5,3 +5,4 @@
 *.csv
 tools/b51/bin
 test/*/obj
+sim/ghdl/*.txt
