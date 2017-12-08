@@ -221,14 +221,19 @@ begin
     if log_sfr_we = '1' and log_sfr_addr = X"99" then
         -- UART TX data goes to output after a bit of line-buffering
         -- and editing
-        if log_sfr_wr = X"0A" then
-            -- CR received: print output string and clear it
+        if log_sfr_wr = X"0D" then
+            -- LF received: print output string and clear it
             print(con_file, info.con_line_buf(1 to info.con_line_ix));
             print(info.con_line_buf(1 to info.con_line_ix));
             info.con_line_ix <= 1;
             info.con_line_buf <= (others => ' ');
-        elsif log_sfr_wr = X"0D" then
-            -- ignore LF
+        elsif log_sfr_wr = X"0A" then
+            -- ignore CR
+        elsif log_sfr_wr = X"04" then
+            -- EOT terminates simulation.
+            assert log_sfr_wr /= X"04"
+            report "Execution terminated by SW -- EOT written to SBUF."
+            severity failure;
         else
             -- append char to output string
             if info.con_line_ix < info.con_line_buf'high then

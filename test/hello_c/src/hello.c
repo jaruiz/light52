@@ -31,10 +31,19 @@ void main(void){
     @arg c Character to be displayed. Character '\n' will be expanded to '\n\r'.
 */
 void putchar (char c) { 
+#ifdef BUILD_FOR_HW
+    /* This will run on actual HW so keep track of RDY flags. */
     while (!TXRDY);
     SBUF = c;
     if(c=='\n'){
         while (!TXRDY);
         SBUF = '\r';
     }
+#else
+    /* This is for sim only so ignore RDY flags which ISS doesn't simulate. */
+    SBUF = c;
+    if(c=='\n'){
+        SBUF = '\r';
+    }
+#endif
 }

@@ -64,7 +64,7 @@ architecture testbench of light52_tb is
 
 -- Simulated clock period is the same as the usual target, the DE-1 board
 constant T : time := 20 ns; -- 50MHz
-constant SIMULATION_LENGTH : integer := 400000;
+constant SIMULATION_LENGTH : integer := 40000000;
 
 --------------------------------------------------------------------------------
 -- MPU interface 
@@ -163,7 +163,6 @@ uut: entity work.light52_mcu
         wait;
         
     end process drive_uut;
-
 
     -- Logging process: launch logger functions --------------------------------
     log_execution:
