@@ -2023,8 +2023,11 @@ test_failed:
         put_crlf
         sjmp    quit
 
-        ;-- End of test program, enter single-instruction endless loop
-quit:   ajmp    $
+        ;-- End of test program.   
+        ; Tell simulation platform to stop by writing EOT to SBUF...
+quit:   putc    #04
+        ; ...and enter single-instruction endless loop.
+        ajmp    $
     
 
         ; We'll place a few test routines in the 2nd half of the code space so
