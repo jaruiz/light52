@@ -28,6 +28,13 @@ LFLAGS += -o $(OBJDIR)/ --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE)
 CFLAGS += -o $(OBJDIR)/ -D__LIGHT52__=1
 AFLAGS += -c
 
+# The SW sources will need to know if we're building for actual HW.
+# (When not defined the SW will not wait for TXRDY when writing to the UART.)
+# FIXME do the same for assembly sources.
+ifdef BUILD_FOR_HW
+	CFLAGS += -DBUILD_FOR_HW
+endif
+
 
 #-- Sources and objects, same for all tests  -----------------------------------
 
@@ -44,6 +51,14 @@ OBJS = $(TEST_OBJS) $(COMM_OBJS)
 BIN ?= software.hex
 
 #-- Targets & rules ------------------------------------------------------------
+
+.PHONY: warn_build_options
+warn_build_options:
+ifdef BUILD_FOR_HW
+	@printf "\033[1;37mINFO: Building SW for actual hardware target.\033[0m\n"
+else 
+	@printf "\033[1;37mINFO: Building SW for simulation target.\033[0m\n"
+endif 
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -64,7 +79,7 @@ $(BINDIR)/$(BIN): $(OBJS)
 
 # Root target
 .PHONY: sw
-sw: $(BINDIR)/$(BIN) package
+sw: warn_build_options $(BINDIR)/$(BIN)
 	@echo Done
 
 
@@ -72,7 +87,7 @@ sw: $(BINDIR)/$(BIN) package
 
 #-- Create VHDL package with object code and synthesis parameters
 .PHONY: package
-package: $(BINDIR)/$(BIN)
+package: warn_build_options sw
 	@echo Building object code VHDL package...
 	@python $(BRPATH)/src/build_rom.py \
 		-f $(BINDIR)/$(BIN)  \
