@@ -31,6 +31,6 @@ That'll build the executable program in Intel HEX format and it will also invoke
 Within directory `sim/ghdl` you'll find a makefile that will build this test and run it on `ghdl` and on the software simulator
 `b51` (supplied with this project) and will match the execution logs against each other automatically. Cd to `sim/ghdl` and:
 
-    make TEST=cpu_test clean sim
+    make TEST=cpu_test clean all
 
 ...and be patient because the RTL simulation takes a few minutes.
