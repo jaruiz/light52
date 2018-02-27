@@ -1,15 +1,17 @@
-#-- Build CPU test program and create VHDL package with object code ------------
+#-- Build assembly source 'hello world' including vhdl obj code package --------
 
 # All we do here is configure the build:
 
 # Test name (same as dir name).
-TEST = cpu_test
+TEST = hello_asm
 # Root file name of the only source file in this test.
-SRCFILE = tb51_cpu
-# XROM size in bytes. The CPU tester needs a bit more than 33K ox XCODE.
-XCODE_SIZE = 40000
+SRCFILE = hello
+# XROM size in bytes.
+XCODE_SIZE = 512
 # XRAM size in bytes -- the minimum of 512 bytes will do.
 XDATA_SIZE = 512
+# This will run on a simulated UART so build fake UART TX code etc.
+SIMULATED_UART = 1
 
 ifeq ($(BCD),1)
 	BCD_FLAG = --define=BCD

@@ -2,15 +2,9 @@ Hello_asm -- displays a 'hello' greeting message on the serial port.
 
 In order to make this demo, you need the free assembler ASEM51.
 
-DOS BAT script 'build.bat' will assemble the demo and build a suitable object
-code VHDL package that can then be used in synthesis or simulation.
+Running `build all` will build the program and create an intel hex file, a 
+listing file and a vhdl file that you can use to initialize a ROM for simulation
+or for synthesis.
 
-You can run this demo on the software simulator by running script 'run.bat'.
-
-You can run this demo in Modelsim using script /sim/light52_hello_tb.do.
-
-Once you have run the demo in Modelsim and B51, you can then compare the
-respective simulation logs (sw_log.txt and /sim/hw_sim_log.txt). For this demo,
-both files should be identical.
-
-It should be easy to port the BAT scripts to any linux shell flavor.
+Please use the makefile in /sim/ghdl to run this example on a vhdl simularion OR
+on a software ISS.

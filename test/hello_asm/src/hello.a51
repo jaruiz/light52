@@ -61,18 +61,6 @@ start:
         mov     DPTR,#text0
         call    po_cstr
 
-
-        ; Ok, now
-        mov     IE,#000h
-        mov     TSTAT,#000h
-        mov     TCH,#0fch
-        mov     TCL,#050h
-        ; Enable timer interrupts and interrupts globally...
-        mov     IE,#082h
-        ; ...and start the timer with autoreload.
-        mov     TSTAT,#030h
-        
-        
         ; End of test program, enter single-instruction endless loop.
         ; The timer will keep triggering interrupts indefinitely.
 quit:   ajmp    $
@@ -80,8 +68,12 @@ quit:   ajmp    $
 ; po_char:  Print character in ACC to console.
 po_char:
         mov     SBUF,a
+        ; We need to skip TXRDY check if this is going to run on a simulation.
+        ; Otherwise run times would be impractically long.
+        ifndef SIMULATED_UART
 po_char_loop:
         jnb     TXRDY,po_char_loop
+        endif
         ret
 
 ; po_cstr:  Prints zero-terminated string at XCODE:DPTR to console.
@@ -105,19 +97,8 @@ irq_unused:
         reti
 irq_uart:
         reti
-        
-        ; This timer routine is meant to show that the timer works; all it
-        ; does is display a message every timer interrupt.
 irq_timer:
-        setb    TSTAT.0         ; Clear the timer irq flag writing a 1 on it
-        push    DPH             ; Write a short message to the console...
-        push    DPL
-        mov     DPTR,#text1
-        call    po_cstr
-        pop     DPL             ; ...and quit
-        pop     DPH
         reti
 
 text0:  db      'Hello World!',13,10,00h,00h
-text1:  db      'Tick!',13,10,00h
         end

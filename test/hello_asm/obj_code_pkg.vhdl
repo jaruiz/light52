@@ -35,31 +35,26 @@ use work.light52_pkg.all;
 package obj_code_pkg is
 
 -- Size of XCODE memory in bytes.
-constant XCODE_SIZE : natural := 2048;
+constant XCODE_SIZE : natural := 512;
 -- Size of XDATA memory in bytes.
-constant XDATA_SIZE : natural := 0;
+constant XDATA_SIZE : natural := 512;
 
 -- Object code initialization constant.
-constant object_code : t_obj_code(0 to 149) := (
-    X"02", X"00", X"30", X"02", X"00", X"6c", X"00", X"00", 
-    X"00", X"00", X"00", X"02", X"00", X"6e", X"00", X"00", 
-    X"00", X"00", X"00", X"02", X"00", X"6c", X"00", X"00", 
-    X"00", X"00", X"00", X"02", X"00", X"6c", X"00", X"00", 
-    X"00", X"00", X"00", X"02", X"00", X"6d", X"00", X"00", 
+constant object_code : t_obj_code(0 to 105) := (
+    X"02", X"00", X"30", X"02", X"00", X"57", X"00", X"00", 
+    X"00", X"00", X"00", X"02", X"00", X"59", X"00", X"00", 
+    X"00", X"00", X"00", X"02", X"00", X"57", X"00", X"00", 
+    X"00", X"00", X"00", X"02", X"00", X"57", X"00", X"00", 
+    X"00", X"00", X"00", X"02", X"00", X"58", X"00", X"00", 
     X"00", X"00", X"00", X"00", X"00", X"00", X"00", X"00", 
     X"75", X"81", X"40", X"75", X"80", X"00", X"75", X"90", 
-    X"00", X"90", X"00", X"7e", X"12", X"00", X"59", X"75", 
-    X"a8", X"00", X"75", X"88", X"00", X"75", X"8f", X"fc", 
-    X"75", X"8e", X"50", X"75", X"a8", X"82", X"75", X"88", 
-    X"30", X"01", X"51", X"f5", X"99", X"30", X"9c", X"fd", 
-    X"22", X"c0", X"30", X"75", X"30", X"00", X"e5", X"30", 
-    X"05", X"30", X"93", X"60", X"04", X"11", X"53", X"80", 
-    X"f5", X"d0", X"30", X"22", X"32", X"32", X"d2", X"88", 
-    X"c0", X"83", X"c0", X"82", X"90", X"00", X"8e", X"11", 
-    X"59", X"d0", X"82", X"d0", X"83", X"32", X"48", X"65", 
-    X"6c", X"6c", X"6f", X"20", X"57", X"6f", X"72", X"6c", 
-    X"64", X"21", X"0d", X"0a", X"00", X"00", X"54", X"69", 
-    X"63", X"6b", X"21", X"0d", X"0a", X"00" 
+    X"00", X"90", X"00", X"5a", X"12", X"00", X"44", X"01", 
+    X"3f", X"f5", X"99", X"22", X"c0", X"30", X"75", X"30", 
+    X"00", X"e5", X"30", X"05", X"30", X"93", X"60", X"04", 
+    X"11", X"41", X"80", X"f5", X"d0", X"30", X"22", X"32", 
+    X"32", X"32", X"48", X"65", X"6c", X"6c", X"6f", X"20", 
+    X"57", X"6f", X"72", X"6c", X"64", X"21", X"0d", X"0a", 
+    X"00", X"00" 
 );
 
 

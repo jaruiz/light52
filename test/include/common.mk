@@ -1,12 +1,14 @@
-#-- common.mk - Makefile include common to all test and demo programs ----------
+#-- common.mk - Makefile include common to C tests and demo programs -----------
 #
 # This make include file should be included in a project makefile *after* the 
 # project configuration variables have been defined. See the Dhrystone makefile 
 # for an usage example.
 
+# (Assembly source tests use common makefile 'assembler.mk' and not this one.)
+
 #-- Toolchain executables ------------------------------------------------------
 
-# TODO won't work with assembly tests and will need changes in Win32.
+# WARNING: Not tested on Windows!
 AS = 
 CC = sdcc
 LD = sdcc
@@ -16,14 +18,14 @@ BRPATH = ../../tools/build_rom
 
 #-- Common configuration for all tests -----------------------------------------
 
-# Directories              
+# Directories
 BINDIR = bin
 OBJDIR = obj
 SRCDIR = src
 VHDL_TB_PATH = .
 COMDIR = ../common
 
-# Toolchain flags 
+# Toolchain flags
 LFLAGS += -o $(OBJDIR)/ --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE) 
 CFLAGS += -o $(OBJDIR)/ -D__LIGHT52__=1
 AFLAGS += -c
@@ -70,6 +72,9 @@ $(OBJDIR)/%.rel : $(SRCDIR)/%.c $(OBJDIR)
 $(OBJDIR)/%.rel : $(COMDIR)/%.c
 	$(CC) $(CFLAGS) -c $<
 
+
+$(BINDIR):
+	mkdir -p $(BINDIR)
 
 # Build executable file and move it to the bin directory
 $(BINDIR)/$(BIN): $(OBJS)
