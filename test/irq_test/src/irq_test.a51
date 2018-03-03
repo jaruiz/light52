@@ -13,9 +13,8 @@
 ; 1.- Port line P1.0 is wired to external input EXTINT0.0
 ; 2.- The timer prescaler is set to 20us@50MHz.
 ;
-; NOTE: I am aware that this code is perfectly hideous and nearly useless as a 
-; test bench; it will have to do for the time being. I can seldom find quality 
-; time for this project...
+; In short, not a real test program as real verification folk would write, but a 
+; useful smoke test.
 ;-------------------------------------------------------------------------------
 
         ; Include the definitions for the light52 derivative
@@ -29,23 +28,13 @@ irq_test_code   set     064h        ; Selects the behavior of the irq routines
 
     
         ;-- Macros -------------------------------------------------------------
-
-        ; putc: send character in A to console (UART)
-putc    macro   character
-        local   putc_loop
-        mov     SBUF,character
-putc_loop:
-        ; This program will only ever run in the simulated environment, where
-        ; UART transmission is instantaneous. No need to loop here.
-        ;mov     a,SCON
-        ;anl     a,#10h
-        ;jz      putc_loop
-        endm
-        
+      
         ; put_crlf: send CR+LF to console
 put_crlf macro
-        putc    #13
-        putc    #10
+        mov     a, #13
+        call    po_char
+        mov     a, #10
+        call    po_char
         endm
     
     
@@ -266,6 +255,18 @@ fail_timer_error:
 
         ; End of the test code. Now let's define a few utility routines.
 
+
+; po_char:  Print character in ACC to console.
+po_char:
+        mov     SBUF,a
+        ; We need to skip TXRDY check if this is going to run on a simulation.
+        ; Otherwise run times would be impractically long.
+        ifndef SIMULATED_UART
+po_char_loop:
+        jnb     TXRDY,po_char_loop
+        endif
+        ret
+
 ;-- puts: output to UART a zero-terminated string at DPTR ----------------------
 puts:
         mov     r0,#00h
@@ -275,7 +276,7 @@ puts_loop:
         movc    a,@a+DPTR
         jz      puts_done
 
-        putc    a
+        call    po_char
         sjmp    puts_loop
 puts_done:
         ret

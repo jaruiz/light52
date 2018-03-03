@@ -33,6 +33,7 @@ AFLAGS += -c
 # The SW sources will need to know if we're building for actual HW.
 # (When not defined the SW will not wait for TXRDY when writing to the UART.)
 # FIXME do the same for assembly sources.
+# FIXME run unmodified SW on simulation and hack the simulated UART instead.
 ifdef BUILD_FOR_HW
 	CFLAGS += -DBUILD_FOR_HW
 endif

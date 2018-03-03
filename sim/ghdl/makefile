@@ -57,7 +57,7 @@
 .DEFAULT: help
 .PHONY: help
 help:
-	(@echo Please read the usage instructions in the makefile comments.)
+	@echo "(Please read the usage instructions in the makefile comments.)"
 
 #---- Project config. ----------------------------------------------------------
 

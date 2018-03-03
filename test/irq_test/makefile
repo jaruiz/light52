@@ -3,11 +3,11 @@
 # All we do here is configure the build:
 
 # Test name (same as dir name).
-TEST = hello_asm
+TEST = irq_test
 # Root file name of the only source file in this test.
-SRCFILE = hello
+SRCFILE = irq_test
 # XROM size in bytes.
-XCODE_SIZE = 512
+XCODE_SIZE = 1024
 # XRAM size in bytes -- the minimum of 512 bytes will do.
 XDATA_SIZE = 512
 # This will run on a simulated UART so build fake UART TX code etc.

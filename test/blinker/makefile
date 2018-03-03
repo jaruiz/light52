@@ -23,12 +23,13 @@ XDATA_SIZE = 0
 # Source files 
 SRC :=  $(SRCDIR)/blinker.c \
         $(COMDIR)/soc.c
-# Final executable HEX file
-BIN :=  blinker.ihx
+
 
 # Toolchain flags 
 LFLAGS = -o $(OBJDIR)/ --code-size $(XCODE_SIZE) --xram-size $(XDATA_SIZE) 
 CFLAGS = -o $(OBJDIR)/ -D__LIGHT52__=1
+# Build SW for real HW, not simulators.
+BUILD_FOR_HW = 1
 
 
 # Include the main makefile body with all the rules.

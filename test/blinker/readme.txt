@@ -12,13 +12,9 @@ of 'make'.
 
 Running 'make all' will compile the demo and build a suitable object
 code VHDL package that can then be used in synthesis or simulation.
-See the makefile for other make targets ('clean', etc.).
 
 Running this demo on the software simulator B51 is possible (by running script 
-'run.bat') but will do you no good: the Sw simulator doe snot simulate the 
-peripherals.
-You can run this demo in Modelsim by modifyng script /sim/light52_hello_tb.do
-slightly -- compile the object code package for this demo.
+'run.bat') but B51 does not simulate the peripherals at all.
 
-This program uses the timer0 interrupt so it covers a wider fraction of the 
-core.
+This program uses the timer0 interrupt so it covers a marginally wider fraction 
+of the core than the other code snippets.
