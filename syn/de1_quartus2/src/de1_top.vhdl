@@ -26,7 +26,7 @@ use work.obj_code_pkg.all;
 
 -- Define the entity outputs as they are connected in the DE-1 development 
 -- board. Many of the outputs will be left unused in this demo.
-entity c2sb_soc is
+entity de1_top is
     port ( 
         -- ***** Clocks
         clk_50MHz     : in std_logic;
@@ -71,12 +71,11 @@ entity c2sb_soc is
         sd_cmd        : out std_logic;
         sd_clk        : out std_logic           
     );
-end c2sb_soc;
+end de1_top;
 
-architecture minimal of c2sb_soc is
+architecture minimal of de1_top is
 
 --##############################################################################
--- Some of these signals are 
 
 -- light52 MCU signals ---------------------------------------------------------
 signal p0_out :           std_logic_vector(7 downto 0);
@@ -238,8 +237,8 @@ begin
 -- RESET, CLOCK
 --##############################################################################
 
-  -- Use switch 9 as reset
-  reset <= not switches(9);
+  -- Use switch 9 as reset. 
+  reset <= switches(9);
 
 
   -- Generate a 1-Hz 'clock' to flash a LED for visual reference.
