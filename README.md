@@ -28,7 +28,7 @@ These are the synthesis results for the Dhrystone demo using the synthesis scrip
 
 | Device                  | Clock    | Slack   | Module                 | Logic   | RAM    | Other  |
 | ---                     | ---      | ---     | ---                    | ---     | ---    | ---    |
-| Altera Cyclone-2 (-C7)  | 50.0 MHz | 1.4ns   | Total for MCU          | 1254LEs | 29M4K  | 1MUL9  |
+| Altera Cyclone-2 (-C7)  | 50.0 MHz | 3.9ns   | Total for MCU          | 1254LEs | 29M4K  | 1MUL9  |
 |                         |          |         | Timer                  | 78LEs   | -      | -      |
 |                         |          |         | UART                   | 135LEs  | -      | -      |
 |                         |          |         | CPU                    | 991LEs  | 29M4K  | 1MUL9  |
