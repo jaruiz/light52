@@ -22,14 +22,32 @@ has yet to be developed.
 
 All the core features are described in detail [in the datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf?raw=true).
 
-### Refactor in Progress
+### Synthesis Results 
 
-At the time of writing this (early May 2017) I'm beginning a refactor of the project that will make it less Windows-centric and will remove the dependency from Modelsim, among other changes. 
+These are the synthesis results for the Dhrystone demo using the synthesis scripts supplied:
 
-When the refactor is complete, quick start instructions will be added to this readme file.
-In the meantime you can probably expect lots of breakage; as of right now, only two of the test programs (`cpu_test` and `hello_c`) actually work and there's no synthesis script for any target. The RTL should work just fine, though.
+| Device                  | Clock    | Slack   | Module                 | Logic   | RAM    | Other  |
+| ---                     | ---      | ---     | ---                    | ---     | ---    | ---    |
+| Altera Cyclone-2 (-C7)  | 50.0 MHz | 1.4ns   | Total for MCU          | 1254LEs | 29M4K  | 1MUL9  |
+|                         |          |         | Timer                  | 78LEs   | -      | -      |
+|                         |          |         | UART                   | 135LEs  | -      | -      |
+|                         |          |         | CPU                    | 991LEs  | 29M4K  | 1MUL9  |
 
-For the time being, if you plan to use this core at all you should use the Opencores version (see below).
+Synthesis scripts for a number of development boards can be found here: 
+
+| Target      |  Device          |  Scripts            |
+| ---         | ---              | ---                 |
+| Terasic DE1 | Altera Cyclone-2 | `syn/de1_quartus2`  |
+
+The synth scripts will build a minimal wrapper around the MCU entity allowing you to run trials on the core with 
+relative ease, or so I hope. 
+
+The [original version of this project, found in Opencores](http://opencores.org/project,light52) was also
+synthesized for a Xilinx Spartan-3 target; results can be found in the Opencores page and in section 9 of
+[the datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf?raw=true).  
+I no longer have a viable Xilinx toolchain for S3 and I haven't yet synthesized this project on any more recent Xilinx chips.
+As soon as I do I will include the synth scripts and update these numbers.
+
 
 ### Next Steps
 
@@ -56,8 +74,30 @@ If you want to try it anyway, check out file /doc/quickstart.txt and
 don't hesitate to contact me if you need help!
 
 
+### Refactor in Progress
+
+This project was moved form Opencores to GitHub (see below) and has since been refactored.  
+*_TL;DR:_ No need to look at the old Opencores version at all.*
+
+For the sake of completeness, these are the differences vs. the original version:
+
++ The RTL is largely the same...
++ ...but only this repo will ever be updated; Opencores' will remain inactive.
++ RTL simulation used to rely on Modelsim scripts, now relies on GHDL.
++ No more BAT files to drive SW build, using simple makefiles instead. 
++ Only one of the SW demos tested on HW (blinker)...
++ ...but all tested on iss and/or rtl simulations.
++ Dhrystone demo not yet tested on HW...
++ ...whereas the version in Opencores was. And this is kind of the centerpiece of the 'test' scheme.
+
+In short, this repo is meant to become the only version of this core. No need to look at the old Opencores version.
+
+At the time of writing this (early March 2018) some traces remain of the old Windows-centric version, mostly DOS newlines in some files. This will be corrected progressively as (if) I move the project forward.
+
+
 ## Project replicated in OpenCores
 
 This project started life in [Opencores](http://opencores.org/project,light52) before being moved here in 2016 or so. 
 
-The Opencores version will remain frozen there for as long as Opencores itself is up.
+The Opencores version will remain frozen there for as long as Opencores itself is up.  
+This GitHub version supersedes the old Opencores version.
