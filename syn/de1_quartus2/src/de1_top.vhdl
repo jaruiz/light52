@@ -103,6 +103,8 @@ signal display_data :     std_logic_vector(15 downto 0);
 signal clk_1hz :          std_logic;
 signal clk_master :       std_logic;
 signal reset :            std_logic;
+signal reset_ffc :        std_logic_vector(2 downto 0);  
+signal reset_async :      std_logic;
 signal clk :              std_logic;
 signal counter_1hz :      std_logic_vector(25 downto 0);
 
@@ -140,7 +142,7 @@ end function nibble_to_7seg;
 
 begin
 
-  -- SOC instantiation 
+  -- MCU instantiation 
   mcu: entity work.light52_mcu 
   generic map (
     -- Memory size is defined in package obj_code_pkg...
@@ -149,7 +151,7 @@ begin
     -- ...as is the object code initialization constant.
     OBJ_CODE => work.obj_code_pkg.object_code,
     -- Leave BCD opcodes disabled.
-    IMPLEMENT_BCD_INSTRUCTIONS => false,
+    IMPLEMENT_BCD_INSTRUCTIONS => true,
     -- UART baud rate isn't programmable in run time.
     UART_HARDWIRED => true,
     -- We're using the 50MHz clock of the DE-1 board.
@@ -237,15 +239,15 @@ begin
 -- RESET, CLOCK
 --##############################################################################
 
-  -- Use switch 9 as reset. 
-  reset <= switches(9);
-
+  -- Use switch 9 as external reset source. 
+  reset_async <= switches(9);
 
   -- Generate a 1-Hz 'clock' to flash a LED for visual reference.
+  -- This 'clock' drives nothing else.
   process(clk_50MHz)
   begin
     if clk_50MHz'event and clk_50MHz='1' then
-      if reset = '1' then
+      if reset_async = '1' then
         clk_1hz <= '0';
         counter_1hz <= (others => '0');
       else
@@ -259,7 +261,16 @@ begin
     end if;
   end process;
 
-  -- Master clock is external 50MHz oscillator
+  -- Synchronize the external reset before feeding it into the main logic.
+  process(clk_50MHz)
+  begin
+    if clk_50MHz'event and clk_50MHz='1' then
+      reset_ffc <= reset_ffc(1 downto 0) & reset_async;
+    end if;
+  end process;
+  reset <= reset_ffc(2);
+
+  -- Master clock external 50MHz oscillator.
   clk <= clk_50MHz;
 
 
@@ -280,7 +291,7 @@ begin
 --##############################################################################
 
   -- Display the contents of the output port at the hex displays.
-  display_data <= p0_out & p1_out;
+  display_data <= p1_out & p0_out;
 
   -- 7-segment encoders; the dev board displays are not multiplexed or encoded
   hex3 <= nibble_to_7seg(display_data(15 downto 12));
