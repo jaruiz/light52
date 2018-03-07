@@ -1,9 +1,9 @@
 /**
     @file blinker.c
     @brief LED blinker demo for light52 core.
-        
+
     Does nothing but send a greeting string to the console and do a binary count
-    on port P0.
+    of real time seconds on ports P1:P0.
     Should fit in 4K of ROM and use no XRAM.
     This demo may come in handy to try the core on boards with no RS232 port or
     display.
@@ -11,11 +11,6 @@
 #include <stdio.h>
 #include "../../include/light52.h"
 #include "../../common/soc.h"
-
-
-/*-- Local function prototypes -----------------------------------------------*/
-
-
 
 
 /*-- Public functions --------------------------------------------------------*/
@@ -35,14 +30,8 @@ void main(void){
     while(1){
         msecs = soc_get_msecs();
         secs = msecs/1000;
-        P1 = (uint8_t)(secs & 0xff);
-        P0 = (uint8_t)((secs>>8) & 0xff);
+        P0 = (uint8_t)(secs & 0xff);
+        P1 = (uint8_t)((secs>>8) & 0xff);
     }
+
 }
-
-/*-- Local functions ---------------------------------------------------------*/
-
-
-
-
-

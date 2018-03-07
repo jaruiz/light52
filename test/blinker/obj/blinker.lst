@@ -1,7 +1,7 @@
                               1 ;--------------------------------------------------------
                               2 ; File Created by SDCC : free open source ANSI-C Compiler
                               3 ; Version 3.3.0 #8604 (Dec 30 2013) (Linux)
-                              4 ; This file was generated Sat Mar  3 10:56:24 2018
+                              4 ; This file was generated Wed Mar  7 19:51:11 2018
                               5 ;--------------------------------------------------------
                               6 	.module blinker
                               7 	.optsdcc -mmcs51 --model-small
@@ -255,7 +255,7 @@
                             255 ;msecs                     Allocated to registers r4 r5 r6 r7 
                             256 ;secs                      Allocated to registers r4 r5 r6 r7 
                             257 ;------------------------------------------------------------
-                            258 ;	src/blinker.c:23: void main(void){
+                            258 ;	src/blinker.c:18: void main(void){
                             259 ;	-----------------------------------------
                             260 ;	 function main
                             261 ;	-----------------------------------------
@@ -268,9 +268,9 @@
                      0002   268 	ar2 = 0x02
                      0001   269 	ar1 = 0x01
                      0000   270 	ar0 = 0x00
-                            271 ;	src/blinker.c:28: soc_init();
+                            271 ;	src/blinker.c:23: soc_init();
    0000 12r00r00      [24]  272 	lcall	_soc_init
-                            273 ;	src/blinker.c:31: printf("\n\r");
+                            273 ;	src/blinker.c:26: printf("\n\r");
    0003 74r00         [12]  274 	mov	a,#__str_0
    0005 C0 E0         [24]  275 	push	acc
    0007 74s00         [12]  276 	mov	a,#(__str_0 >> 8)
@@ -281,7 +281,7 @@
    0012 15 81         [12]  281 	dec	sp
    0014 15 81         [12]  282 	dec	sp
    0016 15 81         [12]  283 	dec	sp
-                            284 ;	src/blinker.c:32: printf("Light52 project -- " __DATE__ "\n\n\r");
+                            284 ;	src/blinker.c:27: printf("Light52 project -- " __DATE__ "\n\n\r");
    0018 74r03         [12]  285 	mov	a,#__str_1
    001A C0 E0         [24]  286 	push	acc
    001C 74s00         [12]  287 	mov	a,#(__str_1 >> 8)
@@ -292,7 +292,7 @@
    0027 15 81         [12]  292 	dec	sp
    0029 15 81         [12]  293 	dec	sp
    002B 15 81         [12]  294 	dec	sp
-                            295 ;	src/blinker.c:33: printf("LED blinker test.\n\r");
+                            295 ;	src/blinker.c:28: printf("LED blinker test.\n\r");
    002D 74r25         [12]  296 	mov	a,#__str_2
    002F C0 E0         [24]  297 	push	acc
    0031 74s00         [12]  298 	mov	a,#(__str_2 >> 8)
@@ -303,15 +303,15 @@
    003C 15 81         [12]  303 	dec	sp
    003E 15 81         [12]  304 	dec	sp
    0040 15 81         [12]  305 	dec	sp
-                            306 ;	src/blinker.c:35: while(1){
+                            306 ;	src/blinker.c:30: while(1){
    0042                     307 00102$:
-                            308 ;	src/blinker.c:36: msecs = soc_get_msecs();
+                            308 ;	src/blinker.c:31: msecs = soc_get_msecs();
    0042 12r00r00      [24]  309 	lcall	_soc_get_msecs
    0045 AC 82         [24]  310 	mov	r4,dpl
    0047 AD 83         [24]  311 	mov	r5,dph
    0049 AE F0         [24]  312 	mov	r6,b
    004B FF            [12]  313 	mov	r7,a
-                            314 ;	src/blinker.c:37: secs = msecs/1000;
+                            314 ;	src/blinker.c:32: secs = msecs/1000;
    004C 75*00 E8      [24]  315 	mov	__divulong_PARM_2,#0xE8
    004F 75*01 03      [24]  316 	mov	(__divulong_PARM_2 + 1),#0x03
    0052 E4            [12]  317 	clr	a
@@ -326,15 +326,15 @@
    0063 AD 83         [24]  326 	mov	r5,dph
    0065 AE F0         [24]  327 	mov	r6,b
    0067 FF            [12]  328 	mov	r7,a
-                            329 ;	src/blinker.c:38: P1 = (uint8_t)(secs & 0xff);
+                            329 ;	src/blinker.c:33: P0 = (uint8_t)(secs & 0xff);
    0068 8C 00         [24]  330 	mov	ar0,r4
    006A 79 00         [12]  331 	mov	r1,#0x00
    006C 7A 00         [12]  332 	mov	r2,#0x00
    006E 7B 00         [12]  333 	mov	r3,#0x00
-   0070 88 90         [24]  334 	mov	_P1,r0
-                            335 ;	src/blinker.c:39: P0 = (uint8_t)((secs>>8) & 0xff);
+   0070 88 80         [24]  334 	mov	_P0,r0
+                            335 ;	src/blinker.c:34: P1 = (uint8_t)((secs>>8) & 0xff);
    0072 8D 04         [24]  336 	mov	ar4,r5
-   0074 8C 80         [24]  337 	mov	_P0,r4
+   0074 8C 90         [24]  337 	mov	_P1,r4
    0076 80 CA         [24]  338 	sjmp	00102$
                             339 	.area CSEG    (CODE)
                             340 	.area CONST   (CODE)
@@ -343,11 +343,11 @@
    0001 0D                  343 	.db 0x0D
    0002 00                  344 	.db 0x00
    0003                     345 __str_1:
-   0003 4C 69 67 68 74 35   346 	.ascii "Light52 project -- Mar  3 2018"
+   0003 4C 69 67 68 74 35   346 	.ascii "Light52 project -- Mar  7 2018"
         32 20 70 72 6F 6A
         65 63 74 20 2D 2D
         20 4D 61 72 20 20
-        33 20 32 30 31 38
+        37 20 32 30 31 38
    0021 0A                  347 	.db 0x0A
    0022 0A                  348 	.db 0x0A
    0023 0D                  349 	.db 0x0D
