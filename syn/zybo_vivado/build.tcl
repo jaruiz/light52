@@ -1,8 +1,9 @@
 # STEP#0: project configuration.
 set PROJECT_NAME    "zybo_demo"
+set PROJECT_TOP     "zybo_top"
 set RTL_DIR         "../../vhdl"
-set BOARD_DIR       "../../boards/zybo"
-set OBJ_CODE_DIR    "../../test/cpu_test"
+set BOARD_DIR       "./src"
+set OBJ_CODE_DIR    "../../test/blinker"
 set VHDL_FILES [list \
     "$RTL_DIR/light52_pkg.vhdl" \
     "$RTL_DIR/light52_ucode_pkg.vhdl" \
@@ -33,7 +34,7 @@ read_xdc    $XDC_FILES
 # STEP#3: run synthesis, write design checkpoint, report timing,
 # and utilization estimates
 #
-synth_design -top zybo_top -part "xc7z010clg400-1"
+synth_design -top $PROJECT_TOP -part "xc7z010clg400-1"
 write_checkpoint -force $outputDir/post_synth.dcp
 report_timing_summary -file $outputDir/post_synth_timing_summary.rpt
 report_utilization -hierarchical -file $outputDir/post_synth_util.rpt
