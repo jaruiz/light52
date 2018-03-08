@@ -32,7 +32,7 @@ The path to the Vivado install is hardcoded in `settings.sh` so you'll probably 
 | `README.md`       | This file.                                              |
 
 
-### RTL Source Dependencies
+### Dependencies
 
 Script `build.tcl` contains a list of source files and constraint file(s).  
 All the target HW dependencies (ZYBO board) ard contained in the constraints
@@ -54,6 +54,10 @@ For instance, to build the test `blinker`:
 That'll build the vhdl package with the object code in the test directory, where `build.tcl`
 expects to find it.  
 (You need SDCC installed for that to work, BTW.)
+
+
+Conveniently, the repository includes pre-built vhdl object code packages for all tests.
+
 
 
 ### Compatibility
