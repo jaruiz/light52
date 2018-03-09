@@ -1,1 +1,0 @@
-python src/build_rom.py -f ../../test/cpu_test/bin/tb51_cpu.hex -o ../../vhdl/obj_code_pkg.vhdl
