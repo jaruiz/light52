@@ -137,7 +137,7 @@ sw: check_test
 .PHONY: iss
 iss: sw
 	@echo -e $(CC_HIGLIGHT)"Running '"$(TEST)"' on b51..."$(CC_NORMAL)
-	$(B51) --bcd=1 $(SWDIR)/$(TEST)/bin/software.hex
+	$(B51) --bcd $(SWDIR)/$(TEST)/bin/software.hex
 
 
 #-- Rules -- RTL simulation on ghdl --------------------------------------------

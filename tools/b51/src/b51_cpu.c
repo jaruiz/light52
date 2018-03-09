@@ -102,7 +102,7 @@ extern uint16_t cpu_load_code(cpu51_t *cpu, const char *hex_filename){
 
     fp = fopen(hex_filename, "r");
     if (fp == NULL) {
-        perror("Error opening file");
+        perror("Error opening input hex file");
         return 0;
     }
 

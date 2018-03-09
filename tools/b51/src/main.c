@@ -2,12 +2,12 @@
     @file main.c
     @brief Entry point to b51 simulator.
 
-    So farm this program is inly useful for the cosimulation of the light52 test
-    bench. It does not simulate any peripheral hardware. Besides, this main
-    program is just a stub: no argument parsing, for starters.
+    This simulator is only meant for the cosimulation of the light52 test
+    bench. It does not simulate any peripheral hardware. 
 
 */
 
+#include <argp.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -21,19 +21,19 @@
 /*-- Local file data ---------------------------------------------------------*/
 
 /** Value of command line parameters */
-static struct {
+struct arguments {
     char *hex_file_name;
     char *trace_logfile_name;
     char *console_logfile_name;
     uint32_t num_instructions;
     bool implement_bcd;
-} args;
-
+    char *debug_tty;
+} args = {NULL, "sw_log.txt", NULL, INT_MAX, false, NULL};
 
 
 /*-- Local function prototypes -----------------------------------------------*/
 
-static bool parse_command_line(int argc, char **argv);
+static error_t parse_command_line(int argc, char **argv);
 static void usage(void);
 
 
@@ -46,11 +46,14 @@ int main(int argc, char **argv){
     cpu_init(&cpu);
 
     /* Parse command line... */
-    if(!parse_command_line(argc, argv)){
+    if(parse_command_line(argc, argv)){
         exit(2);
     }
     /* ...and pass options to CPU model */
     cpu.options.bcd = args.implement_bcd;
+    if (cpu.options.bcd){
+        printf("Simulating BCD instructions.\n");
+    }
 
     if(!cpu_load_code(&cpu, args.hex_file_name)){
         exit(1);
@@ -88,85 +91,87 @@ int main(int argc, char **argv){
 
 /*-- local functions ---------------------------------------------------------*/
 
-static bool parse_command_line(int argc, char **argv){
-    uint32_t i;
+/* Callback to parse a single option. */
+static error_t parse_opt (int key, char *arg, struct argp_state *state){
+    /* Get the input argument from argp_parse, which we
+     know is a pointer to our arguments structure. */
+    struct arguments *arguments = state->input;
 
-    /* Fill command line arguments with default values */
-    args.console_logfile_name = NULL; /* "console_log.txt"; */
-    args.trace_logfile_name = "sw_log.txt";
-    args.hex_file_name = NULL;
-    args.num_instructions = 9e8;
-    args.implement_bcd = false;
-
-    /* Parse all args but last, which should be the file name. */
-    for(i=1;i<argc-1;i++){
-        if (strncmp(argv[i],"--help", strlen("--help"))==0){
-            usage();
-            return true;
+    switch (key){
+    case 900: /* --nologs */
+        arguments->console_logfile_name = NULL;
+        arguments->trace_logfile_name = NULL;
+        break;
+    case 901: /* --ninst = N */
+        /* Number of instructions as decimal integer */
+        if(sscanf(arg, "%u", &(arguments->num_instructions))==0){
+            argp_error(state, "Error: expected decimal integer as argument of --ninst");
         }
-        if(strcmp(argv[i],"--nologs")==0){
-            /* disable logging */
-            args.console_logfile_name = NULL;
-            args.trace_logfile_name = NULL;
+        break;
+    case 902: /* --tty = FILE */
+        break;
+    case 903: /* --bcd */
+        arguments->implement_bcd = true;
+        break;
+    case 904: /* log */
+        arguments->trace_logfile_name = arg;
+        break;
+    case 905: /* log-con */
+        arguments->console_logfile_name = arg;
+        break;
+    case ARGP_KEY_ARG:
+        if (state->arg_num == 0) {
+            arguments->hex_file_name = arg;
         }
-        else if(strncmp(argv[i],"--hex=", strlen("--hex="))==0){
-            args.hex_file_name = &(argv[i][strlen("--hex=")]);
+        else {
+            /* Too many arguments. */
+            argp_usage (state);
         }
-        else if(strncmp(argv[i],"--log_con=", strlen("--log_con="))==0){
-            args.console_logfile_name = &(argv[i][strlen("--log_con=")]);
+        break;
+    case ARGP_KEY_END:
+        if (state->arg_num < 1) {
+            /* Not enough arguments. */
+            argp_usage (state);
         }
-        else if(strncmp(argv[i],"--log=", strlen("--log="))==0){
-            args.trace_logfile_name = &(argv[i][strlen("--log_con=")]);
-        }
-        else if(strncmp(argv[i],"--ninst=", strlen("--ninst="))==0){
-            /* Number of instructions as decimal integer */
-            if(sscanf(&(argv[i][strlen("--ninst=")]), "%u",
-                      &(args.num_instructions))==0){
-                printf("Error: expected decimal integer as argument of --ninst\n\n");
-                return false;
-            }
-        }
-        else if(strncmp(argv[i],"--bcd", strlen("--bcd"))==0){
-            printf("Simulating BCD instructions.\n");
-            args.implement_bcd = true;
-        }
-        else{
-            printf("unknown argument '%s'\n\n",argv[i]);
-            usage();
-            return false;
-        }
+        break;
+    default:
+        return ARGP_ERR_UNKNOWN;
     }
-    /* Last argument should be a file name. Catch glaring errors here...*/
-    if (argv[i][0] == '-') {
-        printf("Error: Missing mandatory '--hex=' argument.\n");
-        usage();
-        return false;
-    }
-    /* ...and let the file open function fail if the argument is wrong. */
-    args.hex_file_name = argv[i];
-
-    return true;
+    return 0;
 }
 
+/* Info displayed before and after options. */
+static char doc[] =
+    "B51: Batch-mode simulator for MCS51 architecture.\v"
+    "The program will load the executable hex file, reset the CPU and execute "
+    "the specified\nnumber of instructions, then quit.\n"
+    "Simulation will only stop after <nint> instructions, when the CPU "
+    "enters a\nsingle-instruction endless loop or on an error "
+    "condition.\n\n";
 
-static void usage(void){
-    printf("B51: Batch-mode simulator for MCS51 architecture.\n\n");
-    printf("Usage: b51 [options] <executable Intel HEX file name>\n\n");
-    printf("Options:\n\n");
-    printf("  --help                 -"
-           " Display this help text and exit.\n");
-    printf("  --nint=<dec. number>   -"
-           " No. of instructions to run.\n"
-           "                           Defaults to a gazillion.\n");
-    printf("  --bcd=<0|1>            -"
-           " Disable/enable implementation of BCD instructions.\n"
-           "                           Defaults to 0.\n");
-    printf("  --nologs               -"
-           " Disable console and execution logging.\n");
-    printf("\n");
-    printf("The program will load the object file, reset the CPU and execute "
-           "the specified\nnumber of instructions, then quit.\n");
-    printf("Simulation will only stop after <nint> instructions, when the CPU "
-           "enters a\nsingle-instruction endless loop or on an error "
-           "condition.\n\n");
+/* Positional argument display names. */
+static char args_doc[] = "HEX";
+
+static struct argp_option options[] = {
+    {"log",     904, "FILE",0,  "Execution log file (CPU state delta log)\n"
+                                "If omitted no execution log is output", 2 },
+    {"log-con", 905, "FILE",0,  "UART0 echo file\n"
+                                "If omitted no echo is output" },
+    {"nologs",  900, 0,     0,  "Disable console and execution logging", 3 },
+    {"ninst",   901, "NUM", 0,  "No. of instructions to run\n"
+                                "Defaults to a gazillion" },
+    #if 0
+    {"tty",     902, "TTY", 0,  "Tty file to use as debugger interface\n"
+                                "Defaults to none (batch mode)" },
+    #endif
+    {"bcd",     903, 0,     0,  "Disable implementation of BCD instructions\n"
+                                "If omitted, BCD instructions are implemented" },
+    {"HEX",     999, 0,     OPTION_DOC, "MCS51 executable in Intel Hex format", 1 },
+    { 0 }
+};
+
+static struct argp argp = { options, parse_opt, args_doc, doc };
+
+static error_t parse_command_line(int argc, char **argv){
+    return argp_parse (&argp, argc, argv, 0, 0, &args);
 }
