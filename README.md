@@ -28,16 +28,24 @@ These are the synthesis results for the Dhrystone demo using the synthesis scrip
 
 | Device                  | Clock    | Slack   | Module                 | Logic   | RAM    | Other  |
 | ---                     | ---      | ---     | ---                    | ---     | ---    | ---    |
-| Altera Cyclone-2 (-C7)  | 50.0 MHz | 3.9ns   | Total for MCU          | 1254LEs | 29M4K  | 1MUL9  |
-|                         |          |         | Timer                  | 78LEs   | -      | -      |
-|                         |          |         | UART                   | 135LEs  | -      | -      |
-|                         |          |         | CPU                    | 991LEs  | 29M4K  | 1MUL9  |
+| Altera Cyclone-2 (-C7)  | 50.0 MHz | 0.4ns   | Total for MCU          | 1308LEs | 29M4K  | 1MUL9  |
+|                         |          |         | Timer                  | 84LEs   | -      | -      |
+|                         |          |         | UART                   | 143LEs  | -      | -      |
+|                         |          |         | CPU                    | 1032LEs | 1M4K   | 1MUL9  |
+| Xilinx Zynq (-1)        | 50.0 MHz | 3.97ns  | Total for MCU          | 900LUTs | 2RB36+2RB18 | -       |
+|                         |          |         | Timer                  | 22LEs   | 2RB36+1RB18      | -      |
+|                         |          |         | UART                   | 55LEs   | -      | -      |
+|                         |          |         | CPU                    | 811LUTs | 1RB18  | -      |
 
-Synthesis scripts for a number of development boards can be found here: 
+_Please note that the results include the BRAM blocks that make up the XCODE and XDATA memory for the SW in question.   
+The object code package includes constants used to dimension XCODE and XDATA memory and the XCODE memory is synthesized as a ROM initialized with the SW object code; that's why the software is relevant to the synthesis at all._
 
-| Target      |  Device          |  Scripts            |
-| ---         | ---              | ---                 |
-| Terasic DE1 | Altera Cyclone-2 | `syn/de1_quartus2`  |
+Synthesis scripts for a couple of development boards can be found here: 
+
+| Target        |  Device          |  Scripts            |
+| ---           | ---              | ---                 |
+| Terasic DE1   | Altera Cyclone-2 | `syn/de1_quartus2`  |
+| Digilent ZYBO | Xilinx Zynq      | `syn/zybo_vivado`   |
 
 The synth scripts will build a minimal wrapper around the MCU entity allowing you to run trials on the core with 
 relative ease, or so I hope. 
@@ -45,8 +53,7 @@ relative ease, or so I hope.
 The [original version of this project, found in Opencores](http://opencores.org/project,light52) was also
 synthesized for a Xilinx Spartan-3 target; results can be found in the Opencores page and in section 9 of
 [the datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf?raw=true).  
-I no longer have a viable Xilinx toolchain for S3 and I haven't yet synthesized this project on any more recent Xilinx chips.
-As soon as I do I will include the synth scripts and update these numbers.
+I no longer have a viable Xilinx toolchain for Spartan 3, which is a shame because that's the platform this core was originally optimized for (size of BRAMs, size of LUTs).
 
 
 ### Next Steps
