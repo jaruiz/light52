@@ -9,10 +9,11 @@ This is a 6-clocker-equivalent implementation of the MCS51 architecture, aiming 
 
 This project has been frozen in a relatively immature state: 
 
-* Design and implementation finished.
 * Already tried on real hardware (Dhrystone demo on Cyclone-2 FPGA).
 * No documentation other than this readme file and a draft of the datasheet.
 * Has not yet passed a rigorous test bench.
+* Bug open [which affects SUBB flags](https://github.com/jaruiz/light52/issues/1).
+* Project still contains many remnants of its OpenCores, Windows-centric past (from dodgy makefiles to CRLF's in sources).
 
 
 The core has already passed a basic test bench and executed a Dhrystone benchmark
@@ -20,7 +21,8 @@ on actual hardware (DE-1 board from Terasic), compiled with SDCC (source and ben
 results included -- see datasheet). Yet, there are still many loose ends and a strong test bench 
 has yet to be developed.
 
-All the core features are described in detail [in the datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf?raw=true).
+All the core features are described in detail [in the core datasheet](https://github.com/jaruiz/light52/blob/master/doc/light52_ds.pdf?raw=true).
+
 
 ### Synthesis Results 
 
