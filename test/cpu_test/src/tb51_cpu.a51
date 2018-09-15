@@ -27,6 +27,14 @@
 ; Note there are too many limitations to list. Use this test bench as a first
 ; approximation only. If your CPU fails this test, it must be dead!
 ;-------------------------------------------------------------------------------
+; IMPORTANT: Syntax compatible to ASEM51 assembler.
+; 
+; The version of SDCC commonly found in repos as of Spring'18 ships with a 
+; very old version of sdas8051 which has trouble with things like local macro 
+; labels. 
+; So either I ask you to install a recent SDCC from source or I ask you to get 
+; ASEM51. 
+;-------------------------------------------------------------------------------
     
         ; Include the definitions for the light52 derivative
         $nomod51
@@ -1142,7 +1150,7 @@ top_mc  macro   op,error_loc,flags
         ; op : Opcode to be tested
         ; a0, a1 : Values used as 1st and 2nd args in all addressing modes
         ; r : Expected result
-        ; am :
+        ; am : Optional addressing modes to test (see below)
         ; flags : <Expected PSW value>&0xfe | <input cy>
         ; (if the parameter is unused, the macro skips the flag check)
 tst_alu macro   op,a0,a1,r,am,flags
@@ -1330,6 +1338,7 @@ tk_ma0: dec     a
 
         putc    #'N'                ; start of test series
 
+        ; TODO macro arg order seems to be != what comments say.
         putc    #'0'
         tst_alu subb,070h,073h,003h,01h,000h     ; /CY /AC /OV
         putc    #'1'
@@ -1338,6 +1347,12 @@ tk_ma0: dec     a
         tst_alu subb,0c3h,0c5h,002h,01h,000h     ; /CY  AC /OV
         putc    #'3'
         tst_alu subb,0c3h,0c5h,001h,01h,001h     ; /CY  AC  OV (CY input)
+        putc    #'4'
+        tst_alu subb,001h,000h,0ffh,00h,0c0h     ;  CY  AC /OV
+        putc    #'5'
+        tst_alu subb,010h,00ah,0fah,00h,080h     ;  CY /AC /OV
+        putc    #'6'
+        tst_alu subb,010h,00ah,0f9h,00h,081h     ;  CY /AC /OV
 
         ; FIXME subb tests are specially weak
 
