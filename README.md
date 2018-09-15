@@ -12,7 +12,6 @@ This project has been frozen in a relatively immature state:
 * Already tried on real hardware (Dhrystone demo on Cyclone-2 FPGA).
 * No documentation other than this readme file and a draft of the datasheet.
 * Has not yet passed a rigorous test bench.
-* Bug open [which affects SUBB flags](https://github.com/jaruiz/light52/issues/1).
 * Project still contains many remnants of its OpenCores, Windows-centric past (from dodgy makefiles to CRLF's in sources).
 
 
