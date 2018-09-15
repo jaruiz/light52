@@ -153,13 +153,15 @@ uut: entity work.light52_mcu
         
         -- ...and wait for the test to hit a termination condition (evaluated by
         -- function log_cpu_activity) or to just timeout.
-        wait for T*SIMULATION_LENGTH;
+        wait until done = '1' for T*SIMULATION_LENGTH;
 
-        -- If we arrive here, the simulation timed out (termination conditions
-        -- trigger a failed assertion).
+        -- If we arrive here and 'done' is not set, the simulation timed out.
+        -- (Some termination conditions trigger a failed assertion).
         -- So print a timeout message and quit.
-        print("TB timed out.");
-        done <= '1';
+        if done = '0' then
+            print("TB timed out.");
+            done <= '1';
+        end if;
         wait;
         
     end process drive_uut;

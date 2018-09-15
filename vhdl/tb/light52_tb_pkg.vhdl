@@ -63,13 +63,14 @@ function hstr(slv: unsigned) return string;
 
 procedure log_cpu_status(
                 signal info :   inout t_log_info;
+                signal done :   out std_logic;
                 file l_file :   TEXT;
                 file con_file : TEXT);
 
 procedure log_cpu_activity(
                 signal clk :    in std_logic;
                 signal reset :  in std_logic;
-                signal done :   in std_logic;   
+                signal done :   inout std_logic;
                 mcu :           string;
                 signal info :   inout t_log_info; 
                 rom_size :      natural;
@@ -100,6 +101,7 @@ end function hstr;
 
 procedure log_cpu_status(
                 signal info :   inout t_log_info;
+                signal done :   out std_logic;
                 file l_file :   TEXT;
                 file con_file : TEXT) is
 variable bram_wr_addr : unsigned(7 downto 0);
@@ -231,9 +233,8 @@ begin
             -- ignore CR
         elsif log_sfr_wr = X"04" then
             -- EOT terminates simulation.
-            assert log_sfr_wr /= X"04"
-            report "Execution terminated by SW -- EOT written to SBUF."
-            severity failure;
+            print("Execution terminated by SW -- EOT written to SBUF.");
+            done <= '1';
         else
             -- append char to output string
             if info.con_line_ix < info.con_line_buf'high then
@@ -331,7 +332,7 @@ end procedure log_cpu_status;
 procedure log_cpu_activity(
                 signal clk :    in std_logic;
                 signal reset :  in std_logic;
-                signal done :   in std_logic;   
+                signal done :   inout std_logic;
                 mcu :           string;
                 signal info :   inout t_log_info; 
                 rom_size :      natural;
@@ -341,43 +342,7 @@ procedure log_cpu_activity(
                 file con_file : TEXT) is
 
 begin
-    
-    ---- 'Connect' all the internal signals we want to watch to members of 
-    ---- the info record.
-    --init_signal_spy(mcu& "/cpu/alu/"&"acc_input",iname&".acc_input", 0);
-    --init_signal_spy(mcu& "/cpu/alu/"&"load_acc", iname&".load_acc", 0);
-    --init_signal_spy(mcu& "/cpu/update_sp",       iname&".update_sp", 0);
-    --init_signal_spy(mcu& "/cpu/SP_reg",          iname&".sp", 0);
-    --init_signal_spy(mcu& "/cpu/"&"psw",          iname&".psw", 0);
-    --init_signal_spy(mcu& "/cpu/"&"update_psw_flags",iname&".update_psw_flags(0)", 0);
-    --init_signal_spy(mcu& "/cpu/"&"code_addr",    iname&".code_addr", 0);
-    --init_signal_spy(mcu& "/cpu/"&"ps",           iname&".ps", 0);
-    --init_signal_spy(mcu& "/cpu/"&"jump_condition", iname&".jump_condition", 0);
-    --init_signal_spy(mcu& "/cpu/"&"rel_jump_target", iname&".rel_jump_target", 0);
-    --init_signal_spy(mcu& "/cpu/"&"bram_we",      iname&".bram_we", 0);
-    --init_signal_spy(mcu& "/cpu/"&"bram_addr_p0", iname&".bram_wr_addr", 0);
-    --init_signal_spy(mcu& "/cpu/"&"bram_wr_data_p0",  iname&".bram_wr_data_p0", 0);
-    --init_signal_spy(mcu& "/cpu/"&"next_pc",      iname&".next_pc", 0);
-    --init_signal_spy(mcu& "/cpu/"&"sfr_we",       iname&".sfr_we", 0);
-    --init_signal_spy(mcu& "/cpu/"&"sfr_wr",       iname&".sfr_wr", 0);
-    --init_signal_spy(mcu& "/cpu/"&"sfr_addr",     iname&".sfr_addr", 0);
-    --init_signal_spy(mcu& "/cpu/"&"inc_dptr",     iname&".inc_dptr", 0);
-    --init_signal_spy(mcu& "/cpu/"&"DPTR_reg",     iname&".dptr", 0);
-    --init_signal_spy(mcu& "/"&"xdata_we",         iname&".xdata_we", 0);
-    --init_signal_spy(mcu& "/"&"xdata_vma",        iname&".xdata_vma", 0);
-    --init_signal_spy(mcu& "/"&"xdata_addr",       iname&".xdata_addr", 0);
-    --init_signal_spy(mcu& "/"&"xdata_wr",         iname&".xdata_wr", 0);
-    --init_signal_spy(mcu& "/cpu/"&"code_rd",      iname&".code_rd", 0);
-    --
-    ---- We force both 'rdy' uart outputs to speed up the simulation (since the
-    ---- UART operation is not simulated by B51, just logged).
-    --signal_force(mcu&"/uart/rx_rdy_flag", "1", 0 ms, freeze, -1 ms, 0);
-    --signal_force(mcu&"/uart/tx_busy", "0", 0 ms, freeze, -1 ms, 0);
-    ---- And we force the UART RX data to a predictable value until we implement
-    ---- UART RX simulation in the B51 simulator, eventually.
-    --signal_force(mcu&"/uart/rx_buffer", "00000000", 0 ms, freeze, -1 ms, 0);
 
-    
     -- Initialize the console log line buffer...
     info.con_line_buf <= (others => ' ');
     -- ...and take note of the ROM size 
@@ -408,7 +373,7 @@ begin
             
             info.con_line_ix <= 1; -- uart log line buffer is empty
         else
-            log_cpu_status(info, l_file, con_file);
+            log_cpu_status(info, done, l_file, con_file);
         end if;
     end loop;
     
