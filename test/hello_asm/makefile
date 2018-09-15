@@ -1,23 +1,18 @@
-#-- Build assembly source into hex obj file & vhdl obj code package ------------
+#-- See rules in ../include/common.mk ------------------------------------------
 
-# All we do here is configure the build:
+#-- Project configuration ------------------------------------------------------
 
-# Test name (same as dir name).
-TEST = hello_asm
-# Root file name of the only source file in this test.
-SRCFILE = hello
+# The parameters we set here will end in the object code VHDL package and will 
+# be passed to the MCU core as generics.
+
+PROJ_NAME = "Hello World (ASM)"
 # XROM size in bytes.
-XCODE_SIZE = 512
-# XRAM size in bytes -- the minimum of 512 bytes will do.
+XCODE_SIZE = 2048
+# XRAM size in bytes -- should be zero but the HW does not support that yet.
 XDATA_SIZE = 512
-# This will run on a simulated UART so build fake UART TX code etc.
-SIMULATED_UART = 1
 
-ifeq ($(BCD),1)
-	BCD_FLAG = --define=BCD
-else
-	BCD =
-endif
+# Don't link in the common code.
+COMM_OBJS =
 
-# The actual build happens in the main makefile fragment.
-include ../include/assembler.mk
+# Include the main makefile body with all the rules.
+include ../include/common.mk
