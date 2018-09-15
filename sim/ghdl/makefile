@@ -1,6 +1,10 @@
 #-------------------------------------------------------------------------------
 # Light52 test driver makefile.
-# Builds and runs test code on GHDL.
+# Builds and runs test code on GHDL (mcode backend only!).
+#
+# You need to have GHDL on your PATH and it needs to be the 'mcode backend'
+# version of GHDL. Build instructions here:
+# https://ghdl.readthedocs.io/en/latest/building/mcode/GNULinux-GNAT.html
 #
 #
 # QUICK START
@@ -54,6 +58,8 @@
 # 
 #-------------------------------------------------------------------------------
 
+SHELL := /bin/bash
+
 .DEFAULT: help
 .PHONY: help
 help:
@@ -73,7 +79,7 @@ CC_NORMAL 		= "\033[0m"
 
 # GHDL.
 GHDLC			:= ghdl
-GHDLFLAGS 		:=
+GHDLFLAGS 		:= -Wno-library
 GHDLSIMFLAGS 	:= --ieee-asserts=disable
 # GtkWave.
 WAVE 			:= gtkwave
@@ -139,6 +145,10 @@ iss: sw
 	@echo -e $(CC_HIGLIGHT)"Running '"$(TEST)"' on b51..."$(CC_NORMAL)
 	$(B51) --bcd $(SWDIR)/$(TEST)/bin/software.hex
 
+.PHONY: debug
+debug: sw
+	@echo -e $(CC_HIGLIGHT)"Running '"$(TEST)"' on b51 in debug target mode..."$(CC_NORMAL)
+	$(B51) --tty=/dev/pts/9 --bcd $(SWDIR)/$(TEST)/bin/software.hex
 
 #-- Rules -- RTL simulation on ghdl --------------------------------------------
 
@@ -146,13 +156,13 @@ iss: sw
 .PHONY: rtl
 rtl: sw ghdl 
 
-# Run SW on VHDL TB on GHDL. 
+# Run SW on VHDL TB on GHDL (mcode backend).
 .PHONY: ghdl
 ghdl: ghdl_rtl 
 	@echo -e $(CC_HIGLIGHT)"Running '"$(TEST)"' on ghdl..."$(CC_NORMAL)
 	$(GHDLC) -a $(GHDLFLAGS) $(PKGTB) $(SRCTB)
 	$(GHDLC) -m $(GHDLFLAGS) $(TBUNIT)
-	-./$(TBUNIT) $(GHDLSIMFLAGS) --wave=$(TBUNIT).ghw
+	-$(GHDLC) -r light52_tb $(GHDLSIMFLAGS) --wave=$(TBUNIT).ghw
 
 # Compile the whole set of sources, packages first.
 # Note we insert the SW object code package after the main package sources.
