@@ -77,7 +77,6 @@ static void cpu_xdata_write(cpu51_t *cpu, uint16_t addr, uint8_t value);
 static void cpu_set_rn(cpu51_t *cpu, uint8_t n, uint8_t value);
 static void cpu_set_a(cpu51_t *cpu, uint8_t value);
 static uint8_t cpu_update_flags(cpu51_t *cpu, uint8_t x, uint8_t y, cpu_op_t op);
-static uint8_t cpu_compute_ac(cpu51_t *cpu, uint8_t x, uint8_t y, cpu_op_t op);
 static void cpu_set_dir(cpu51_t *cpu, uint8_t dir, uint8_t value);
 static void cpu_set_idata(cpu51_t *cpu, uint8_t dir, uint8_t value);
 static uint8_t cpu_get_dir(cpu51_t *cpu, uint8_t dir);
@@ -310,25 +309,6 @@ static uint8_t set_bit(uint8_t target, uint8_t index, uint8_t value){
     return target;
 }
 
-static uint8_t cpu_compute_ac(cpu51_t *cpu, uint8_t x, uint8_t y, cpu_op_t op){
-
-  if(op==subb){
-    x = x & 0x0f;
-    y = y & 0x0f;
-    if((cpu->sfr.psw)&0x80){
-      y++;
-    }
-    return (x<y)?1:0;
-  }
-  else{
-    x = x & 0x0f;
-    y = y & 0x0f;
-    if((cpu->sfr.psw)&0x80){
-      y++;
-    }
-    return ((x+y)>0x0f)?1:0;
-  }
-}
 
 static uint8_t cpu_update_flags(cpu51_t *cpu, uint8_t s, uint8_t d, cpu_op_t op){
     uint16_t res, x, y, res_half, rem;
@@ -357,15 +337,14 @@ static uint8_t cpu_update_flags(cpu51_t *cpu, uint8_t s, uint8_t d, cpu_op_t op)
         cpu->sfr.psw = set_bit(cpu->sfr.psw, 2, ov);
         break;
     case subb:
-        ac = cpu_compute_ac(cpu, x, y, subb);
-        y ^= 0xffff;
-        y += 1;
-        res = x + y;
+        res = x - y;
+        res_half = (x & 0x0f) - (y & 0x0f);
         if(cpu->sfr.psw & 0x80){
             res--;
+            res_half--;
         }
         cy = (res & 0x0100)? 1 : 0;
-
+        ac = (res_half & 0x0010)? 1 : 0;
         if((x < 0x80) && (y >= 0x80)){
             /* positive - negative = positive, otherwise OV */
             ov = (res & 0x0080)? 1 : 0;
@@ -377,7 +356,6 @@ static uint8_t cpu_update_flags(cpu51_t *cpu, uint8_t s, uint8_t d, cpu_op_t op)
         else{
             ov = 0;
         }
-
         cpu->sfr.psw = set_bit(cpu->sfr.psw, 7, cy);
         cpu->sfr.psw = set_bit(cpu->sfr.psw, 6, ac);
         cpu->sfr.psw = set_bit(cpu->sfr.psw, 2, ov);
