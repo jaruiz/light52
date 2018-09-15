@@ -8,7 +8,7 @@ set PROJECT_NAME    "de1_demo"
 set PROJECT_TOP     "de1_top"
 set RTL_DIR         "../../vhdl"
 set BOARD_DIR       "./src"
-set OBJ_CODE_DIR    "../../test/blinker"
+set OBJ_CODE_DIR    "../../test/dhrystone"
 
 #####################################################################################
 # Create project, then add source files and pin assignments.

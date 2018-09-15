@@ -3,7 +3,7 @@ set PROJECT_NAME    "zybo_demo"
 set PROJECT_TOP     "zybo_top"
 set RTL_DIR         "../../vhdl"
 set BOARD_DIR       "./src"
-set OBJ_CODE_DIR    "../../test/blinker"
+set OBJ_CODE_DIR    "../../test/dhrystone"
 set VHDL_FILES [list \
     "$RTL_DIR/light52_pkg.vhdl" \
     "$RTL_DIR/light52_ucode_pkg.vhdl" \
